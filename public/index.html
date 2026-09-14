@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini E-Commerce API Tester</title>
+</head>
+<body>
+    <h1>Mini E-Commerce API Tester</h1>
+    <p><i>Minimal UI for testing endpoints. No CSS intentionally.</i></p>
+
+    <!-- Auth Section -->
+    <section id="auth-section">
+        <h2>Authentication</h2>
+        <div id="auth-status">Not logged in</div>
+        <br>
+        <form id="login-form">
+            <input type="email" id="login-email" placeholder="Email" required value="john@example.com">
+            <input type="password" id="login-password" placeholder="Password" required value="password123">
+            <button type="submit">Login</button>
+        </form>
+        <button id="logout-btn" style="display:none;">Logout</button>
+    </section>
+    <hr>
+
+    <!-- Products & Recommendations -->
+    <section id="products-section">
+        <h2>Products</h2>
+        <button id="load-products-btn">Load Products</button>
+        <div id="products-list"></div>
+
+        <h3>Recommendations</h3>
+        <p>Enter a Product ID to get recommendations:</p>
+        <input type="number" id="rec-product-id" placeholder="Product ID" value="1">
+        <button id="get-recs-btn">Get Recommendations</button>
+        <div id="recs-list"></div>
+    </section>
+    <hr>
+
+    <!-- Cart & Checkout -->
+    <section id="cart-section">
+        <h2>Cart</h2>
+        <div id="cart-items">Empty</div>
+        <br>
+        <button id="checkout-btn">Checkout</button>
+        <div id="checkout-status"></div>
+    </section>
+
+    <!-- Admin -->
+    <section id="admin-section" style="display:none;">
+        <h2>Admin Dashboard</h2>
+        <button id="load-admin-btn">Load Dashboard Data</button>
+        <pre id="admin-data"></pre>
+    </section>
+
+    <!-- Scripts -->
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/products.js"></script>
+    <script>
+        // Init check
+        if(localStorage.getItem('token')){
+            document.getElementById('auth-status').innerText = 'Logged in as ' + JSON.parse(localStorage.getItem('user')).email;
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('logout-btn').style.display = 'block';
+            if(JSON.parse(localStorage.getItem('user')).role === 'admin'){
+                document.getElementById('admin-section').style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>

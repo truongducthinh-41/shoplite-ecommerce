@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cosmos - Visual Discovery</title>
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <style type="text/tailwindcss">
+        @theme {
+            --color-linen-canvas: #f7f5f3;
+            --color-ink-black: #0d0d0d;
+            --color-paper-white: #ffffff;
+            --color-stone: #6e6a69;
+            --color-pebble: #9a9796;
+            
+            --font-serif: 'Georgia', ui-serif, Cambria, "Times New Roman", Times, serif;
+            
+            --text-eyebrow: 15px;
+            --text-heading-huge: 74px;
+            --leading-heading-huge: 0.8;
+            --tracking-heading-huge: -3.7px;
+            
+            --text-label: 18px;
+        }
+
+        body {
+            background-color: var(--color-linen-canvas);
+            color: var(--color-ink-black);
+            font-family: var(--font-serif);
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .border-ink-15 {
+            border: 1px solid rgba(13, 13, 13, 0.15);
+        }
+    </style>
+</head>
+<body class="min-h-screen relative overflow-x-hidden">
+
+    <!-- Floating Pill Navigation -->
+    <div class="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-4xl px-4">
+        <nav class="bg-paper-white rounded-full px-8 py-3 flex items-center justify-between border-ink-15 shadow-sm" style="box-shadow: none;">
+            <!-- Logo -->
+            <div class="text-xl font-medium tracking-tight">Cosmos</div>
+            
+            <!-- Search -->
+            <div class="flex-1 max-w-md mx-8 relative">
+                <input type="text" placeholder="Search visual universe..." 
+                    class="w-full bg-linen-canvas rounded-full py-2 px-6 text-sm placeholder:text-pebble focus:outline-none border-ink-15 font-sans" />
+            </div>
+            
+            <!-- Links -->
+            <div class="flex items-center gap-6 font-sans font-medium text-sm">
+                <a href="#" class="text-stone hover:text-ink-black">Log in</a>
+                <a href="#" class="text-paper-white bg-ink-black px-5 py-2 rounded-full">Sign up</a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Hero Section (Collage) -->
+    <section class="relative pt-48 pb-32 flex flex-col items-center text-center px-4 min-h-[80vh] justify-center">
+        
+        <!-- Floating Polaroids (Absolute) -->
+        <div class="absolute top-32 left-[15%] w-[100px] h-[100px] rounded-[12px] bg-stone overflow-hidden rotate-[-3deg]">
+            <img src="https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&w=200&q=80" alt="Abstract art" class="w-full h-full object-cover">
+        </div>
+        <div class="absolute bottom-20 left-[25%] w-[100px] h-[100px] rounded-[12px] bg-stone overflow-hidden rotate-[4deg]">
+            <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=200&q=80" alt="Abstract art" class="w-full h-full object-cover">
+        </div>
+        <div class="absolute top-40 right-[15%] w-[100px] h-[100px] rounded-[12px] bg-stone overflow-hidden rotate-[2deg]">
+            <img src="https://images.unsplash.com/photo-1518640467707-6811f4a6ab73?auto=format&fit=crop&w=200&q=80" alt="Abstract art" class="w-full h-full object-cover">
+        </div>
+        <div class="absolute bottom-32 right-[20%] w-[100px] h-[100px] rounded-[12px] bg-stone overflow-hidden rotate-[-4deg]">
+            <img src="https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?auto=format&fit=crop&w=200&q=80" alt="Abstract art" class="w-full h-full object-cover">
+        </div>
+
+        <!-- Text Stack -->
+        <div class="relative z-10 max-w-3xl flex flex-col items-center">
+            <span class="text-[15px] uppercase tracking-widest text-stone mb-6 font-sans">Cosmos</span>
+            <h1 class="text-heading-huge leading-heading-huge tracking-heading-huge font-normal mb-12">
+                A gallery-wrapped canvas for visual discovery.
+            </h1>
+            
+            <div class="flex items-center gap-4 font-sans font-medium">
+                <button class="bg-ink-black text-paper-white px-8 py-3.5 rounded-[16px] hover:opacity-90 transition-opacity">
+                    Start Exploring
+                </button>
+                <button class="bg-paper-white text-ink-black border-ink-15 px-8 py-3.5 rounded-[16px] hover:bg-linen-canvas transition-colors">
+                    Upload Artwork
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Feature Cards Section -->
+    <section class="max-w-7xl mx-auto px-8 pb-32">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-[24px]">
+            
+            <!-- Card 1 -->
+            <div class="group cursor-pointer">
+                <div class="rounded-[16px] overflow-hidden mb-4 aspect-[4/5] bg-stone">
+                    <img src="https://images.unsplash.com/photo-1600607686527-6fb886090705?auto=format&fit=crop&w=600&q=80" alt="Architecture" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                </div>
+                <h3 class="text-[18px] font-normal">Modern Architecture</h3>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="group cursor-pointer">
+                <div class="rounded-[16px] overflow-hidden mb-4 aspect-[4/5] bg-stone">
+                    <img src="https://images.unsplash.com/photo-1493246507139-91e8fad9978e?auto=format&fit=crop&w=600&q=80" alt="Landscapes" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                </div>
+                <h3 class="text-[18px] font-normal">Alpine Landscapes</h3>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="group cursor-pointer">
+                <div class="rounded-[16px] overflow-hidden mb-4 aspect-[4/5] bg-stone">
+                    <img src="https://images.unsplash.com/photo-1549490349-8643362247b5?auto=format&fit=crop&w=600&q=80" alt="Sculpture" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                </div>
+                <h3 class="text-[18px] font-normal">Contemporary Sculpture</h3>
+            </div>
+
+        </div>
+    </section>
+
+</body>
+</html>
