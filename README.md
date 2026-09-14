@@ -14,7 +14,7 @@ Chào mừng bạn đến với tài liệu tổng hợp của dự án ShopLite
 > - **Backend:** Node.js, Express.js. REST API Architecture (Controllers, Routes).
 > - **Database:** PostgreSQL. Contains tables: `Users`, `Categories`, `Products`, `Orders`, `OrderDetails`, `Reviews`, `InventoryLogs`. Includes raw SQL procedures (`sp_checkout`) and triggers (`trg_after_order_detail_insert`).
 > - **Frontend:** React (Vite), Tailwind CSS v4, Lucide Icons, React Router. Styled using a premium "Dark / Glassmorphism" theme (`#020204` background) with Apple-like aesthetics, neon glow borders, and complex 3D CSS transforms.
-> 
+> - **Deployment Architecture:** Supabase (PostgreSQL Database using IPv4 Transaction Pooler), Render (Express Backend API), Vercel (React Frontend). 
 > **Key Features Implemented:**
 > 1. Authentication (JWT based, Login/Register). Admin and Customer roles.
 > 2. Product Catalog with real Unsplash images and stock management.
@@ -27,42 +27,51 @@ Chào mừng bạn đến với tài liệu tổng hợp của dự án ShopLite
 
 ---
 
-## 2. 💻 HƯỚNG DẪN CÀI ĐẶT & CHẠY DỰ ÁN
+## 2. 💻 HƯỚNG DẪN CÀI ĐẶT & CHẠY LẠI DỰ ÁN (LOCAL DEVELOPMENT)
+Dự án hiện đã được deploy lên Cloud, nhưng nếu bạn muốn code và thử nghiệm trên máy cá nhân, hãy làm theo các bước sau:
 
 ### Yêu cầu tiên quyết:
 - Đã cài đặt **Node.js** (v18+).
-- Đã cài đặt **PostgreSQL** và tạo database tên `ecommerce`.
+- Dự án sử dụng **Supabase** làm Database chính thức (không cần chạy PostgreSQL ở local nữa).
 
-### Bước 1: Setup Database
-1. Mở `pgAdmin` hoặc trình quản lý SQL của bạn.
-2. Chạy nội dung file `database/schema.sql` để tạo các bảng, trigger, procedures.
-3. Chạy nội dung file `database/seed.sql` để đưa dữ liệu sản phẩm thật (iPhone, MacBook) và tài khoản mẫu vào hệ thống.
-
-### Bước 2: Setup Backend
+### Bước 1: Setup Backend
 1. Mở terminal, trỏ vào thư mục `backend/`
-2. Tạo file `.env` theo cấu trúc:
+2. Tạo file `.env` theo cấu trúc giống như cấu hình bạn đã làm trên Supabase/Render:
 ```env
-DB_USER=postgres
-DB_HOST=localhost
-DB_DATABASE=ecommerce
-DB_PASSWORD=password123
-DB_PORT=5432
+DB_USER=postgres.id_cua_ban
+DB_HOST=aws-0-....pooler.supabase.com
+DB_DATABASE=postgres
+DB_PASSWORD=mat_khau_cua_ban
+DB_PORT=6543
 PORT=3000
 ```
+*(Lưu ý: Bắt buộc dùng Session Pooler / Transaction Pooler hỗ trợ IPv4 của Supabase)*
 3. Chạy lệnh cài thư viện và khởi động:
 ```bash
 npm install
 node server.js
 ```
 
-### Bước 3: Setup Frontend
+### Bước 2: Setup Frontend
 1. Mở một terminal MỚI, trỏ vào thư mục `frontend/`
-2. Chạy lệnh cài thư viện và khởi động Vite:
+2. Tạo file `.env`. Ở bước này bạn có 2 lựa chọn:
+
+   **Lựa chọn A (Code cả Front & Back):** Trỏ về backend đang bật ở máy bạn:
+   ```env
+   VITE_API_URL=http://localhost:3000/api
+   ```
+   
+   **Lựa chọn B (Chỉ code Giao diện - Rất nhàn):** Trỏ thẳng lên API của Render. Bạn sẽ **KHÔNG CẦN** bật `node server.js` ở máy nữa!
+   ```env
+   VITE_API_URL=https://shoplite-api-c67i.onrender.com/api
+   ```
+
+3. Chạy lệnh cài thư viện và khởi động Vite:
 ```bash
 npm install
 npm run dev
 ```
-3. Mở trình duyệt truy cập: `http://localhost:5173`
+4. Mở trình duyệt truy cập: `http://localhost:5173`
 
 *(Tài khoản Admin test: `admin@example.com` / `password123`)*
 
@@ -89,10 +98,17 @@ Dưới đây là các lệnh bạn và team sẽ dùng mỗi ngày khi code:
 ### Các lệnh Git (Quản lý mã nguồn cơ bản)
 - Xem file nào vừa bị chỉnh sửa: `git status`
 - Lưu toàn bộ thay đổi: `git add .`
-- Đóng gói thay đổi kèm ghi chú: `git commit -m "Ghi chú công việc vừa làm, vd: Thêm chức năng thanh toán"`
-- Đẩy code lên GitHub cho bạn bè lấy về: `git push origin main`
-- Lấy code mới nhất do bạn bè vừa đẩy lên: `git pull origin main`
+- Đóng gói thay đổi kèm ghi chú: `git commit -m "Ghi chú công việc vừa làm"`
+- Đẩy code lên GitHub: `git push origin master`
 
 ### Cài thêm thư viện mới
 - Nếu bạn cần thư viện cho React (Frontend): `cd frontend` -> `npm install tên-thư-viện`
 - Nếu bạn cần thư viện cho Node (Backend): `cd backend` -> `npm install tên-thư-viện`
+
+---
+
+## 4. 🚀 KIẾN TRÚC DEPLOYMENT (PRODUCTION)
+Dự án được phân tách và triển khai theo chuẩn Micro-services cơ bản:
+1. **Database (Supabase):** Chứa dữ liệu. Phải kết nối thông qua IPv4 Connection Pooler (Port 6543 hoặc 5432) do Vercel/Render không hỗ trợ IPv6 thuần. File cấu hình cần có `ssl: { rejectUnauthorized: false }`.
+2. **Backend (Render):** Web Service chạy Node.js. Root `package.json` đã được cấu hình lệnh `"start": "node backend/server.js"` để tự động khởi động. Yêu cầu copy đầy đủ biến môi trường Supabase vào Render.
+3. **Frontend (Vercel):** Tự động build bằng Vite. Giao tiếp với Backend qua biến môi trường `VITE_API_URL`. Khi cập nhật URL Backend, bắt buộc phải *Redeploy* trên Vercel để code được build lại.
