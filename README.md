@@ -13,7 +13,7 @@ Chào mừng bạn đến với tài liệu tổng hợp của dự án ShopLite
 > **Current Tech Stack:**
 > - **Backend:** Node.js, Express.js. REST API Architecture (Controllers, Routes).
 > - **Database:** PostgreSQL. Contains tables: `Users`, `Categories`, `Products`, `Orders`, `OrderDetails`, `Reviews`, `InventoryLogs`. Includes raw SQL procedures (`sp_checkout`) and triggers (`trg_after_order_detail_insert`).
-> - **Frontend:** React (Vite), Tailwind CSS v4, Lucide Icons, React Router. Styled using a custom "Indigo/Slate" theme with rounded corners and soft shadows.
+> - **Frontend:** React (Vite), Tailwind CSS v4, Lucide Icons, React Router. Styled using a premium "Dark / Glassmorphism" theme (`#020204` background) with Apple-like aesthetics, neon glow borders, and complex 3D CSS transforms.
 > 
 > **Key Features Implemented:**
 > 1. Authentication (JWT based, Login/Register). Admin and Customer roles.
@@ -21,8 +21,9 @@ Chào mừng bạn đến với tài liệu tổng hợp của dự án ShopLite
 > 3. Shopping Cart (Context API + LocalStorage) and Checkout process.
 > 4. Admin Dashboard (Revenue, Orders, Sales History).
 > 5. **AI Recommendation Engine:** A "Best Sellers" global endpoint & "Frequently Bought Together" (Co-occurrence) widget based on `OrderDetails` history.
+> 6. **3D Vertex Hero:** A highly complex, performance-optimized 3D rotating carousel and type-fitter built in React hooks (`VertexHero.jsx`), rendering dynamic database products into 3D space.
 > 
-> **Your rules for this project:** Do not change the database schema unless requested. Do not change the UI theme (keep it Indigo/Slate Apple-like). Always provide absolute paths or correct terminal commands when updating code.
+> **Your rules for this project:** Do not change the database schema unless requested. Do not change the UI theme (keep the Dark/Glassmorphism theme intact). Always provide absolute paths or correct terminal commands when updating code.
 
 ---
 
@@ -44,7 +45,7 @@ Chào mừng bạn đến với tài liệu tổng hợp của dự án ShopLite
 DB_USER=postgres
 DB_HOST=localhost
 DB_DATABASE=ecommerce
-DB_PASSWORD=mật_khẩu_postgres_của_bạn
+DB_PASSWORD=password123
 DB_PORT=5432
 PORT=3000
 ```
