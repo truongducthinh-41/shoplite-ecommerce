@@ -95,11 +95,23 @@ Dưới đây là các lệnh bạn và team sẽ dùng mỗi ngày khi code:
   npm run dev
   ```
 
-### Các lệnh Git (Quản lý mã nguồn cơ bản)
-- Xem file nào vừa bị chỉnh sửa: `git status`
+### Các lệnh Git (Quản lý mã nguồn cơ bản & Làm việc nhóm)
+
+**1. Lấy dự án về máy (Dành cho thành viên mới/bạn bè):**
+- Lấy dự án từ GitHub (Thay URL bằng link kho chứa của team bạn):
+  `git clone https://github.com/your-username/your-repo-name.git`
+- Di chuyển vào thư mục dự án vừa tải về: `cd your-repo-name`
+- *Lưu ý: Sau khi tải code về, thành viên mới cần tạo các file `.env` và làm theo **Phần 2: Hướng dẫn cài đặt & chạy lại dự án** để chạy được dự án.*
+
+**2. Lấy bản cập nhật mới nhất (Kéo code mới về):**
+- Khi có người khác vừa cập nhật tính năng mới lên GitHub, bạn chạy lệnh sau để kéo code mới nhất về máy bạn:
+  `git pull origin master` *(hoặc `git pull origin main`)*
+
+**3. Lưu và đẩy code của bạn lên (Cho người khác lấy):**
+- Xem các file bạn vừa chỉnh sửa: `git status`
 - Lưu toàn bộ thay đổi: `git add .`
 - Đóng gói thay đổi kèm ghi chú: `git commit -m "Ghi chú công việc vừa làm"`
-- Đẩy code lên GitHub: `git push origin master`
+- Đẩy code lên GitHub: `git push origin master` *(hoặc `git push origin main`)*
 
 ### Cài thêm thư viện mới
 - Nếu bạn cần thư viện cho React (Frontend): `cd frontend` -> `npm install tên-thư-viện`
