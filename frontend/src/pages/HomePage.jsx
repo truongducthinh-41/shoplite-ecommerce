@@ -8,13 +8,16 @@ export default function HomePage() {
   const [products, setProducts] = useState([]);
   const [bestSellers, setBestSellers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
   const { addToCart } = useCart();
+  const LIMIT = 20;
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [productsData, bestSellersData] = await Promise.all([
-          apiFetch('/products').catch(() => []),
+          apiFetch(`/products?limit=${LIMIT}&offset=0`).catch(() => []),
           apiFetch('/products/bestsellers').catch(() => [])
         ]);
         setProducts(productsData || []);
@@ -31,6 +34,22 @@ export default function HomePage() {
   if (loading) {
     return <div className="flex justify-center items-center h-64"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div></div>;
   }
+
+  const handleLoadMore = async () => {
+    setLoadingMore(true);
+    try {
+      const offset = page * LIMIT;
+      const newProducts = await apiFetch(`/products?limit=${LIMIT}&offset=${offset}`);
+      if (newProducts && newProducts.length > 0) {
+        setProducts(prev => [...prev, ...newProducts]);
+        setPage(prev => prev + 1);
+      }
+    } catch (error) {
+      console.error('Failed to load more products:', error);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   return (
     <div>
@@ -67,7 +86,7 @@ export default function HomePage() {
                   )}
                 </Link>
                 
-                <div className="p-5 flex flex-col flex-grow">
+                <div className="px-5 pb-5 pt-3 flex flex-col flex-grow">
                   <Link to={`/product/${product.id}`}>
                     <h3 className="font-semibold text-white hover:text-indigo-400 transition-colors line-clamp-2 text-sm">{product.name}</h3>
                   </Link>
@@ -146,7 +165,7 @@ export default function HomePage() {
                   )}
                 </Link>
                 
-                <div className="p-5 flex flex-col flex-grow">
+                <div className="px-5 pb-5 pt-3 flex flex-col flex-grow">
                   <div className="flex justify-between items-start mb-2">
                     <Link to={`/product/${product.id}`}>
                       <h3 className="font-semibold text-white hover:text-indigo-400 transition-colors line-clamp-2 text-sm">{product.name}</h3>
@@ -178,6 +197,23 @@ export default function HomePage() {
               </div>
             ))}
           </div>
+
+          {/* Load More Button */}
+          {products.length > 0 && products.length % LIMIT === 0 && (
+            <div className="mt-12 flex justify-center">
+              <button 
+                onClick={handleLoadMore} 
+                disabled={loadingMore}
+                className="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full font-medium transition-all shadow-[0_0_15px_rgba(99,102,241,0.4)] hover:shadow-[0_0_25px_rgba(99,102,241,0.6)] disabled:opacity-50 flex items-center gap-2"
+              >
+                {loadingMore ? (
+                  <><div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div> Loading...</>
+                ) : (
+                  'Load More Products'
+                )}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

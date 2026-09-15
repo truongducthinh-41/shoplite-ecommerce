@@ -19,7 +19,18 @@ const getProductById = async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM Products WHERE id = $1', [id]);
     if (result.rows.length === 0) return res.status(404).json({ error: 'Product not found' });
-    res.json(result.rows[0]);
+    
+    const product = result.rows[0];
+    
+    // Fetch multiple images
+    const imagesResult = await pool.query('SELECT image_url FROM Product_Images WHERE product_id = $1 ORDER BY display_order ASC', [id]);
+    if (imagesResult.rows.length > 0) {
+      product.images = imagesResult.rows.map(row => row.image_url);
+    } else {
+      product.images = [product.image_url];
+    }
+    
+    res.json(product);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Database error' });

@@ -24,8 +24,6 @@ export default function VertexHero({ products = [], bestSellers = [] }) {
   const h1bRef = useRef(null);
   const sub1Ref = useRef(null);
   const sub2Ref = useRef(null);
-  const badgeTxtRef = useRef(null);
-  const ctaLabelRef = useRef(null);
   
   // Carousel refs
   const cardsRef = useRef([]);
@@ -76,22 +74,8 @@ export default function VertexHero({ products = [], bestSellers = [] }) {
       const D = m.fontBoundingBoxDescent || size * 0.2;
       el.style.top = `${y - ((size - (A + D)) / 2 + A)}px`;
     }
-    function centreLabel(btn, el, capPx) {
-      if(!btn || !el) return;
-      const probe = document.createElement('i');
-      probe.style.cssText = 'position:absolute;visibility:hidden;width:0;height:0';
-      probe.innerHTML = 'H';
-      el.appendChild(probe);
-      const btnRect = btn.getBoundingClientRect(), pRect = probe.getBoundingClientRect();
-      const base = (pRect.top - btnRect.top) / (isPhone ? 1 : k);
-      el.removeChild(probe);
-      const btnH = btnRect.height / (isPhone ? 1 : k);
-      el.style.top = `${btnH / 2 - (base - capPx / 2) + 1.1}px`;
-    }
-
     const els = {
-      h1a: h1aRef.current, h1b: h1bRef.current, sub1: sub1Ref.current, sub2: sub2Ref.current,
-      badgeTxt: badgeTxtRef.current, ctaLabel: ctaLabelRef.current
+      h1a: h1aRef.current, h1b: h1bRef.current, sub1: sub1Ref.current, sub2: sub2Ref.current
     };
 
     function applyPhoneStyles() {
@@ -146,19 +130,11 @@ export default function VertexHero({ products = [], bestSellers = [] }) {
       }
       
       const T = tboost;
-      // Shifted elements up by ~40px since navbar is gone
-      fitBox(els.h1a, 563.5 * T, 37.2 * T, 'translateX(-50%)'); baseline(els.h1a, 164.5);
-      fitBox(els.h1b, 197.5 * T, 37.2 * T, 'translateX(-50%)'); baseline(els.h1b, 218.5);
-      fitBox(els.sub1, 389 * T, 8.4 * T, 'translateX(-50%)'); baseline(els.sub1, 260.5);
-      fitBox(els.sub2, 311 * T, 8.4 * T, 'translateX(-50%)'); baseline(els.sub2, 276.5);
-      fitBox(els.badgeTxt, 230 * T, 9.4 * T, 'translate(2px,-1px)'); 
-      if(els.badgeTxt) els.badgeTxt.parentNode.style.top = '55px'; // Shift badge up
-
-      fitBox(els.ctaLabel, 107 * T, 8.9 * T, ''); 
-      if(els.ctaLabel) {
-         centreLabel(els.ctaLabel.parentNode, els.ctaLabel, 8.9 * T);
-         els.ctaLabel.parentNode.style.top = '309px'; // Shift CTA up
-      }
+      // Shifted elements up by 15px to accommodate the button above the cards
+      fitBox(els.h1a, 563.5 * T, 37.2 * T, 'translateX(-50%)'); baseline(els.h1a, 149.5);
+      fitBox(els.h1b, 197.5 * T, 37.2 * T, 'translateX(-50%)'); baseline(els.h1b, 203.5);
+      fitBox(els.sub1, 389 * T, 8.4 * T, 'translateX(-50%)'); baseline(els.sub1, 245.5);
+      fitBox(els.sub2, 311 * T, 8.4 * T, 'translateX(-50%)'); baseline(els.sub2, 261.5);
       
       for (const id in els) {
         if(els[id]) save[id] = { fontSize: els[id].style.fontSize, top: els[id].style.top, transform: els[id].style.transform };
@@ -262,7 +238,7 @@ export default function VertexHero({ products = [], bestSellers = [] }) {
       });
     }
     
-    play('.badge',      { opacity: 0, translate: Y(11), scale: 0.985 }, 560, 270, EXPO);
+
     play('.h1-a',       { opacity: 0, translate: Y(15), clipPath: 'inset(100% 0 -30% 0)' }, 900, 380, EXPO);
     play('.h1-b',       { opacity: 0, translate: Y(15), clipPath: 'inset(100% 0 -30% 0)' }, 900, 470, EXPO);
     play('.sub-1',      { opacity: 0, translate: Y(10) }, 620, 690, EXPO);
@@ -305,22 +281,22 @@ export default function VertexHero({ products = [], bestSellers = [] }) {
 
       <div className="canvas" ref={canvasRef}>
         <div className="stack">
-          <div className="badge">
-            <i>
-              <svg viewBox="5 1 14 22" preserveAspectRatio="none">
-                <path fill="rgba(16,112,152,.72)" stroke="rgba(190,236,255,.6)" strokeWidth="1.6" strokeLinejoin="round" d="M13.9 1.6 5.5 13.6a.7.7 0 0 0 .6 1.1h4.2l-1 7.7a.7.7 0 0 0 1.25.55l8.3-12.1a.7.7 0 0 0-.6-1.1h-4.2l1-7.7a.7.7 0 0 0-1.25-.55Z"/>
-              </svg>
-            </i>
-            <b ref={badgeTxtRef}>AI-Powered Recommendations</b>
-          </div>
-
           <div className="h1 h1-a" ref={h1aRef}>Streamline your</div>
           <div className="h1 h1-b" ref={h1bRef}>Shopping</div>
 
           <div className="sub sub-1" ref={sub1Ref}><b>Intelligent product discovery / <span className="nb">E-commerce</span></b> orchestrated with</div>
           <div className="sub sub-2" ref={sub2Ref}>seamless checkouts, performance, and dark aesthetics.</div>
 
-          <a href="#products" className="v-btn cta2"><span ref={ctaLabelRef}>Explore Catalog</span></a>
+          <a 
+            href="#products" 
+            className="cta2"
+            onClick={(e) => {
+              e.preventDefault();
+              window.scrollTo({ top: window.innerHeight, behavior: 'smooth' });
+            }}
+          >
+            <span>Explore Catalog</span>
+          </a>
         </div>
 
         <div className="showcase">

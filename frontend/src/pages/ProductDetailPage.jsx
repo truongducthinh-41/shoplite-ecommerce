@@ -10,6 +10,7 @@ export default function ProductDetailPage() {
   const [recommendations, setRecommendations] = useState({ type: '', items: [] });
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
   const { addToCart } = useCart();
 
   useEffect(() => {
@@ -21,6 +22,7 @@ export default function ProductDetailPage() {
           apiFetch(`/products/${id}/recommendations`).catch(() => ({ type: '', recommendations: [] }))
         ]);
         setProduct(prodData);
+        setActiveImageIndex(0);
         setRecommendations({ type: recData.type, items: recData.recommendations || [] });
       } catch (error) {
         console.error('Failed to fetch product:', error);
@@ -52,9 +54,26 @@ export default function ProductDetailPage() {
       <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden mb-12">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
           
-          {/* Product Image */}
-          <div className="bg-slate-50 p-8 md:p-12 flex items-center justify-center border-b md:border-b-0 md:border-r border-slate-200">
-            {product.image_url ? (
+          {/* Product Image Gallery */}
+          <div className="bg-slate-50 p-8 md:p-12 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-slate-200">
+            {product.images && product.images.length > 0 ? (
+              <>
+                <div className="w-full mb-6 flex-grow flex items-center justify-center h-64 md:h-80">
+                  <img src={product.images[activeImageIndex]} alt={product.name} className="w-full h-full object-contain mix-blend-multiply drop-shadow-xl transition-all duration-300" />
+                </div>
+                <div className="flex gap-3 overflow-x-auto pb-2 w-full max-w-md justify-start md:justify-center scrollbar-hide">
+                  {product.images.map((img, idx) => (
+                    <button 
+                      key={idx} 
+                      onClick={() => setActiveImageIndex(idx)}
+                      className={`flex-shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-xl bg-white overflow-hidden border-2 transition-all ${activeImageIndex === idx ? 'border-indigo-600 scale-105 shadow-md' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                    >
+                      <img src={img} alt={`${product.name} thumbnail ${idx}`} className="w-full h-full object-cover mix-blend-multiply" />
+                    </button>
+                  ))}
+                </div>
+              </>
+            ) : product.image_url ? (
               <img src={product.image_url} alt={product.name} className="w-full max-w-md h-auto object-contain mix-blend-multiply drop-shadow-xl" />
             ) : (
               <div className="w-full max-w-md aspect-square bg-slate-200 rounded-2xl flex items-center justify-center text-slate-400">
@@ -87,7 +106,7 @@ export default function ProductDetailPage() {
 
             <p className="text-3xl font-bold text-slate-900 mb-6">${parseFloat(product.price).toFixed(2)}</p>
             
-            <p className="text-slate-600 text-base leading-relaxed mb-8">{product.description}</p>
+            <p className="text-slate-600 text-base leading-relaxed mb-8 whitespace-pre-line">{product.description}</p>
 
             <div className="mt-auto space-y-6">
               <div className="flex items-center gap-4">
