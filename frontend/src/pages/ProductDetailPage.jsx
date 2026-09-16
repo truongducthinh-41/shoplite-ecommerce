@@ -171,8 +171,8 @@ export default function ProductDetailPage() {
             
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {recommendations.items.map(rec => (
-                <Link key={rec.id} to={`/product/${rec.id}`} className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 hover:shadow-md hover:border-indigo-200 transition-all group">
-                  <div className="aspect-square bg-slate-50 rounded-xl mb-4 overflow-hidden relative">
+                <Link key={rec.id} to={`/product/${rec.id}`} className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 hover:shadow-md hover:border-indigo-200 transition-all group flex flex-col h-full">
+                  <div className="aspect-square w-full bg-slate-50 rounded-xl mb-4 overflow-hidden relative">
                     {rec.image_url ? (
                       <img src={rec.image_url} alt={rec.name} className="w-full h-full object-contain p-4 group-hover:scale-110 transition-transform duration-300 mix-blend-multiply" />
                     ) : (
@@ -181,8 +181,12 @@ export default function ProductDetailPage() {
                       </div>
                     )}
                   </div>
-                  <h3 className="font-medium text-slate-900 text-sm mb-1 line-clamp-2 group-hover:text-indigo-600 transition-colors">{rec.name}</h3>
-                  <p className="text-indigo-600 font-bold">${parseFloat(rec.price).toFixed(2)}</p>
+                  <div className="flex flex-col flex-grow">
+                    <h3 className="font-medium text-slate-900 text-sm mb-1 line-clamp-2 min-h-[40px] group-hover:text-indigo-600 transition-colors">{rec.name}</h3>
+                    <div className="mt-auto">
+                      <p className="text-indigo-600 font-bold">${parseFloat(rec.price).toFixed(2)}</p>
+                    </div>
+                  </div>
                 </Link>
               ))}
             </div>

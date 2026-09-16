@@ -69,9 +69,9 @@ export default function HomePage() {
           
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
             {bestSellers.map(product => (
-              <div key={product.id} className="bg-[#111] rounded-2xl border border-white/10 overflow-hidden hover:border-indigo-500/50 hover:shadow-[0_0_15px_rgba(99,102,241,0.15)] transition-all group flex flex-col relative">
+              <div key={product.id} className="bg-[#111] rounded-2xl border border-white/10 overflow-hidden hover:border-indigo-500/50 hover:shadow-[0_0_15px_rgba(99,102,241,0.15)] transition-all group flex flex-col relative h-full">
                 <span className="absolute top-3 left-3 z-10 bg-amber-500 text-white text-xs uppercase tracking-wider font-bold px-2.5 py-1 rounded-full shadow-sm">Hot</span>
-                <Link to={`/product/${product.id}`} className="block relative aspect-square bg-white/5">
+                <Link to={`/product/${product.id}`} className="block w-full relative aspect-square bg-white/5 overflow-hidden">
                   {product.image_url ? (
                     <img 
                       src={product.image_url} 
@@ -88,7 +88,7 @@ export default function HomePage() {
                 
                 <div className="px-5 pb-5 pt-3 flex flex-col flex-grow">
                   <Link to={`/product/${product.id}`}>
-                    <h3 className="font-semibold text-white hover:text-indigo-400 transition-colors line-clamp-2 text-sm">{product.name}</h3>
+                    <h3 className="font-semibold text-white hover:text-indigo-400 transition-colors line-clamp-2 text-sm min-h-[40px]">{product.name}</h3>
                   </Link>
                   <div className="mt-auto flex items-center justify-between pt-4">
                     <span className="text-lg font-bold text-white">${parseFloat(product.price).toFixed(2)}</span>
@@ -143,8 +143,8 @@ export default function HomePage() {
                   <p>No products found. Is the backend running?</p>
                </div>
             ) : products.map((product) => (
-              <div key={product.id} className="bg-[#111] rounded-2xl border border-white/10 overflow-hidden hover:border-indigo-500/50 hover:shadow-[0_0_15px_rgba(99,102,241,0.15)] transition-all group flex flex-col">
-                <Link to={`/product/${product.id}`} className="block relative aspect-square bg-white/5">
+              <div key={product.id} className="bg-[#111] rounded-2xl border border-white/10 overflow-hidden hover:border-indigo-500/50 hover:shadow-[0_0_15px_rgba(99,102,241,0.15)] transition-all group flex flex-col h-full">
+                <Link to={`/product/${product.id}`} className="block w-full relative aspect-square bg-white/5 overflow-hidden">
                   {product.image_url ? (
                     <img 
                       src={product.image_url} 
@@ -168,7 +168,7 @@ export default function HomePage() {
                 <div className="px-5 pb-5 pt-3 flex flex-col flex-grow">
                   <div className="flex justify-between items-start mb-2">
                     <Link to={`/product/${product.id}`}>
-                      <h3 className="font-semibold text-white hover:text-indigo-400 transition-colors line-clamp-2 text-sm">{product.name}</h3>
+                      <h3 className="font-semibold text-white hover:text-indigo-400 transition-colors line-clamp-2 text-sm min-h-[40px]">{product.name}</h3>
                     </Link>
                   </div>
                   

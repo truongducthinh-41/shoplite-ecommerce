@@ -79,7 +79,9 @@ CREATE TABLE InventoryLogs (
 
 -- Trigger Function: Auto-deduct stock & log inventory when an OrderDetail is inserted
 CREATE OR REPLACE FUNCTION trg_after_order_detail_insert()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER
+SET search_path = public
+AS $$
 BEGIN
     -- Deduct stock
     UPDATE Products 
@@ -101,7 +103,7 @@ EXECUTE FUNCTION trg_after_order_detail_insert();
 
 
 -- View: Sales Summary for Admin
-CREATE VIEW vw_admin_sales_summary AS
+CREATE VIEW vw_admin_sales_summary WITH (security_invoker = true) AS
 SELECT 
     DATE(o.created_at) AS sale_date,
     COUNT(DISTINCT o.id) AS total_orders,
@@ -126,6 +128,7 @@ CREATE OR REPLACE PROCEDURE sp_checkout(
     OUT p_order_id INT
 )
 LANGUAGE plpgsql
+SET search_path = public
 AS $$
 DECLARE
     v_total_amount NUMERIC(10, 2) := 0;

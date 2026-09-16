@@ -23,6 +23,11 @@ Chào mừng bạn đến với tài liệu tổng hợp của dự án ShopLite
 > 5. **AI Recommendation Engine:** A "Best Sellers" global endpoint & "Frequently Bought Together" (Co-occurrence) widget based on `OrderDetails` history.
 > 6. **3D Vertex Hero:** A highly complex, performance-optimized 3D rotating carousel and type-fitter built in React hooks (`VertexHero.jsx`), rendering dynamic database products into 3D space.
 > 
+> **Recent Updates & Fixes (Context):**
+> - **Database Security:** Fixed Supabase linter warnings (Enabled RLS on public tables, View set to Security Invoker, bounded `search_path` for functions).
+> - **UI/UX Alignment:** Fixed CSS Grid product cards to have strictly uniform heights across the platform using robust `aspect-square`, `overflow-hidden`, and `min-h-[40px]` for dynamic text clamping.
+> - **Data Seeding:** Seeded 100,000 products and fixed image placeholders with perfectly cropped square Unsplash images (`&h=800`).
+> 
 > **Your rules for this project:** Do not change the database schema unless requested. Do not change the UI theme (keep the Dark/Glassmorphism theme intact). Always provide absolute paths or correct terminal commands when updating code.
 
 ---
