@@ -80,10 +80,10 @@ export default function VertexHero({ products = [], bestSellers = [] }) {
 
     function applyPhoneStyles() {
       for (const id in els) {
-        if(els[id] && save[id]) {
-          els[id].style.fontSize = save[id].fontSize;
-          els[id].style.top = save[id].top;
-          els[id].style.transform = save[id].transform;
+        if(els[id]) {
+          els[id].style.fontSize = '';
+          els[id].style.top = '';
+          els[id].style.transform = '';
         }
       }
     }

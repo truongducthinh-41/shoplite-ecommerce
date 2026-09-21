@@ -12,9 +12,38 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      # Optionally uncomment the following lines to auto-run initialization scripts on first start:
-      # - ./database/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
-      # - ./database/seed.sql:/docker-entrypoint-initdb.d/2-seed.sql
+
+  redis:
+    image: redis:alpine
+    container_name: ecommerce_redis
+    ports:
+      - "6379:6379"
+
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ecommerce_backend
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - DATABASE_URL=postgresql://admin:password123@db:5432/ecommerce
+      - JWT_SECRET=supersecretjwtkey123!
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - db
+      - redis
+
+  frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ecommerce_frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
 
 volumes:
   postgres_data:

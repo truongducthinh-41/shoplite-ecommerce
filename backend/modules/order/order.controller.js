@@ -1,4 +1,4 @@
-const pool = require('../config/db');
+const pool = require('../../config/db');
 
 const checkout = async (req, res) => {
   const { cartItems } = req.body; // Array of { product_id, quantity }
@@ -28,4 +28,28 @@ const checkout = async (req, res) => {
   }
 };
 
-module.exports = { checkout };
+const getMyOrders = async (req, res) => {
+  const userId = req.user ? req.user.id : req.userId; // authMiddleware sets req.user or req.userId depending on version
+  if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+  try {
+    const ordersResult = await pool.query(`
+      SELECT id, created_at as order_date, total_amount, status 
+      FROM Orders 
+      WHERE user_id = $1 
+      ORDER BY created_at DESC
+    `, [userId]);
+
+    const orders = ordersResult.rows;
+    
+    // For each order, fetch items if we want rich detail (or just return basic order list)
+    // For now, basic order list is fine. We can join OrderDetails if needed.
+    
+    res.json(orders);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch orders' });
+  }
+};
+
+module.exports = { checkout, getMyOrders };

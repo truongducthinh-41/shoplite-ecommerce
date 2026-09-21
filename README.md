@@ -26,7 +26,9 @@ Chào mừng bạn đến với tài liệu tổng hợp của dự án ShopLite
 > **Recent Updates & Fixes (Context):**
 > - **Database Security:** Fixed Supabase linter warnings (Enabled RLS on public tables, View set to Security Invoker, bounded `search_path` for functions).
 > - **UI/UX Alignment:** Fixed CSS Grid product cards to have strictly uniform heights across the platform using robust `aspect-square`, `overflow-hidden`, and `min-h-[40px]` for dynamic text clamping.
-> - **Data Seeding:** Seeded 100,000 products and fixed image placeholders with perfectly cropped square Unsplash images (`&h=800`).
+> - **Data Seeding & Scrubbing:** Seeded 100,000 products, fixed image placeholders with perfectly cropped square Unsplash images (`&h=800`), and scrubbed Faker.js placeholder names (e.g. "Sleek Rubber Tuna") using a backend script to assign realistic titles per category.
+> - **Dynamic UI:** Re-architected `FilterSidebar.jsx` to parse `useParams()` and dynamically inject relevant subcategories and brands based on the active e-commerce category.
+> - **Pricing UI:** Refactored the UI price display on all product cards (Home, Category, Detail pages) to include a deterministic original price with a strikethrough next to the sale price, enhancing UI realism.
 > 
 > **Your rules for this project:** Do not change the database schema unless requested. Do not change the UI theme (keep the Dark/Glassmorphism theme intact). Always provide absolute paths or correct terminal commands when updating code.
 

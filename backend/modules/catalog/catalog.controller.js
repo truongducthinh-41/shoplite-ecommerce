@@ -1,11 +1,44 @@
-const pool = require('../config/db');
+const pool = require('../../config/db');
 
-// List products with optional pagination
 const getProducts = async (req, res) => {
   const limit = parseInt(req.query.limit) || 20;
   const offset = parseInt(req.query.offset) || 0;
+  const category = req.query.category || 'All';
+  const sort = req.query.sort || 'Popularity';
+  const search = req.query.search || '';
+  
   try {
-    const result = await pool.query('SELECT * FROM Products ORDER BY id LIMIT $1 OFFSET $2', [limit, offset]);
+    let query = 'SELECT * FROM Products WHERE 1=1';
+    const params = [];
+    
+    // Add category filter (dynamic from DB)
+    if (category !== 'All') {
+      query += ` AND category_id = (SELECT id FROM Categories WHERE name = $${params.length + 1})`;
+      params.push(category);
+    }
+
+    // Add search filter
+    if (search) {
+      query += ` AND name ILIKE $${params.length + 1}`;
+      params.push(`%${search}%`);
+    }
+    
+    // Add sorting
+    if (sort === 'Price: Low to High') {
+      query += ' ORDER BY price ASC';
+    } else if (sort === 'Price: High to Low') {
+      query += ' ORDER BY price DESC';
+    } else {
+      query += ' ORDER BY id ASC'; // Popularity default
+    }
+    
+    // Add pagination
+    const limitIdx = params.length + 1;
+    const offsetIdx = params.length + 2;
+    query += ` LIMIT $${limitIdx} OFFSET $${offsetIdx}`;
+    params.push(limit, offset);
+
+    const result = await pool.query(query, params);
     res.json(result.rows);
   } catch (error) {
     console.error(error);

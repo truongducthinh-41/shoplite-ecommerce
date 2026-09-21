@@ -23,4 +23,13 @@ const isAdmin = (req, res, next) => {
   next();
 };
 
-module.exports = { verifyToken, isAdmin };
+const hasRole = (...roles) => {
+  return (req, res, next) => {
+    if (!req.userRole || !roles.includes(req.userRole)) {
+      return res.status(403).json({ error: `Require one of roles: ${roles.join(', ')}!` });
+    }
+    next();
+  };
+};
+
+module.exports = { verifyToken, isAdmin, hasRole };

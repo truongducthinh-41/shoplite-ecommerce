@@ -983,13 +983,13 @@
     position: relative;
     left: auto;
     top: auto;
-    transform: none;
+    transform: none !important;
     white-space: normal;
     text-align: center;
-    font-size: clamp(29px, 8.4vw, 36px);
-    line-height: 1.06;
+    font-size: clamp(24px, 7vw, 30px);
+    line-height: 1.1;
     letter-spacing: -0.01em;
-    max-width: 7.4em;
+    width: 100%;
   }
   .vertex-hero-wrapper .h1.l1 {
     margin-top: clamp(12px, 2.2vh, 20px);
@@ -998,12 +998,13 @@
     position: relative;
     left: auto;
     top: auto;
-    transform: none;
+    transform: none !important;
     white-space: normal;
     text-align: center;
-    font-size: clamp(14px, 3.9vw, 15.5px);
-    line-height: 1.5;
-    max-width: 340px;
+    font-size: clamp(12px, 3.5vw, 14px);
+    line-height: 1.4;
+    max-width: 90%;
+    margin-top: 8px;
   }
   .vertex-hero-wrapper .sub.s1 {
     margin-top: clamp(10px, 1.8vh, 16px);
@@ -1012,13 +1013,14 @@
     position: relative;
     left: auto;
     top: auto;
-    margin-top: clamp(16px, 2.6vh, 26px);
+    transform: none !important;
+    margin-top: clamp(20px, 3vh, 30px);
     flex: 0 0 auto;
     width: auto;
     min-width: 158px;
-    height: 52px;
+    height: 48px;
     padding: 0 26px;
-    font-size: 16px;
+    font-size: 14px;
   }
   .vertex-hero-wrapper .showcase {
     position: relative;
@@ -1033,12 +1035,12 @@
     position: absolute;
     left: 50%;
     margin-left: -586px;
-    top: -446px;
+    top: -420px;
     bottom: auto;
     width: 1172px;
     height: 657px;
     transform-origin: 586px 466px;
-    transform: scale(1.02);
+    transform: scale(0.9);
   }
   .vertex-hero-wrapper .browser {
     position: absolute;

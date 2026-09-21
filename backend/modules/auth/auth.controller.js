@@ -1,4 +1,4 @@
-const pool = require('../config/db');
+const pool = require('../../config/db');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
@@ -32,17 +32,52 @@ const login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) return res.status(401).json({ error: 'Invalid credentials' });
 
-    const token = jwt.sign(
+    const accessToken = jwt.sign(
       { id: user.id, role: user.role },
       process.env.JWT_SECRET || 'supersecretkey',
-      { expiresIn: '24h' }
+      { expiresIn: '15m' }
     );
 
-    res.json({ message: 'Login successful', token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+    const refreshToken = jwt.sign(
+      { id: user.id },
+      process.env.JWT_REFRESH_SECRET || 'supersecretrefreshkey',
+      { expiresIn: '7d' }
+    );
+
+    res.json({ 
+      message: 'Login successful', 
+      token: accessToken, 
+      refreshToken, 
+      user: { id: user.id, name: user.name, email: user.email, role: user.role } 
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Database error' });
   }
 };
 
-module.exports = { register, login };
+const refresh = async (req, res) => {
+  const { refreshToken } = req.body;
+  if (!refreshToken) return res.status(401).json({ error: 'Refresh token required' });
+
+  try {
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || 'supersecretrefreshkey');
+    const result = await pool.query('SELECT * FROM Users WHERE id = $1', [decoded.id]);
+    const user = result.rows[0];
+    
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const accessToken = jwt.sign(
+      { id: user.id, role: user.role },
+      process.env.JWT_SECRET || 'supersecretkey',
+      { expiresIn: '15m' }
+    );
+
+    res.json({ token: accessToken });
+  } catch (error) {
+    console.error(error);
+    res.status(403).json({ error: 'Invalid refresh token' });
+  }
+};
+
+module.exports = { register, login, refresh };
