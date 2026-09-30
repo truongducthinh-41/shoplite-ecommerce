@@ -4,6 +4,7 @@ import { apiFetch } from '../services/api';
 import { useCart } from '../context/CartContext';
 import { ShoppingCart, Star, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 import FilterSidebar from '../components/FilterSidebar';
+import { CATEGORY_BRANDS } from './BrandsPage';
 
 export default function CategoryPage() {
   const { categoryName } = useParams();
@@ -15,6 +16,11 @@ export default function CategoryPage() {
   const [sort, setSort] = useState('Popularity');
   const [searchParams] = useSearchParams();
   const searchQuery = searchParams.get('search') || '';
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
+  const [brandsFilter, setBrandsFilter] = useState([]);
+  const [ratingFilter, setRatingFilter] = useState(null);
+  const [subCategoryFilter, setSubCategoryFilter] = useState('');
   
   const observer = useRef();
   const { addToCart } = useCart();
@@ -36,7 +42,19 @@ export default function CategoryPage() {
     const fetchInitialData = async () => {
       setLoading(true);
       try {
-        const productsData = await apiFetch(`/products?limit=${LIMIT}&offset=0&category=${encodeURIComponent(categoryName || 'All')}&sort=${encodeURIComponent(sort)}&search=${encodeURIComponent(searchQuery)}`).catch(() => []);
+        const queryParams = new URLSearchParams({
+          limit: LIMIT,
+          offset: 0,
+          category: categoryName || 'All',
+          sort: sort,
+          search: searchQuery,
+          ...(minPrice && { minPrice }),
+          ...(maxPrice && { maxPrice }),
+          ...(brandsFilter.length > 0 && { brands: brandsFilter.join(',') }),
+          ...(ratingFilter && { rating: ratingFilter }),
+          ...(subCategoryFilter && { subcategory: subCategoryFilter })
+        });
+        const productsData = await apiFetch(`/products?${queryParams.toString()}`).catch(() => []);
         setProducts(productsData || []);
         setPage(0);
         setHasMore(productsData?.length === LIMIT);
@@ -47,7 +65,7 @@ export default function CategoryPage() {
       }
     };
     fetchInitialData();
-  }, [categoryName, sort, searchQuery]);
+  }, [categoryName, sort, searchQuery, minPrice, maxPrice, brandsFilter, ratingFilter, subCategoryFilter]);
 
   // Fetch More Data on Page Change
   useEffect(() => {
@@ -56,7 +74,19 @@ export default function CategoryPage() {
       setLoadingMore(true);
       try {
         const offset = page * LIMIT;
-        const newProducts = await apiFetch(`/products?limit=${LIMIT}&offset=${offset}&category=${encodeURIComponent(categoryName || 'All')}&sort=${encodeURIComponent(sort)}&search=${encodeURIComponent(searchQuery)}`);
+        const queryParams = new URLSearchParams({
+          limit: LIMIT,
+          offset: offset,
+          category: categoryName || 'All',
+          sort: sort,
+          search: searchQuery,
+          ...(minPrice && { minPrice }),
+          ...(maxPrice && { maxPrice }),
+          ...(brandsFilter.length > 0 && { brands: brandsFilter.join(',') }),
+          ...(ratingFilter && { rating: ratingFilter }),
+          ...(subCategoryFilter && { subcategory: subCategoryFilter })
+        });
+        const newProducts = await apiFetch(`/products?${queryParams.toString()}`);
         if (newProducts && newProducts.length > 0) {
           setProducts(prev => [...prev, ...newProducts]);
           setHasMore(newProducts.length === LIMIT);
@@ -72,49 +102,21 @@ export default function CategoryPage() {
     loadMore();
   }, [page]);
 
-  const fashionBrands = [
-    { name: "Nike", url: "https://cdn.simpleicons.org/nike" },
-    { name: "Adidas", url: "https://cdn.simpleicons.org/adidas" },
-    { name: "Puma", url: "https://cdn.simpleicons.org/puma" },
-    { name: "Zara", url: "https://cdn.simpleicons.org/zara" },
-    { name: "Uniqlo", url: "https://cdn.simpleicons.org/uniqlo" },
-    { name: "Under Armour", url: "https://cdn.simpleicons.org/underarmour" },
-    { name: "The North Face", url: "https://cdn.simpleicons.org/thenorthface" },
-    { name: "New Balance", url: "https://cdn.simpleicons.org/newbalance" }
-  ];
-
-  const techBrands = [
-    { name: "Apple", url: "https://cdn.simpleicons.org/apple" },
-    { name: "Samsung", url: "https://cdn.simpleicons.org/samsung" },
-    { name: "Sony", url: "https://cdn.simpleicons.org/sony" },
-    { name: "Dell", url: "https://cdn.simpleicons.org/dell" },
-    { name: "Asus", url: "https://cdn.simpleicons.org/asus" },
-    { name: "Intel", url: "https://cdn.simpleicons.org/intel" },
-    { name: "LG", url: "https://cdn.simpleicons.org/lg" },
-    { name: "HP", url: "https://cdn.simpleicons.org/hp" }
-  ];
-
-  const generalBrands = [
-    { name: "Ikea", url: "https://cdn.simpleicons.org/ikea" },
-    { name: "eBay", url: "https://cdn.simpleicons.org/ebay" },
-    { name: "Target", url: "https://cdn.simpleicons.org/target" },
-    { name: "Starbucks", url: "https://cdn.simpleicons.org/starbucks" },
-    { name: "McDonald's", url: "https://cdn.simpleicons.org/mcdonalds" },
-    { name: "Shopee", url: "https://cdn.simpleicons.org/shopee" },
-    { name: "Visa", url: "https://cdn.simpleicons.org/visa" },
-    { name: "Mastercard", url: "https://cdn.simpleicons.org/mastercard" }
-  ];
-
   const getBrandsForCategory = () => {
-    const fashionKeywords = ['fashion', 'shoe', 'bag', 'apparel', 'beauty', 'watch'];
-    const techKeywords = ['smart', 'phone', 'laptop', 'computer', 'electronic', 'audio', 'gaming', 'camera', 'appliance'];
-    
-    if (!categoryName) return generalBrands;
-    const catLower = categoryName.toLowerCase();
-    
-    if (fashionKeywords.some(kw => catLower.includes(kw))) return fashionBrands;
-    if (techKeywords.some(kw => catLower.includes(kw))) return techBrands;
-    return generalBrands;
+    if (categoryName && CATEGORY_BRANDS[categoryName]) {
+      return CATEGORY_BRANDS[categoryName].slice(0, 15);
+    }
+    // Fallback to random popular brands if category not specifically mapped
+    return [
+      { name: "Apple", url: "https://cdn.simpleicons.org/apple/white" },
+      { name: "Nike", url: "https://cdn.simpleicons.org/nike/white" },
+      { name: "Samsung", url: "https://cdn.simpleicons.org/samsung/white" },
+      { name: "Zara", url: "https://upload.wikimedia.org/wikipedia/commons/f/fd/Zara_Logo.svg" },
+      { name: "Sony", url: "https://cdn.simpleicons.org/sony/white" },
+      { name: "Gucci", url: "https://cdn.simpleicons.org/gucci/white" },
+      { name: "Dell", url: "https://cdn.simpleicons.org/dell/white" },
+      { name: "L'Oréal", url: "https://upload.wikimedia.org/wikipedia/commons/9/9d/L%27Or%C3%A9al_logo.svg" }
+    ];
   };
 
   const brandLogos = getBrandsForCategory();
@@ -132,7 +134,7 @@ export default function CategoryPage() {
       <div className="mb-8 bg-[#111] rounded-2xl border border-white/10 p-4 sm:p-6 shadow-sm overflow-hidden flex flex-col relative group/brands">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-base sm:text-lg font-bold text-rose-500 uppercase tracking-wider">Top Brands</h2>
-          <Link to="#" className="text-sm text-rose-500 hover:text-rose-400 flex items-center gap-1">See All <ChevronRight className="w-4 h-4"/></Link>
+          <Link to={`/brands/${encodeURIComponent(categoryName || 'All')}`} className="text-sm text-rose-500 hover:text-rose-400 flex items-center gap-1">See All <ChevronRight className="w-4 h-4"/></Link>
         </div>
         
         <div className="relative w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
@@ -140,13 +142,23 @@ export default function CategoryPage() {
             {/* First Set */}
             {brandLogos.map((brand, idx) => (
               <div key={idx} className="flex-shrink-0 w-28 h-16 sm:w-32 sm:h-20 flex items-center justify-center bg-white rounded-xl border border-white/5 hover:border-indigo-500 transition-all cursor-pointer shadow-md overflow-hidden p-2">
-                <img src={brand.url} alt={brand.name} className="max-w-full max-h-full object-contain filter hover:scale-110 transition-transform" />
+                <img 
+                  src={brand.url} 
+                  alt={brand.name} 
+                  className="max-w-full max-h-full object-contain filter hover:scale-110 transition-transform" 
+                  onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x300/222222/FFFFFF?text=' + encodeURIComponent(brand.name.charAt(0)) }}
+                />
               </div>
             ))}
             {/* Second Set (Duplicate for smooth infinite scroll) */}
             {brandLogos.map((brand, idx) => (
               <div key={`dup-${idx}`} className="flex-shrink-0 w-28 h-16 sm:w-32 sm:h-20 flex items-center justify-center bg-white rounded-xl border border-white/5 hover:border-indigo-500 transition-all cursor-pointer shadow-md overflow-hidden p-2">
-                <img src={brand.url} alt={brand.name} className="max-w-full max-h-full object-contain filter hover:scale-110 transition-transform" />
+                <img 
+                  src={brand.url} 
+                  alt={brand.name} 
+                  className="max-w-full max-h-full object-contain filter hover:scale-110 transition-transform" 
+                  onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x300/222222/FFFFFF?text=' + encodeURIComponent(brand.name.charAt(0)) }}
+                />
               </div>
             ))}
           </div>
@@ -158,7 +170,16 @@ export default function CategoryPage() {
         
         {/* Sidebar (Filters) */}
         <div className="w-full md:w-64 shrink-0">
-           <FilterSidebar />
+           <FilterSidebar 
+              onApplyFilter={(filters) => {
+                 setMinPrice(filters.minPrice);
+                 setMaxPrice(filters.maxPrice);
+                 setBrandsFilter(filters.brandsFilter || []);
+                 setRatingFilter(filters.ratingFilter || null);
+                 setSubCategoryFilter(filters.subCategory || '');
+                 setPage(0); // Reset page to fetch initial data
+              }}
+           />
         </div>
         
         {/* Main Product Grid */}

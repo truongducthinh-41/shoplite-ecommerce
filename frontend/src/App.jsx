@@ -10,6 +10,7 @@ import CheckoutPage from './pages/CheckoutPage';
 import AuthPage from './pages/AuthPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import ProfilePage from './pages/ProfilePage';
+import BrandsPage from './pages/BrandsPage';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
             <Route path="/" element={<Layout />}>
               <Route index element={<HomePage />} />
               <Route path="category/:categoryName" element={<CategoryPage />} />
+              <Route path="brands/:categoryName" element={<BrandsPage />} />
               <Route path="product/:id" element={<ProductDetailPage />} />
               <Route path="checkout" element={<CheckoutPage />} />
               <Route path="auth" element={<AuthPage />} />

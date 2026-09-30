@@ -22,6 +22,43 @@ const getProducts = async (req, res) => {
       query += ` AND name ILIKE $${params.length + 1}`;
       params.push(`%${search}%`);
     }
+
+    // Add subcategory filter (search in name)
+    const subcategory = req.query.subcategory;
+    if (subcategory) {
+      // Remove 's' at the end for singular matching (e.g. Jackets -> Jacket)
+      const singularSub = subcategory.endsWith('s') ? subcategory.slice(0, -1) : subcategory;
+      query += ` AND name ILIKE $${params.length + 1}`;
+      params.push(`%${singularSub}%`);
+    }
+
+    const minPrice = parseFloat(req.query.minPrice);
+    if (!isNaN(minPrice)) {
+      query += ` AND price >= $${params.length + 1}`;
+      params.push(minPrice);
+    }
+
+    const maxPrice = parseFloat(req.query.maxPrice);
+    if (!isNaN(maxPrice)) {
+      query += ` AND price <= $${params.length + 1}`;
+      params.push(maxPrice);
+    }
+
+    // Add brand filter
+    const brandsStr = req.query.brands;
+    if (brandsStr) {
+      const brandsArray = brandsStr.split(',');
+      const brandConditions = brandsArray.map((_, i) => `name ILIKE $${params.length + i + 1}`).join(' OR ');
+      query += ` AND (${brandConditions})`;
+      brandsArray.forEach(b => params.push(`%${b}%`));
+    }
+
+    // Add rating filter (using Reviews table)
+    const rating = parseInt(req.query.rating);
+    if (!isNaN(rating) && rating > 0) {
+      query += ` AND id IN (SELECT product_id FROM Reviews GROUP BY product_id HAVING AVG(rating) >= $${params.length + 1})`;
+      params.push(rating);
+    }
     
     // Add sorting
     if (sort === 'Price: Low to High') {

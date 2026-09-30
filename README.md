@@ -29,7 +29,8 @@ Chào mừng bạn đến với tài liệu tổng hợp của dự án ShopLite
 > - **Data Seeding & Scrubbing:** Seeded 100,000 products, fixed image placeholders with perfectly cropped square Unsplash images (`&h=800`), and scrubbed Faker.js placeholder names (e.g. "Sleek Rubber Tuna") using a backend script to assign realistic titles per category.
 > - **Dynamic UI:** Re-architected `FilterSidebar.jsx` to parse `useParams()` and dynamically inject relevant subcategories and brands based on the active e-commerce category.
 > - **Pricing UI:** Refactored the UI price display on all product cards (Home, Category, Detail pages) to include a deterministic original price with a strikethrough next to the sale price, enhancing UI realism.
-> 
+> - **Massive Brand Generation:** Wrote a Node.js script to dynamically generate a `brands.json` dataset containing 114 completely unique, categorized, highly realistic brand names for ALL 24 categories (Total: 2,736 brands!).
+> - **Adblock-Proof Image Architecture:** Completely eliminated `logo.clearbit.com` (which was heavily blocked by Adblockers/uBlock Origin in Vietnam) and replaced it with `cdn.simpleicons.org`, `upload.wikimedia.org`, and Google's high-res Favicon API (`t3.gstatic.com`) to guarantee 100% successful logo rendering without CORS or firewall issues.
 > **Your rules for this project:** Do not change the database schema unless requested. Do not change the UI theme (keep the Dark/Glassmorphism theme intact). Always provide absolute paths or correct terminal commands when updating code.
 
 ---
