@@ -5,6 +5,7 @@ import { useCart } from '../context/CartContext';
 import { ShoppingCart, Star, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 import FilterSidebar from '../components/FilterSidebar';
 import { CATEGORY_BRANDS } from './BrandsPage';
+import { calculatePricing } from '../utils/pricing';
 
 export default function CategoryPage() {
   const { categoryName } = useParams();
@@ -165,48 +166,37 @@ export default function CategoryPage() {
         </div>
       </div>
 
-      {/* Sidebar + Main Content Flex */}
-      <div className="flex flex-col md:flex-row gap-6 mb-12">
-        
-        {/* Sidebar (Filters) */}
-        <div className="w-full md:w-64 shrink-0">
-           <FilterSidebar 
-              onApplyFilter={(filters) => {
-                 setMinPrice(filters.minPrice);
-                 setMaxPrice(filters.maxPrice);
-                 setBrandsFilter(filters.brandsFilter || []);
-                 setRatingFilter(filters.ratingFilter || null);
-                 setSubCategoryFilter(filters.subCategory || '');
-                 setPage(0); // Reset page to fetch initial data
-              }}
-           />
-        </div>
-        
-        {/* Main Product Grid */}
-        <div className="flex-1">
-          {searchQuery ? (
-            <h2 className="text-xl font-bold text-indigo-400 uppercase tracking-wider mb-6">
-              Search Results for "{searchQuery}" in {categoryName}
-            </h2>
-          ) : (
-            <h2 className="text-xl font-bold text-white uppercase tracking-wider mb-6">
-              {categoryName} Products
-            </h2>
-          )}
+      <div className="flex flex-col lg:flex-row gap-8">
+        {/* Dynamic Sidebar Filters */}
+        <FilterSidebar
+          minPrice={minPrice}
+          setMinPrice={setMinPrice}
+          maxPrice={maxPrice}
+          setMaxPrice={setMaxPrice}
+          brandsFilter={brandsFilter}
+          setBrandsFilter={setBrandsFilter}
+          ratingFilter={ratingFilter}
+          setRatingFilter={setRatingFilter}
+          subCategoryFilter={subCategoryFilter}
+          setSubCategoryFilter={setSubCategoryFilter}
+        />
 
-          {/* Sorting Bar */}
-          <div className="bg-[#111] border border-white/10 rounded-xl p-3 flex flex-wrap items-center gap-3 md:gap-4 mb-6 shadow-sm">
-            <span className="text-slate-400 text-sm hidden sm:inline-block font-medium">Sort by</span>
-            <button className="px-4 py-1.5 bg-indigo-600 text-white text-sm font-medium rounded-lg shadow-md hover:bg-indigo-500 transition-colors">Popular</button>
-            <button className="px-4 py-1.5 bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white text-sm font-medium rounded-lg transition-colors border border-transparent">Latest</button>
-            <button className="px-4 py-1.5 bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white text-sm font-medium rounded-lg transition-colors border border-transparent">Top Sales</button>
-            <div className="relative flex-1 max-w-[150px] sm:ml-auto">
-              <select className="w-full px-4 py-1.5 bg-white/5 text-slate-300 border border-white/10 hover:border-white/20 text-sm font-medium rounded-lg transition-colors outline-none appearance-none cursor-pointer focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
-                <option value="price" className="bg-[#111]">Price</option>
-                <option value="asc" className="bg-[#111]">Low to High</option>
-                <option value="desc" className="bg-[#111]">High to Low</option>
+        {/* Product Grid Area */}
+        <div className="flex-1">
+          {/* Controls Bar */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 bg-[#111] p-4 rounded-xl border border-white/10">
+            <span className="text-sm text-slate-400 font-medium">{products.length} Products Found</span>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-slate-400">Sort by:</span>
+              <select
+                value={sort}
+                onChange={(e) => setSort(e.target.value)}
+                className="bg-black/50 border border-white/10 text-white text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:border-indigo-500"
+              >
+                <option value="Popularity">Popularity</option>
+                <option value="Price: Low to High">Price: Low to High</option>
+                <option value="Price: High to Low">Price: High to Low</option>
               </select>
-              <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
           </div>
 
@@ -221,9 +211,7 @@ export default function CategoryPage() {
                </div>
             ) : products.map((product, index) => {
               const isLast = products.length === index + 1;
-              const discount = (product.id % 40) + 10;
-              const salePrice = parseFloat(product.price).toFixed(2);
-              const originalPrice = (parseFloat(product.price) / (1 - discount/100)).toFixed(2);
+              const { salePrice, originalPrice, discountPercent, hasDiscount } = calculatePricing(product);
               return (
               <div ref={isLast ? lastProductElementRef : null} key={product.id} className="bg-[#111] rounded-xl border border-white/10 overflow-hidden hover:border-indigo-500/50 hover:shadow-[0_0_15px_rgba(99,102,241,0.15)] transition-all group flex flex-col h-full">
                 <Link to={`/product/${product.id}`} className="block w-full relative aspect-square bg-white/5 overflow-hidden">
@@ -239,10 +227,6 @@ export default function CategoryPage() {
                         <span className="text-xl font-bold opacity-50">No Image</span>
                      </div>
                   )}
-                  {/* Shopee-style discount badge */}
-                  <div className="absolute top-0 right-0 bg-rose-500/90 backdrop-blur-sm text-white text-[10px] font-bold px-1.5 py-1 rounded-bl-lg">
-                    -{discount}%
-                  </div>
                   {product.stock === 0 && (
                     <span className="absolute top-2 left-2 bg-red-500/80 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-md">Out of stock</span>
                   )}
@@ -257,8 +241,17 @@ export default function CategoryPage() {
                   
                   <div className="mt-auto flex items-center justify-between pt-2">
                     <div className="flex flex-col">
-                      <span className="text-xs text-slate-500 line-through">${originalPrice}</span>
-                      <span className="text-sm font-bold text-indigo-400">${salePrice}</span>
+                      {hasDiscount ? (
+                        <>
+                          <div className="flex items-center gap-1">
+                            <span className="text-[10px] text-slate-500 line-through">${originalPrice}</span>
+                            <span className="text-[9px] font-bold text-rose-400">-{discountPercent}%</span>
+                          </div>
+                          <span className="text-sm font-bold text-rose-400">${salePrice}</span>
+                        </>
+                      ) : (
+                        <span className="text-sm font-bold text-indigo-400">${salePrice}</span>
+                      )}
                     </div>
                     <button 
                       onClick={() => addToCart(product)}

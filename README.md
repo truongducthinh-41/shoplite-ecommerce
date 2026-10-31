@@ -1,4 +1,4 @@
-# 🛒 Dự án ShopLite AI - E-commerce Platform
+# 🛒 Dự án ShopLite AI - E-commerce Platform (Mô hình Sàn Shopee Đa Người Bán)
 
 Chào mừng bạn đến với tài liệu tổng hợp của dự án ShopLite AI. File này đóng vai trò là "bản lề" ghi nhớ toàn bộ tiến độ dự án, kiến trúc kỹ thuật và là tài liệu (prompt) để cung cấp cho AI trong các lần làm việc tiếp theo.
 
@@ -8,127 +8,129 @@ Chào mừng bạn đến với tài liệu tổng hợp của dự án ShopLite
 *Khi bắt đầu một session mới với AI, hãy copy/paste phần này cho AI đọc để nó nhớ lại toàn bộ bối cảnh dự án:*
 
 > **ROLE & CONTEXT FOR AI:**
-> You are an Expert Full-Stack Developer. We are building "ShopLite AI", an advanced E-commerce platform with an AI Recommendation Engine.
+> You are an Expert Full-Stack Developer. We are building "ShopLite AI", an advanced E-commerce platform inspired by the Shopee Multi-Vendor Marketplace model, powered by an AI Recommendation Engine.
 > 
 > **Current Tech Stack:**
-> - **Backend:** Node.js, Express.js. REST API Architecture (Controllers, Routes).
-> - **Database:** PostgreSQL. Contains tables: `Users`, `Categories`, `Products`, `Orders`, `OrderDetails`, `Reviews`, `InventoryLogs`. Includes raw SQL procedures (`sp_checkout`) and triggers (`trg_after_order_detail_insert`).
+> - **Backend:** Node.js, Express.js. REST API Layered Architecture (Controllers, Routes, Middleware). Modules: `auth`, `shops`, `catalog`, `order`, `dashboard`, `reviews`.
+> - **Database:** PostgreSQL (Supabase with IPv4 Transaction Pooler). 
+>   Tables: `Users`, `Shops`, `Categories`, `Brands`, `Category_Brands`, `Products`, `Orders`, `OrderDetails`, `Reviews`, `InventoryLogs`.
 > - **Frontend:** React (Vite), Tailwind CSS v4, Lucide Icons, React Router. Styled using a premium "Dark / Glassmorphism" theme (`#020204` background) with Apple-like aesthetics, neon glow borders, and complex 3D CSS transforms.
-> - **Deployment Architecture:** Supabase (PostgreSQL Database using IPv4 Transaction Pooler), Render (Express Backend API), Vercel (React Frontend). 
-> **Key Features Implemented:**
-> 1. Authentication (JWT based, Login/Register). Admin and Customer roles.
-> 2. Product Catalog with real Unsplash images and stock management.
-> 3. Shopping Cart (Context API + LocalStorage) and Checkout process.
-> 4. Admin Dashboard (Revenue, Orders, Sales History).
-> 5. **AI Recommendation Engine:** A "Best Sellers" global endpoint & "Frequently Bought Together" (Co-occurrence) widget based on `OrderDetails` history.
-> 6. **3D Vertex Hero:** A highly complex, performance-optimized 3D rotating carousel and type-fitter built in React hooks (`VertexHero.jsx`), rendering dynamic database products into 3D space.
+> - **Deployment Architecture:** Supabase (PostgreSQL Database using IPv4 Transaction Pooler), Render (Express Backend API), Vercel (React Frontend).
 > 
-> **Recent Updates & Fixes (Context):**
-> - **Database Security:** Fixed Supabase linter warnings (Enabled RLS on public tables, View set to Security Invoker, bounded `search_path` for functions).
-> - **UI/UX Alignment:** Fixed CSS Grid product cards to have strictly uniform heights across the platform using robust `aspect-square`, `overflow-hidden`, and `min-h-[40px]` for dynamic text clamping.
-> - **Data Seeding & Scrubbing:** Seeded 100,000 products, fixed image placeholders with perfectly cropped square Unsplash images (`&h=800`), and scrubbed Faker.js placeholder names (e.g. "Sleek Rubber Tuna") using a backend script to assign realistic titles per category.
-> - **Dynamic UI:** Re-architected `FilterSidebar.jsx` to parse `useParams()` and dynamically inject relevant subcategories and brands based on the active e-commerce category.
-> - **Pricing UI:** Refactored the UI price display on all product cards (Home, Category, Detail pages) to include a deterministic original price with a strikethrough next to the sale price, enhancing UI realism.
-> - **Massive Brand Generation:** Wrote a Node.js script to dynamically generate a `brands.json` dataset containing 114 completely unique, categorized, highly realistic brand names for ALL 24 categories (Total: 2,736 brands!).
-> - **Adblock-Proof Image Architecture:** Completely eliminated `logo.clearbit.com` (which was heavily blocked by Adblockers/uBlock Origin in Vietnam) and replaced it with `cdn.simpleicons.org`, `upload.wikimedia.org`, and Google's high-res Favicon API (`t3.gstatic.com`) to guarantee 100% successful logo rendering without CORS or firewall issues.
+> **Key Database & Advanced Relational Concepts Implemented:**
+> 1. **3NF & BCNF Normalization:** Strictly normalized schema. `Brands` and `Categories` separated into standalone entities; `Category_Brands` (N-N) junction table mapping world-class brands to specific categories.
+> 2. **3 User Roles (RBAC):**
+>    - `admin`: System administrator (KPI dashboard, shop rankings, full moderation).
+>    - `customer`: Regular buyer (register, search, filter, cart, checkout, reviews).
+>    - `seller`: User who also owns a Shop (`Shops` table). Can list products with professional categorization (category, world-class brand, SKU, price, original_price, stock) and manage shop orders.
+> 3. **ACID Stored Procedure with Pessimistic Locking:** `sp_checkout` uses `SELECT ... FOR UPDATE` (row-level exclusive lock) to prevent overselling / race conditions during simultaneous purchases, with automatic rollback on stock shortage.
+> 4. **Automated Triggers:**
+>    - `trg_order_detail_stock`: Auto-deducts stock, increments `sold_count`, and writes audit records to `InventoryLogs`.
+>    - `trg_review_sync`: Auto-recalculates `rating_avg` and `review_count` for products upon review insertion/update/deletion.
+> 5. **Advanced Views with Window Functions:**
+>    - `vw_shop_sales_performance`: Ranks shop revenues using `DENSE_RANK() OVER (ORDER BY total_revenue DESC)`.
+>    - `vw_top_selling_per_category`: Ranks best sellers within each category using `DENSE_RANK() OVER (PARTITION BY category_id ORDER BY sold_count DESC)`.
+>    - `vw_product_catalog_details`: Enriches products with Shop, Brand, Category info and Shopee-style discount percentage.
+> 6. **Recursive CTE:** `fn_get_category_path()` dynamically traverses hierarchical parent-child categories for breadcrumbs.
+> 7. **AI Recommendation Engine:** Frequently Bought Together (Co-occurrence algorithm via `OrderDetails` self-join) with category-based fallback.
+> 8. **3D Vertex Hero:** High-performance 3D rotating carousel and type-fitter built in React hooks (`VertexHero.jsx`).
+> 9. **Pricing & Discount UI:** Deterministic pricing where original price with strikethrough and red discount badge (`-X%`) only displays when `original_price > price`.
+> 
+> **Test Accounts (Password for all: `password123`):**
+> - Admin: `admin@shoplite.com`
+> - Sellers: `apple_official@shoplite.com` (Apple Flagship Store), `nike_official@shoplite.com` (Nike Official Store), `samsung_official@shoplite.com` (Samsung Brand Store)
+> - Customers: `customer1@gmail.com`, `customer2@gmail.com`
+> 
 > **Your rules for this project:** Do not change the database schema unless requested. Do not change the UI theme (keep the Dark/Glassmorphism theme intact). Always provide absolute paths or correct terminal commands when updating code.
 
 ---
 
-## 2. 💻 HƯỚNG DẪN CÀI ĐẶT & CHẠY LẠI DỰ ÁN (LOCAL DEVELOPMENT)
-Dự án hiện đã được deploy lên Cloud, nhưng nếu bạn muốn code và thử nghiệm trên máy cá nhân, hãy làm theo các bước sau:
+## 2. 💻 HƯỚNG DẪN CÀI ĐẶT & CHẠY LOCAL (LOCAL DEVELOPMENT)
 
 ### Yêu cầu tiên quyết:
 - Đã cài đặt **Node.js** (v18+).
-- Dự án sử dụng **Supabase** làm Database chính thức (không cần chạy PostgreSQL ở local nữa).
+- Dự án sử dụng **Supabase** làm Database chính thức (hoặc PostgreSQL local).
 
 ### Bước 1: Setup Backend
 1. Mở terminal, trỏ vào thư mục `backend/`
-2. Tạo file `.env` theo cấu trúc giống như cấu hình bạn đã làm trên Supabase/Render:
+2. Tạo file `.env` theo mẫu:
 ```env
 DB_USER=postgres.id_cua_ban
-DB_HOST=aws-0-....pooler.supabase.com
+DB_HOST=aws-0-ap-southeast-1.pooler.supabase.com
 DB_DATABASE=postgres
 DB_PASSWORD=mat_khau_cua_ban
 DB_PORT=6543
 PORT=3000
+JWT_SECRET=supersecretjwtkey123!
 ```
 *(Lưu ý: Bắt buộc dùng Session Pooler / Transaction Pooler hỗ trợ IPv4 của Supabase)*
-3. Chạy lệnh cài thư viện và khởi động:
+3. Khởi chạy:
 ```bash
-npm install
 node server.js
 ```
 
 ### Bước 2: Setup Frontend
-1. Mở một terminal MỚI, trỏ vào thư mục `frontend/`
-2. Tạo file `.env`. Ở bước này bạn có 2 lựa chọn:
-
-   **Lựa chọn A (Code cả Front & Back):** Trỏ về backend đang bật ở máy bạn:
-   ```env
-   VITE_API_URL=http://localhost:3000/api
-   ```
-   
-   **Lựa chọn B (Chỉ code Giao diện - Rất nhàn):** Trỏ thẳng lên API của Render. Bạn sẽ **KHÔNG CẦN** bật `node server.js` ở máy nữa!
-   ```env
-   VITE_API_URL=https://shoplite-api-c67i.onrender.com/api
-   ```
-
-3. Chạy lệnh cài thư viện và khởi động Vite:
+1. Mở terminal mới, trỏ vào thư mục `frontend/`
+2. Tạo file `.env`:
+   - Nếu chạy cả backend local: `VITE_API_URL=http://localhost:3000/api`
+   - Nếu trỏ lên cloud Render: `VITE_API_URL=https://shoplite-api-c67i.onrender.com/api`
+3. Khởi chạy Vite:
 ```bash
-npm install
 npm run dev
 ```
-4. Mở trình duyệt truy cập: `http://localhost:5173`
-
-*(Tài khoản Admin test: `admin@example.com` / `password123`)*
+*(Mở trình duyệt: `http://localhost:5173`)*
 
 ---
 
-## 3. 🛠 BỘ LỆNH TERMINAL THƯỜNG DÙNG ĐỂ CHỈNH SỬA & CODE
+## 3. 🚀 HƯỚNG DẪN DEPLOY TRỌN GÓI LÊN PRODUCTION (BÁO CÁO ĐỒ ÁN)
 
-Dưới đây là các lệnh bạn và team sẽ dùng mỗi ngày khi code:
+Dự án được triển khai theo mô hình Micro-services 3 tầng:
 
-### Khởi động nhanh dự án (Chia làm 2 tab terminal)
-- **Tab 1 (Backend):**
-  ```bash
-  cd backend
-  node server.js
-  ```
-  *(Mẹo: Nếu muốn code backend tự động refresh khi lưu file, hãy cài `npm install -g nodemon` và chạy lệnh `nodemon server.js` thay cho `node server.js`)*
-
-- **Tab 2 (Frontend):**
-  ```bash
-  cd frontend
-  npm run dev
-  ```
-
-### Các lệnh Git (Quản lý mã nguồn cơ bản & Làm việc nhóm)
-
-**1. Lấy dự án về máy (Dành cho thành viên mới/bạn bè):**
-- Lấy dự án từ GitHub (Thay URL bằng link kho chứa của team bạn):
-  `git clone https://github.com/your-username/your-repo-name.git`
-- Di chuyển vào thư mục dự án vừa tải về: `cd your-repo-name`
-- *Lưu ý: Sau khi tải code về, thành viên mới cần tạo các file `.env` và làm theo **Phần 2: Hướng dẫn cài đặt & chạy lại dự án** để chạy được dự án.*
-
-**2. Lấy bản cập nhật mới nhất (Kéo code mới về):**
-- Khi có người khác vừa cập nhật tính năng mới lên GitHub, bạn chạy lệnh sau để kéo code mới nhất về máy bạn:
-  `git pull origin master` *(hoặc `git pull origin main`)*
-
-**3. Lưu và đẩy code của bạn lên (Cho người khác lấy):**
-- Xem các file bạn vừa chỉnh sửa: `git status`
-- Lưu toàn bộ thay đổi: `git add .`
-- Đóng gói thay đổi kèm ghi chú: `git commit -m "Ghi chú công việc vừa làm"`
-- Đẩy code lên GitHub: `git push origin master` *(hoặc `git push origin main`)*
-
-### Cài thêm thư viện mới
-- Nếu bạn cần thư viện cho React (Frontend): `cd frontend` -> `npm install tên-thư-viện`
-- Nếu bạn cần thư viện cho Node (Backend): `cd backend` -> `npm install tên-thư-viện`
+### Bước 1: Deploy Database lên Supabase
+1. Đăng nhập vào [Supabase Dashboard](https://supabase.com).
+2. Chọn dự án của bạn (nếu dự án bị Pause, bấm **Restore** để kích hoạt lại).
+3. Vào tab **SQL Editor** ở thanh menu bên trái.
+4. Mở file [database/schema.sql](database/schema.sql), copy toàn bộ nội dung và bấm **Run** để tạo bảng, views, triggers và stored procedure.
+5. Mở file [database/seed.sql](database/seed.sql), copy toàn bộ nội dung và bấm **Run** để nạp dữ liệu mẫu gồm 3 role người dùng, 3 shop mall, các thương hiệu lớn và sản phẩm flagship.
+6. Vào mục **Project Settings -> Database -> Connection Pooling**: Chọn chế độ **Transaction Mode** (Port `6543`) và copy chuỗi kết nối IPv4.
 
 ---
 
-## 4. 🚀 KIẾN TRÚC DEPLOYMENT (PRODUCTION)
-Dự án được phân tách và triển khai theo chuẩn Micro-services cơ bản:
-1. **Database (Supabase):** Chứa dữ liệu. Phải kết nối thông qua IPv4 Connection Pooler (Port 6543 hoặc 5432) do Vercel/Render không hỗ trợ IPv6 thuần. File cấu hình cần có `ssl: { rejectUnauthorized: false }`.
-2. **Backend (Render):** Web Service chạy Node.js. Root `package.json` đã được cấu hình lệnh `"start": "node backend/server.js"` để tự động khởi động. Yêu cầu copy đầy đủ biến môi trường Supabase vào Render.
-3. **Frontend (Vercel):** Tự động build bằng Vite. Giao tiếp với Backend qua biến môi trường `VITE_API_URL`. Khi cập nhật URL Backend, bắt buộc phải *Redeploy* trên Vercel để code được build lại.
+### Bước 2: Deploy Backend lên Render
+1. Đẩy code mới nhất lên GitHub repository của bạn:
+   ```bash
+   git add .
+   git commit -m "feat: Nang cap backend va database da nguoi ban chuan do an"
+   git push origin master
+   ```
+2. Đăng nhập vào [Render Dashboard](https://dashboard.render.com).
+3. Chọn Web Service backend của bạn (`shoplite-api`).
+4. Vào mục **Environment** và cập nhật các biến môi trường:
+   - `DB_USER`: `postgres.your_project_id`
+   - `DB_HOST`: `aws-0-ap-southeast-1.pooler.supabase.com`
+   - `DB_DATABASE`: `postgres`
+   - `DB_PASSWORD`: Mật khẩu database Supabase của bạn
+   - `DB_PORT`: `6543`
+   - `PORT`: `3000`
+   - `JWT_SECRET`: `supersecretjwtkey123!`
+5. Bấm **Manual Deploy -> Deploy latest commit**. Đợi 1-2 phút Render build và khởi động thành công.
+
+---
+
+### Bước 3: Deploy Frontend lên Vercel
+1. Đăng nhập vào [Vercel Dashboard](https://vercel.com).
+2. Chọn project Frontend của bạn.
+3. Vào **Settings -> Environment Variables**:
+   - Thêm hoặc cập nhật biến: `VITE_API_URL` = `https://shoplite-api-c67i.onrender.com/api` (hoặc domain Render của bạn).
+4. Vào mục **Deployments**, chọn **Redeploy** (Bắt buộc redeploy để Vite đóng gói lại biến môi trường mới vào file bundle tĩnh).
+5. Truy cập link Vercel của bạn để trải nghiệm và mang đi thuyết trình đồ án!
+
+---
+
+## 4. 🛠 BỘ LỆNH GIT LÀM VIỆC NHÓM THƯỜNG DÙNG
+
+- **Xem trạng thái thay đổi:** `git status`
+- **Lưu toàn bộ thay đổi:** `git add .`
+- **Đóng gói thay đổi:** `git commit -m "Nội dung cập nhật"`
+- **Đẩy code lên GitHub:** `git push origin master`
+- **Kéo code mới nhất từ bạn bè về:** `git pull origin master`

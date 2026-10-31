@@ -4,6 +4,7 @@ import { apiFetch } from '../services/api';
 import { useCart } from '../context/CartContext';
 import { ShoppingCart, Star, Smartphone, Laptop, Headphones, Gamepad, Watch, Camera, Flame, Shirt, ShoppingBag, Baby, Monitor, Home, Sparkles, HeartPulse, Footprints, Briefcase, Coffee, Dumbbell, Store, Car, Book, Gamepad2, Gift, Box, Ticket, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 import VertexHero from '../components/VertexHero';
+import { calculatePricing } from '../utils/pricing';
 
 export default function HomePage() {
   const [products, setProducts] = useState([]);
@@ -105,6 +106,7 @@ export default function HomePage() {
     { name: 'Gifts', icon: Gift },
     { name: 'Vouchers', icon: Ticket },
   ];
+
   return (
     <div className="max-w-7xl mx-auto pb-12 px-4 sm:px-6 lg:px-8">
       {/* Hero Banner (3D Effect) */}
@@ -142,12 +144,12 @@ export default function HomePage() {
           
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
             {bestSellers.map(product => {
-              const discount = (product.id % 40) + 10;
-              const salePrice = parseFloat(product.price).toFixed(2);
-              const originalPrice = (parseFloat(product.price) / (1 - discount/100)).toFixed(2);
+              const { salePrice, originalPrice, discountPercent, hasDiscount } = calculatePricing(product);
               return (
               <div key={product.id} className="bg-[#111] rounded-2xl border border-white/10 overflow-hidden hover:border-indigo-500/50 hover:shadow-[0_0_15px_rgba(99,102,241,0.15)] transition-all group flex flex-col relative h-full">
+                {/* Top Badge */}
                 <span className="absolute top-3 left-3 z-10 bg-amber-500 text-white text-[10px] sm:text-xs uppercase tracking-wider font-bold px-2.5 py-1 rounded-full shadow-sm">TOP</span>
+
                 <Link to={`/product/${product.id}`} className="block w-full relative aspect-square bg-white/5 overflow-hidden">
                   {product.image_url ? (
                     <img 
@@ -169,8 +171,19 @@ export default function HomePage() {
                   </Link>
                   <div className="mt-auto flex items-center justify-between pt-4">
                     <div className="flex flex-col">
-                      <span className="text-xs text-slate-500 line-through">${originalPrice}</span>
-                      <span className="text-base sm:text-lg font-bold text-indigo-400">${salePrice}</span>
+                      {hasDiscount ? (
+                        <>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs text-slate-500 line-through">${originalPrice}</span>
+                            <span className="text-[10px] font-bold text-rose-400 bg-rose-500/15 px-1.5 py-0.5 rounded border border-rose-500/30">
+                              -{discountPercent}%
+                            </span>
+                          </div>
+                          <span className="text-base sm:text-lg font-bold text-rose-400">${salePrice}</span>
+                        </>
+                      ) : (
+                        <span className="text-base sm:text-lg font-bold text-indigo-400">${salePrice}</span>
+                      )}
                     </div>
                     <button 
                       onClick={() => addToCart(product)}
@@ -211,9 +224,7 @@ export default function HomePage() {
                </div>
             ) : products.map((product, index) => {
               const isLast = products.length === index + 1;
-              const discount = (product.id % 40) + 10;
-              const salePrice = parseFloat(product.price).toFixed(2);
-              const originalPrice = (parseFloat(product.price) / (1 - discount/100)).toFixed(2);
+              const { salePrice, originalPrice, discountPercent, hasDiscount } = calculatePricing(product);
               return (
               <div ref={isLast ? lastProductElementRef : null} key={product.id} className="bg-[#111] rounded-xl border border-white/10 overflow-hidden hover:border-indigo-500/50 hover:shadow-[0_0_15px_rgba(99,102,241,0.15)] transition-all group flex flex-col h-full">
                 <Link to={`/product/${product.id}`} className="block w-full relative aspect-square bg-white/5 overflow-hidden">
@@ -229,10 +240,6 @@ export default function HomePage() {
                         <span className="text-xl font-bold opacity-50">No Image</span>
                      </div>
                   )}
-                  {/* Shopee-style discount badge */}
-                  <div className="absolute top-0 right-0 bg-rose-500/90 backdrop-blur-sm text-white text-[10px] font-bold px-1.5 py-1 rounded-bl-lg">
-                    -{discount}%
-                  </div>
                   {product.stock === 0 && (
                     <span className="absolute top-2 left-2 bg-red-500/80 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-md">Out of stock</span>
                   )}
@@ -247,8 +254,17 @@ export default function HomePage() {
                   
                   <div className="mt-auto flex items-center justify-between pt-2">
                     <div className="flex flex-col">
-                      <span className="text-xs text-slate-500 line-through">${originalPrice}</span>
-                      <span className="text-sm font-bold text-indigo-400">${salePrice}</span>
+                      {hasDiscount ? (
+                        <>
+                          <div className="flex items-center gap-1">
+                            <span className="text-[10px] text-slate-500 line-through">${originalPrice}</span>
+                            <span className="text-[9px] font-bold text-rose-400">-{discountPercent}%</span>
+                          </div>
+                          <span className="text-sm font-bold text-rose-400">${salePrice}</span>
+                        </>
+                      ) : (
+                        <span className="text-sm font-bold text-indigo-400">${salePrice}</span>
+                      )}
                     </div>
                     <button 
                       onClick={() => addToCart(product)}

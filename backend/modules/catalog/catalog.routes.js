@@ -1,11 +1,34 @@
 const express = require('express');
-const { getProducts, getProductById, getProductRecommendations, getBestSellers } = require('./catalog.controller');
-const { cacheMiddleware } = require('../../config/redis');
+const { 
+  getProducts, 
+  getProductById, 
+  getCategories, 
+  getCategoryBrands, 
+  getAllBrands, 
+  createProduct, 
+  updateProduct, 
+  deleteProduct, 
+  getBestSellers, 
+  getProductRecommendations 
+} = require('./catalog.controller');
+const { verifyToken, isSellerOrAdmin } = require('../../middleware/authMiddleware');
+
 const router = express.Router();
 
-router.get('/', cacheMiddleware('catalog:products', 300), getProducts);
-router.get('/bestsellers', cacheMiddleware('catalog:bestsellers', 3600), getBestSellers);
-router.get('/:id', cacheMiddleware('catalog:product', 3600), getProductById);
-router.get('/:id/recommendations', cacheMiddleware('catalog:recommendations', 3600), getProductRecommendations);
+// Public routes for Categories & Brands
+router.get('/categories', getCategories);
+router.get('/categories/:id/brands', getCategoryBrands);
+router.get('/brands', getAllBrands);
+
+// Public product routes
+router.get('/bestsellers', getBestSellers);
+router.get('/', getProducts);
+router.get('/:id', getProductById);
+router.get('/:id/recommendations', getProductRecommendations);
+
+// Seller / Admin protected routes
+router.post('/', verifyToken, isSellerOrAdmin, createProduct);
+router.put('/:id', verifyToken, isSellerOrAdmin, updateProduct);
+router.delete('/:id', verifyToken, isSellerOrAdmin, deleteProduct);
 
 module.exports = router;

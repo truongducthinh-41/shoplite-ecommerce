@@ -2,35 +2,54 @@ const pool = require('../../config/db');
 
 const getDashboardSummary = async (req, res) => {
   try {
-    // 1. Get Sales Summary (mock or simple aggregation)
+    // 1. Lấy dữ liệu doanh thu theo ngày
     const salesResult = await pool.query(`
-      SELECT DATE(created_at) as sale_date, COUNT(id) as total_orders, SUM(total_amount) as daily_revenue
+      SELECT 
+        DATE(created_at) as sale_date, 
+        COUNT(id) as total_orders, 
+        SUM(total_amount) as daily_revenue
       FROM Orders 
+      WHERE status != 'cancelled'
       GROUP BY DATE(created_at)
       ORDER BY sale_date DESC
       LIMIT 30
     `);
     
-    // 2. Get Low Stock Products
-    const lowStockResult = await pool.query('SELECT id, name, stock FROM Products WHERE stock < 10 ORDER BY stock ASC');
+    // 2. Lấy sản phẩm sắp hết hàng (Low Stock)
+    const lowStockResult = await pool.query(`
+      SELECT p.id, p.name, p.stock, s.name as shop_name 
+      FROM Products p 
+      JOIN Shops s ON p.shop_id = s.id 
+      WHERE p.stock < 30 
+      ORDER BY p.stock ASC
+      LIMIT 10
+    `);
     
-    // 3. Get KPI Metrics
+    // 3. Xếp hạng hiệu năng kinh doanh giữa các Shop bằng Window Function View
+    const shopRankResult = await pool.query(`
+      SELECT * FROM vw_shop_sales_performance ORDER BY revenue_rank ASC
+    `);
+
+    // 4. Chỉ số KPI toàn hệ thống
     const userCountResult = await pool.query('SELECT COUNT(*) FROM Users');
-    const totalRevenueResult = await pool.query('SELECT SUM(total_amount) FROM Orders');
+    const totalRevenueResult = await pool.query("SELECT COALESCE(SUM(total_amount), 0) as total FROM Orders WHERE status != 'cancelled'");
     const orderCountResult = await pool.query('SELECT COUNT(*) FROM Orders');
+    const shopCountResult = await pool.query('SELECT COUNT(*) FROM Shops');
 
     res.json({
       salesSummary: salesResult.rows,
       lowStockProducts: lowStockResult.rows,
+      shopPerformance: shopRankResult.rows,
       kpi: {
-        totalUsers: userCountResult.rows[0].count,
-        totalRevenue: totalRevenueResult.rows[0].sum || 0,
-        totalOrders: orderCountResult.rows[0].count,
-        aov: orderCountResult.rows[0].count > 0 ? (totalRevenueResult.rows[0].sum / orderCountResult.rows[0].count) : 0
+        totalUsers: parseInt(userCountResult.rows[0].count),
+        totalShops: parseInt(shopCountResult.rows[0].count),
+        totalRevenue: parseFloat(totalRevenueResult.rows[0].total),
+        totalOrders: parseInt(orderCountResult.rows[0].count),
+        aov: orderCountResult.rows[0].count > 0 ? (totalRevenueResult.rows[0].total / orderCountResult.rows[0].count) : 0
       }
     });
   } catch (error) {
-    console.error(error);
+    console.error('[Dashboard Summary Error]:', error);
     res.status(500).json({ error: 'Database error' });
   }
 };

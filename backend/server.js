@@ -9,6 +9,7 @@ const catalogRoutes = require('./modules/catalog/catalog.routes');
 const orderRoutes = require('./modules/order/order.routes');
 const dashboardRoutes = require('./modules/dashboard/dashboard.routes');
 const reviewsRoutes = require('./modules/reviews/reviews.routes');
+const shopRoutes = require('./modules/shops/shop.routes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -20,7 +21,7 @@ app.use(helmet());
 
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  max: 300, // limit each IP to 300 requests per windowMs
   message: 'Too many requests from this IP, please try again after 15 minutes'
 });
 app.use('/api/', apiLimiter);
@@ -36,6 +37,7 @@ app.use('/api/products', catalogRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/admin', dashboardRoutes);
 app.use('/api/reviews', reviewsRoutes);
+app.use('/api/shops', shopRoutes);
 
 if (require.main === module) {
   app.listen(PORT, () => {

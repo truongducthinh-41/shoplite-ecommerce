@@ -9,9 +9,10 @@ const verifyToken = (req, res, next) => {
   const jwtToken = tokenParts.length === 2 ? tokenParts[1] : token;
 
   jwt.verify(jwtToken, process.env.JWT_SECRET || 'supersecretkey', (err, decoded) => {
-    if (err) return res.status(401).json({ error: 'Unauthorized!' });
+    if (err) return res.status(401).json({ error: 'Unauthorized! Token invalid or expired.' });
     req.userId = decoded.id;
     req.userRole = decoded.role;
+    req.shopId = decoded.shopId || null;
     next();
   });
 };
@@ -19,6 +20,20 @@ const verifyToken = (req, res, next) => {
 const isAdmin = (req, res, next) => {
   if (req.userRole !== 'admin') {
     return res.status(403).json({ error: 'Require Admin Role!' });
+  }
+  next();
+};
+
+const isSeller = (req, res, next) => {
+  if (req.userRole !== 'seller') {
+    return res.status(403).json({ error: 'Require Seller Role!' });
+  }
+  next();
+};
+
+const isSellerOrAdmin = (req, res, next) => {
+  if (req.userRole !== 'seller' && req.userRole !== 'admin') {
+    return res.status(403).json({ error: 'Require Seller or Admin Role!' });
   }
   next();
 };
@@ -32,4 +47,4 @@ const hasRole = (...roles) => {
   };
 };
 
-module.exports = { verifyToken, isAdmin, hasRole };
+module.exports = { verifyToken, isAdmin, isSeller, isSellerOrAdmin, hasRole };
