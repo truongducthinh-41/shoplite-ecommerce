@@ -71,6 +71,26 @@ export const AuthProvider = ({ children }) => {
     });
   };
 
+  const updateProfile = async (profileData) => {
+    const data = await apiFetch('/auth/profile', {
+      method: 'PUT',
+      body: JSON.stringify(profileData),
+    });
+    if (data.user) {
+      const mergedUser = { ...user, ...data.user };
+      localStorage.setItem('user', JSON.stringify(mergedUser));
+      setUser(mergedUser);
+    }
+    return data;
+  };
+
+  const changePassword = async (currentPassword, newPassword) => {
+    return await apiFetch('/auth/change-password', {
+      method: 'PUT',
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+  };
+
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('refreshToken');
@@ -79,7 +99,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, sendOtp, verifyOtp, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, register, sendOtp, verifyOtp, updateProfile, changePassword, logout, loading }}>
       {!loading && children}
     </AuthContext.Provider>
   );

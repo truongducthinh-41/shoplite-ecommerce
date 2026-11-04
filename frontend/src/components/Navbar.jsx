@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, User, Search, LogOut } from 'lucide-react';
+import { ShoppingCart, User, Search, LogOut, ChevronDown } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { apiFetch } from '../services/api';
@@ -13,7 +13,10 @@ export default function Navbar() {
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
+  
   const dropdownRef = useRef(null);
+  const userMenuRef = useRef(null);
 
   const cartItemCount = cart.reduce((total, item) => total + item.quantity, 0);
 
@@ -39,11 +42,14 @@ export default function Navbar() {
     return () => clearTimeout(delayDebounceFn);
   }, [searchQuery]);
 
-  // Click outside to close
+  // Click outside to close dropdowns
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setShowSuggestions(false);
+      }
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setShowUserDropdown(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -61,6 +67,7 @@ export default function Navbar() {
   };
 
   const handleLogout = () => {
+    setShowUserDropdown(false);
     logout();
     navigate('/');
   };
@@ -139,13 +146,62 @@ export default function Navbar() {
                     Admin Panel
                   </Link>
                 )}
-                <Link to="/profile" className="flex items-center gap-2 text-sm text-slate-200 font-medium bg-white/5 px-3 py-1.5 rounded-full border border-white/10 hover:bg-white/10 transition-colors">
-                  <User className="h-4 w-4 text-orange-400" />
-                  <span className="hidden sm:inline max-w-[120px] truncate">{user.name}</span>
-                </Link>
-                <button onClick={handleLogout} title="Đăng xuất" className="text-slate-400 hover:text-red-500 transition-colors">
-                  <LogOut className="h-5 w-5" />
-                </button>
+
+                {/* Shopee-style User Dropdown (Matches user screenshot 1) */}
+                <div 
+                  ref={userMenuRef} 
+                  className="relative group"
+                  onMouseEnter={() => setShowUserDropdown(true)}
+                  onMouseLeave={() => setShowUserDropdown(false)}
+                >
+                  <button
+                    onClick={() => setShowUserDropdown(!showUserDropdown)}
+                    className="flex items-center gap-2 text-sm text-slate-200 font-medium py-1.5 px-2 rounded-full hover:bg-white/10 transition-colors"
+                  >
+                    <div className="w-7 h-7 rounded-full bg-slate-300 border border-white/20 flex items-center justify-center text-slate-600 overflow-hidden flex-shrink-0">
+                      {user.avatar_url ? (
+                        <img src={user.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                      ) : (
+                        <User className="w-4 h-4 text-slate-500" />
+                      )}
+                    </div>
+                    <span className="hidden sm:inline max-w-[120px] truncate text-slate-200 font-medium">
+                      {user.username || user.name || (user.email ? user.email.split('@')[0] : '_user')}
+                    </span>
+                  </button>
+
+                  {/* Dropdown Card */}
+                  {showUserDropdown && (
+                    <div className="absolute right-0 top-full pt-1.5 z-50">
+                      <div className="relative w-44 bg-white text-slate-800 rounded-md shadow-2xl border border-slate-100 py-1.5 animate-in fade-in duration-150">
+                        {/* Triangle arrow pointer pointing to avatar */}
+                        <div className="absolute -top-1.5 right-6 w-3 h-3 bg-white border-t border-l border-slate-100 rotate-45" />
+
+                        <Link 
+                          to="/profile?tab=profile"
+                          onClick={() => setShowUserDropdown(false)}
+                          className="block px-4 py-2.5 text-sm font-normal text-slate-700 hover:text-[#EE4D2D] hover:bg-slate-50 transition-colors"
+                        >
+                          My Account
+                        </Link>
+                        <Link 
+                          to="/profile?tab=purchase"
+                          onClick={() => setShowUserDropdown(false)}
+                          className="block px-4 py-2.5 text-sm font-normal text-slate-700 hover:text-[#EE4D2D] hover:bg-slate-50 transition-colors"
+                        >
+                          My Purchase
+                        </Link>
+                        <button 
+                          onClick={handleLogout}
+                          className="w-full text-left px-4 py-2.5 text-sm font-normal text-slate-700 hover:text-[#EE4D2D] hover:bg-slate-50 transition-colors border-t border-slate-100"
+                        >
+                          Logout
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
               </div>
             ) : (
               <div className="flex items-center gap-2 sm:gap-3">

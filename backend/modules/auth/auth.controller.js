@@ -246,4 +246,96 @@ const refresh = async (req, res) => {
   });
 };
 
-module.exports = { register, login, getProfile, refresh, sendOtp, verifyOtp };
+// 7. Cập nhật thông tin cá nhân (Profile)
+const updateProfile = async (req, res) => {
+  const { name, phone, email, avatar_url, gender, date_of_birth, username } = req.body;
+  try {
+    const fields = [];
+    const values = [];
+    let idx = 1;
+
+    if (name !== undefined) {
+      fields.push(`name = $${idx++}`);
+      values.push(name.trim());
+    }
+    if (phone !== undefined) {
+      fields.push(`phone = $${idx++}`);
+      values.push(phone ? phone.replace(/\D/g, '') : null);
+    }
+    if (email !== undefined) {
+      fields.push(`email = $${idx++}`);
+      values.push(email.trim());
+    }
+    if (avatar_url !== undefined) {
+      fields.push(`avatar_url = $${idx++}`);
+      values.push(avatar_url);
+    }
+
+    if (fields.length === 0) {
+      return res.status(400).json({ error: 'Không có thông tin cần cập nhật.' });
+    }
+
+    values.push(req.userId);
+    const query = `UPDATE Users SET ${fields.join(', ')} WHERE id = $${idx} RETURNING id, name, email, phone, avatar_url, role, created_at`;
+    const result = await pool.query(query, values);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const updatedUser = {
+      ...result.rows[0],
+      gender: gender || null,
+      date_of_birth: date_of_birth || null,
+      username: username || null
+    };
+
+    res.json({ message: 'Cập nhật hồ sơ thành công!', user: updatedUser });
+  } catch (error) {
+    console.error('[updateProfile Error]:', error);
+    if (error.code === '23505') {
+      return res.status(400).json({ error: 'Email hoặc số điện thoại đã tồn tại trên hệ thống.' });
+    }
+    res.status(500).json({ error: 'Database error' });
+  }
+};
+
+// 8. Đổi mật khẩu (Change Password)
+const changePassword = async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ error: 'Vui lòng cung cấp mật khẩu hiện tại và mật khẩu mới.' });
+  }
+
+  // Validate new password security criteria
+  if (newPassword.length < 6) {
+    return res.status(400).json({ error: 'Mật khẩu mới phải có tối thiểu 6 ký tự.' });
+  }
+  if (!/\d/.test(newPassword)) {
+    return res.status(400).json({ error: 'Mật khẩu mới phải chứa ít nhất 1 chữ số (0-9).' });
+  }
+  if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~`]/.test(newPassword)) {
+    return res.status(400).json({ error: 'Mật khẩu mới phải chứa ít nhất 1 ký tự đặc biệt (!@#$%...).' });
+  }
+
+  try {
+    const userRes = await pool.query('SELECT password_hash FROM Users WHERE id = $1', [req.userId]);
+    if (userRes.rows.length === 0) return res.status(404).json({ error: 'User not found' });
+
+    const isMatch = await bcrypt.compare(currentPassword, userRes.rows[0].password_hash);
+    if (!isMatch) {
+      return res.status(400).json({ error: 'Mật khẩu hiện tại không chính xác.' });
+    }
+
+    const saltRounds = 10;
+    const newHash = await bcrypt.hash(newPassword, saltRounds);
+    await pool.query('UPDATE Users SET password_hash = $1 WHERE id = $2', [newHash, req.userId]);
+
+    res.json({ message: 'Đổi mật khẩu thành công!' });
+  } catch (error) {
+    console.error('[changePassword Error]:', error);
+    res.status(500).json({ error: 'Database error' });
+  }
+};
+
+module.exports = { register, login, getProfile, refresh, sendOtp, verifyOtp, updateProfile, changePassword };
