@@ -5,36 +5,51 @@ Chào mừng bạn đến với tài liệu tổng hợp của dự án ShopLite
 ---
 
 ## 1. 🤖 BẢN TÓM TẮT DỰ ÁN DÀNH CHO AI (AI CONTEXT PROMPT)
-*Khi bắt đầu một session mới với AI, hãy copy/paste phần này cho AI đọc để nó nhớ lại toàn bộ bối cảnh dự án:*
+*Khi bắt đầu một session mới với AI, hãy copy/paste toàn bộ đoạn trích dẫn bên dưới cho AI đọc để ghi nhớ trọn vẹn bối cảnh, kiến trúc và tiến độ dự án:*
 
 > **ROLE & CONTEXT FOR AI:**
 > You are an Expert Full-Stack Developer. We are building "ShopLite AI", an advanced E-commerce platform inspired by the Shopee Multi-Vendor Marketplace model, powered by an AI Recommendation Engine.
 > 
 > **Current Tech Stack:**
 > - **Backend:** Node.js, Express.js. REST API Layered Architecture (Controllers, Routes, Middleware). Modules: `auth`, `shops`, `catalog`, `order`, `dashboard`, `reviews`.
-> - **Database:** PostgreSQL (Supabase with IPv4 Transaction Pooler). 
+> - **Database:** PostgreSQL (Supabase with IPv4 Transaction Pooler) & Microsoft SQL Server T-SQL Equivalent.
 >   Tables: `Users`, `Shops`, `Categories`, `Brands`, `Category_Brands`, `Products`, `Orders`, `OrderDetails`, `Reviews`, `InventoryLogs`.
-> - **Frontend:** React (Vite), Tailwind CSS v4, Lucide Icons, React Router. Styled using a premium "Dark / Glassmorphism" theme (`#020204` background) with Apple-like aesthetics, neon glow borders, and complex 3D CSS transforms.
+> - **Frontend:** React 19 (Vite), Tailwind CSS v4, Lucide Icons, React Router. Styled using a premium "Dark / Glassmorphism" theme (`#020204` background) with Apple-like aesthetics, neon glow borders, and complex 3D CSS transforms.
 > - **Deployment Architecture:** Supabase (PostgreSQL Database using IPv4 Transaction Pooler), Render (Express Backend API), Vercel (React Frontend).
 > 
-> **Key Database & Advanced Relational Concepts Implemented:**
+> **Key Database & Advanced Relational Concepts Implemented (DBMS / T-SQL):**
 > 1. **3NF & BCNF Normalization:** Strictly normalized schema. `Brands` and `Categories` separated into standalone entities; `Category_Brands` (N-N) junction table mapping world-class brands to specific categories.
 > 2. **3 User Roles (RBAC):**
->    - `admin`: System administrator (KPI dashboard, shop rankings, full moderation).
->    - `customer`: Regular buyer (register, search, filter, cart, checkout, reviews).
+>    - `admin`: System administrator (KPI dashboard, shop rankings, sales analytics, full moderation).
+>    - `customer`: Regular buyer (register, search, filter, cart, checkout, reviews, Shopee-style account center).
 >    - `seller`: User who also owns a Shop (`Shops` table). Can list products with professional categorization (category, world-class brand, SKU, price, original_price, stock) and manage shop orders.
 > 3. **ACID Stored Procedure with Pessimistic Locking:** `sp_checkout` uses `SELECT ... FOR UPDATE` (row-level exclusive lock) to prevent overselling / race conditions during simultaneous purchases, with automatic rollback on stock shortage.
-> 4. **Automated Triggers:**
+> 4. **Automated Business Triggers:**
 >    - `trg_order_detail_stock`: Auto-deducts stock, increments `sold_count`, and writes audit records to `InventoryLogs`.
 >    - `trg_review_sync`: Auto-recalculates `rating_avg` and `review_count` for products upon review insertion/update/deletion.
-> 5. **Advanced Views with Window Functions:**
+>    - `trg_prevent_negative_price`: Validation trigger preventing negative prices or illegal discounts.
+> 5. **Advanced Window Functions:**
+>    - `vw_monthly_sales_growth`: Window functions using `LAG()` / `LEAD()` for month-over-month growth comparisons, and `SUM(...) OVER (ORDER BY ...)` for running total cumulative sales.
 >    - `vw_shop_sales_performance`: Ranks shop revenues using `DENSE_RANK() OVER (ORDER BY total_revenue DESC)`.
->    - `vw_top_selling_per_category`: Ranks best sellers within each category using `DENSE_RANK() OVER (PARTITION BY category_id ORDER BY sold_count DESC)`.
+>    - `vw_top_selling_per_category`: Ranks best sellers within each category using `DENSE_RANK() OVER (PARTITION BY category_id ORDER BY sold_count DESC)` and `ROW_NUMBER()`.
 >    - `vw_product_catalog_details`: Enriches products with Shop, Brand, Category info and Shopee-style discount percentage.
-> 6. **Recursive CTE:** `fn_get_category_path()` dynamically traverses hierarchical parent-child categories for breadcrumbs.
-> 7. **AI Recommendation Engine:** Frequently Bought Together (Co-occurrence algorithm via `OrderDetails` self-join) with category-based fallback.
-> 8. **3D Vertex Hero:** High-performance 3D rotating carousel and type-fitter built in React hooks (`VertexHero.jsx`).
-> 9. **Pricing & Discount UI:** Deterministic pricing where original price with strikethrough and red discount badge (`-X%`) only displays when `original_price > price`.
+> 6. **Functions (Scalar & TVF) & Recursive CTE:**
+>    - Scalar Function: `fn_calculate_discounted_price(price, discount_percent)` to compute final price after discount.
+>    - Table-Valued Function (TVF): `fn_get_products_by_brand(brand_id)` returning full product sets for simulated FROM-clause joins.
+>    - Recursive CTE: `fn_get_category_path()` dynamically traverses hierarchical parent-child categories for breadcrumbs.
+> 7. **Shopee-Style Authentication & Registration Flow:**
+>    - 3-step registration flow: Step 1 (Phone number verification with simulated OTP), Step 2 (Password setup & profile creation), Step 3 (Success confirmation & auto-login redirect).
+>    - Password security: Real-time criteria checking (minimum 6 characters, numbers, letters, special characters), dynamic strength meter, and matching confirmation check with independent show/hide toggles.
+>    - Role simplification: Unified customer registration without role confusion (new registrants default to `customer` role).
+> 8. **Shopee "My Account" Center (`ProfilePage.jsx` & `Navbar.jsx`):**
+>    - Profile dropdown in header: "My Account", "My Purchase", "Logout".
+>    - Left sidebar navigation with 3 main sections:
+>      - Notifications (Đơn hàng & Khuyến mãi).
+>      - My Account with 7 tabs: Profile, Banks & Cards (pre-configured VISA card + add card modal), Addresses, Change Password, Notification Settings, Privacy Settings, Personal Information.
+>      - My Purchase (Đơn mua): Full order history tabs (All, To Pay, To Ship, To Receive, Completed, Cancelled, Return/Refund) with detailed status, thumbnails, and re-order actions.
+> 9. **AI Recommendation Engine:** Frequently Bought Together (Co-occurrence algorithm via `OrderDetails` self-join) with category-based fallback.
+> 10. **3D Vertex Hero & Visuals:** High-performance 3D rotating carousel and type-fitter built in React hooks (`VertexHero.jsx`), Shopee-inspired discount badges (`-X%`) and deterministic pricing.
+> 11. **Clean Codebase Architecture:** Redundant legacy scripts and static HTML prototypes have been completely removed. Active code is strictly organized in `backend/` (layered `config`, `middleware`, `modules`), `database/` (SQL schemas, seeds, T-SQL equivalent), and `frontend/` (React/Vite).
 > 
 > **Test Accounts (Password for all: `password123`):**
 > - Admin: `admin@shoplite.com`
