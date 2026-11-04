@@ -252,6 +252,30 @@ const getAllBrands = async (req, res) => {
   }
 };
 
+// 5.1. Lấy danh sách sản phẩm theo Thương hiệu qua Table-Valued Function (TVF)
+const getProductsByBrandTVF = async (req, res) => {
+  const { brandId } = req.params;
+  try {
+    const result = await pool.query('SELECT * FROM fn_get_products_by_brand($1)', [brandId]);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('[Catalog getProductsByBrandTVF Error]:', error);
+    res.status(500).json({ error: 'Database error' });
+  }
+};
+
+// 5.2. Lấy đường dẫn phân cấp danh mục (Breadcrumb) qua Recursive CTE TVF
+const getCategoryPath = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query('SELECT * FROM fn_get_category_path($1)', [id]);
+    res.json(result.rows[0] || null);
+  } catch (error) {
+    console.error('[Catalog getCategoryPath Error]:', error);
+    res.status(500).json({ error: 'Database error' });
+  }
+};
+
 // 6. Đăng sản phẩm mới (Dành cho Người bán hàng - Seller)
 const createProduct = async (req, res) => {
   const { 
@@ -489,6 +513,8 @@ module.exports = {
   getCategories,
   getCategoryBrands,
   getAllBrands,
+  getProductsByBrandTVF,
+  getCategoryPath,
   createProduct,
   updateProduct,
   deleteProduct,

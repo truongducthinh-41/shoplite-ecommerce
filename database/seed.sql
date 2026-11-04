@@ -6,6 +6,7 @@
 
 -- Clear existing data
 TRUNCATE TABLE 
+    ProductAuditLogs,
     InventoryLogs, 
     Reviews, 
     OrderDetails, 

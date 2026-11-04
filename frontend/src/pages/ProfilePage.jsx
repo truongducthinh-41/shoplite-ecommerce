@@ -2,21 +2,21 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { apiFetch } from '../services/api';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { 
-  User, 
-  Bell, 
-  FileText, 
-  CreditCard, 
-  MapPin, 
-  Lock, 
-  Shield, 
-  Plus, 
-  Check, 
-  X, 
-  Eye, 
-  EyeOff, 
-  Edit2, 
-  Trash2, 
+import {
+  User,
+  Bell,
+  FileText,
+  CreditCard,
+  MapPin,
+  Lock,
+  Shield,
+  Plus,
+  Check,
+  X,
+  Eye,
+  EyeOff,
+  Edit2,
+  Trash2,
   Download,
   AlertCircle
 } from 'lucide-react';
@@ -25,7 +25,7 @@ export default function ProfilePage() {
   const { user, updateProfile, changePassword, logout } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  
+
   // Default tab is 'profile' or from query param
   const activeTab = searchParams.get('tab') || 'profile';
 
@@ -153,7 +153,7 @@ export default function ProfilePage() {
     setError('');
 
     try {
-      const dob = (birthYear && birthMonth && birthDay) 
+      const dob = (birthYear && birthMonth && birthDay)
         ? `${birthYear}-${birthMonth.padStart(2, '0')}-${birthDay.padStart(2, '0')}`
         : null;
 
@@ -320,15 +320,15 @@ export default function ProfilePage() {
 
   return (
     <div className="w-full max-w-6xl mx-auto py-6 sm:py-8 px-2 sm:px-4 text-slate-800">
-      
+
       {/* Container with Shopee Gray/White layout */}
       <div className="flex flex-col md:flex-row gap-6 items-start">
-        
+
         {/* ========================================================================= */}
         {/* SIDEBAR NAVIGATION (Matching user screenshot 2) */}
         {/* ========================================================================= */}
         <aside className="w-full md:w-60 flex-shrink-0 bg-transparent">
-          
+
           {/* Top User Header */}
           <div className="flex items-center gap-3.5 pb-5 border-b border-slate-200">
             <div className="w-12 h-12 rounded-full bg-slate-200 border border-slate-300 flex items-center justify-center text-slate-400 overflow-hidden flex-shrink-0">
@@ -342,7 +342,7 @@ export default function ProfilePage() {
               <h3 className="font-bold text-sm text-slate-900 truncate">
                 {username}
               </h3>
-              <button 
+              <button
                 onClick={() => setTab('profile')}
                 className="text-xs text-slate-500 hover:text-[#EE4D2D] flex items-center gap-1 mt-0.5"
               >
@@ -353,16 +353,15 @@ export default function ProfilePage() {
 
           {/* 3 Middle Sections as requested */}
           <nav className="mt-5 space-y-4 text-sm font-medium">
-            
+
             {/* 1. Notifications */}
             <div>
               <button
                 onClick={() => setTab('notifications')}
-                className={`w-full flex items-center gap-2.5 py-2 px-1 text-left transition-colors ${
-                  activeTab === 'notifications' 
-                    ? 'text-[#EE4D2D] font-bold' 
+                className={`w-full flex items-center gap-2.5 py-2 px-1 text-left transition-colors ${activeTab === 'notifications'
+                    ? 'text-[#EE4D2D] font-bold'
                     : 'text-slate-700 hover:text-[#EE4D2D]'
-                }`}
+                  }`}
               >
                 <Bell className={`w-4 h-4 ${activeTab === 'notifications' ? 'text-[#EE4D2D]' : 'text-[#EE4D2D]/80'}`} />
                 <span>Notifications</span>
@@ -373,11 +372,10 @@ export default function ProfilePage() {
             <div>
               <button
                 onClick={() => setTab('profile')}
-                className={`w-full flex items-center gap-2.5 py-1.5 px-1 text-left transition-colors ${
-                  ['profile', 'banks', 'addresses', 'password', 'noti_settings', 'privacy', 'personal_info'].includes(activeTab)
+                className={`w-full flex items-center gap-2.5 py-1.5 px-1 text-left transition-colors ${['profile', 'banks', 'addresses', 'password', 'noti_settings', 'privacy', 'personal_info'].includes(activeTab)
                     ? 'text-slate-900 font-bold'
                     : 'text-slate-700 hover:text-slate-900'
-                }`}
+                  }`}
               >
                 <User className="w-4 h-4 text-blue-500" />
                 <span>My Account</span>
@@ -385,66 +383,59 @@ export default function ProfilePage() {
 
               {/* Sub-items list (Indented) */}
               <div className="pl-7 mt-1.5 space-y-2 text-xs">
-                
+
                 <button
                   onClick={() => setTab('profile')}
-                  className={`block w-full text-left py-1 transition-colors ${
-                    activeTab === 'profile' ? 'text-[#EE4D2D] font-bold' : 'text-slate-600 hover:text-[#EE4D2D]'
-                  }`}
+                  className={`block w-full text-left py-1 transition-colors ${activeTab === 'profile' ? 'text-[#EE4D2D] font-bold' : 'text-slate-600 hover:text-[#EE4D2D]'
+                    }`}
                 >
                   Profile
                 </button>
 
                 <button
                   onClick={() => setTab('banks')}
-                  className={`block w-full text-left py-1 transition-colors ${
-                    activeTab === 'banks' ? 'text-[#EE4D2D] font-bold' : 'text-slate-600 hover:text-[#EE4D2D]'
-                  }`}
+                  className={`block w-full text-left py-1 transition-colors ${activeTab === 'banks' ? 'text-[#EE4D2D] font-bold' : 'text-slate-600 hover:text-[#EE4D2D]'
+                    }`}
                 >
                   Banks & Cards
                 </button>
 
                 <button
                   onClick={() => setTab('addresses')}
-                  className={`block w-full text-left py-1 transition-colors ${
-                    activeTab === 'addresses' ? 'text-[#EE4D2D] font-bold' : 'text-slate-600 hover:text-[#EE4D2D]'
-                  }`}
+                  className={`block w-full text-left py-1 transition-colors ${activeTab === 'addresses' ? 'text-[#EE4D2D] font-bold' : 'text-slate-600 hover:text-[#EE4D2D]'
+                    }`}
                 >
                   Addresses
                 </button>
 
                 <button
                   onClick={() => setTab('password')}
-                  className={`block w-full text-left py-1 transition-colors ${
-                    activeTab === 'password' ? 'text-[#EE4D2D] font-bold' : 'text-slate-600 hover:text-[#EE4D2D]'
-                  }`}
+                  className={`block w-full text-left py-1 transition-colors ${activeTab === 'password' ? 'text-[#EE4D2D] font-bold' : 'text-slate-600 hover:text-[#EE4D2D]'
+                    }`}
                 >
                   Change Password
                 </button>
 
                 <button
                   onClick={() => setTab('noti_settings')}
-                  className={`block w-full text-left py-1 transition-colors ${
-                    activeTab === 'noti_settings' ? 'text-[#EE4D2D] font-bold' : 'text-slate-600 hover:text-[#EE4D2D]'
-                  }`}
+                  className={`block w-full text-left py-1 transition-colors ${activeTab === 'noti_settings' ? 'text-[#EE4D2D] font-bold' : 'text-slate-600 hover:text-[#EE4D2D]'
+                    }`}
                 >
                   Notification Settings
                 </button>
 
                 <button
                   onClick={() => setTab('privacy')}
-                  className={`block w-full text-left py-1 transition-colors ${
-                    activeTab === 'privacy' ? 'text-[#EE4D2D] font-bold' : 'text-slate-600 hover:text-[#EE4D2D]'
-                  }`}
+                  className={`block w-full text-left py-1 transition-colors ${activeTab === 'privacy' ? 'text-[#EE4D2D] font-bold' : 'text-slate-600 hover:text-[#EE4D2D]'
+                    }`}
                 >
                   Privacy Settings
                 </button>
 
                 <button
                   onClick={() => setTab('personal_info')}
-                  className={`block w-full text-left py-1 transition-colors ${
-                    activeTab === 'personal_info' ? 'text-[#EE4D2D] font-bold' : 'text-slate-600 hover:text-[#EE4D2D]'
-                  }`}
+                  className={`block w-full text-left py-1 transition-colors ${activeTab === 'personal_info' ? 'text-[#EE4D2D] font-bold' : 'text-slate-600 hover:text-[#EE4D2D]'
+                    }`}
                 >
                   Personal Information
                 </button>
@@ -456,11 +447,10 @@ export default function ProfilePage() {
             <div>
               <button
                 onClick={() => setTab('purchase')}
-                className={`w-full flex items-center gap-2.5 py-2 px-1 text-left transition-colors ${
-                  activeTab === 'purchase' 
-                    ? 'text-[#EE4D2D] font-bold' 
+                className={`w-full flex items-center gap-2.5 py-2 px-1 text-left transition-colors ${activeTab === 'purchase'
+                    ? 'text-[#EE4D2D] font-bold'
                     : 'text-slate-700 hover:text-[#EE4D2D]'
-                }`}
+                  }`}
               >
                 <FileText className="w-4 h-4 text-blue-600" />
                 <span>My Purchase</span>
@@ -474,7 +464,7 @@ export default function ProfilePage() {
         {/* MAIN CONTENT AREA */}
         {/* ========================================================================= */}
         <main className="flex-1 w-full bg-white rounded-md shadow-sm border border-slate-200 p-6 sm:p-8 min-h-[580px]">
-          
+
           {/* Notification Alert Banners */}
           {message && (
             <div className="mb-6 p-3.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-md text-xs font-medium flex items-center gap-2">
@@ -502,10 +492,10 @@ export default function ProfilePage() {
 
               {/* Body: 2 Columns */}
               <div className="pt-6 flex flex-col-reverse md:flex-row gap-8">
-                
+
                 {/* Left Form */}
                 <form onSubmit={handleSaveProfile} className="flex-1 space-y-6 text-sm">
-                  
+
                   {/* Username */}
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6">
                     <label className="sm:w-32 text-right text-slate-500 text-xs sm:text-sm">
@@ -735,7 +725,7 @@ export default function ProfilePage() {
           {/* ----------------------------------------------------------------------- */}
           {activeTab === 'banks' && (
             <div className="space-y-10">
-              
+
               {/* Section 1: Credit / Debit Card */}
               <div>
                 <div className="flex items-center justify-between pb-4 border-b border-slate-100">
@@ -752,8 +742,8 @@ export default function ProfilePage() {
                   {cards.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {cards.map((c) => (
-                        <div 
-                          key={c.id} 
+                        <div
+                          key={c.id}
                           className="relative p-5 rounded-xl border border-slate-200 bg-gradient-to-tr from-slate-900 to-slate-800 text-white shadow-md overflow-hidden"
                         >
                           <div className="flex justify-between items-center mb-6">
@@ -1099,7 +1089,7 @@ export default function ProfilePage() {
                     <h4 className="font-semibold text-slate-800">Tải về dữ liệu cá nhân</h4>
                     <p className="text-xs text-slate-400 mt-0.5">Xuất file báo cáo lịch sử đơn hàng và dữ liệu tài khoản</p>
                   </div>
-                  <button 
+                  <button
                     onClick={() => alert('Dữ liệu cá nhân đã được tổng hợp và chuẩn bị gửi về email của bạn.')}
                     className="px-3 py-1.5 border border-slate-300 rounded text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-1.5"
                   >
@@ -1120,7 +1110,7 @@ export default function ProfilePage() {
                   <h2 className="text-lg font-medium text-slate-800">Notifications</h2>
                   <p className="text-xs text-slate-500 mt-1">Cập nhật đơn hàng & thông báo từ ShopLite</p>
                 </div>
-                <button 
+                <button
                   onClick={() => alert('Đã đánh dấu tất cả thông báo là đã đọc')}
                   className="text-xs text-blue-600 hover:underline"
                 >
@@ -1165,11 +1155,10 @@ export default function ProfilePage() {
                   <button
                     key={filter}
                     onClick={() => setPurchaseFilter(filter)}
-                    className={`py-3 px-4 font-medium whitespace-nowrap border-b-2 transition-colors ${
-                      purchaseFilter === filter 
-                        ? 'border-[#EE4D2D] text-[#EE4D2D] font-bold' 
+                    className={`py-3 px-4 font-medium whitespace-nowrap border-b-2 transition-colors ${purchaseFilter === filter
+                        ? 'border-[#EE4D2D] text-[#EE4D2D] font-bold'
                         : 'border-transparent text-slate-600 hover:text-slate-900'
-                    }`}
+                      }`}
                   >
                     {filter}
                   </button>

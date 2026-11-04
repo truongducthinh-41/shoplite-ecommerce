@@ -25,12 +25,22 @@ const getDashboardSummary = async (req, res) => {
       LIMIT 10
     `);
     
-    // 3. Xếp hạng hiệu năng kinh doanh giữa các Shop bằng Window Function View
+    // 3. Xếp hạng hiệu năng kinh doanh giữa các Shop bằng Window Function View (DENSE_RANK)
     const shopRankResult = await pool.query(`
       SELECT * FROM vw_shop_sales_performance ORDER BY revenue_rank ASC
     `);
 
-    // 4. Chỉ số KPI toàn hệ thống
+    // 4. Báo cáo tăng trưởng doanh thu qua từng tháng dùng Window Functions (LAG, LEAD, Running Total)
+    const monthlyGrowthResult = await pool.query(`
+      SELECT * FROM vw_monthly_sales_growth ORDER BY sales_month DESC LIMIT 12
+    `);
+
+    // 5. Top sản phẩm bán chạy nhất trong từng danh mục (Window Function ROW_NUMBER & DENSE_RANK Partition)
+    const topPerCategoryResult = await pool.query(`
+      SELECT * FROM vw_top_selling_per_category WHERE row_num <= 3 ORDER BY category_id, rank_in_category ASC
+    `);
+
+    // 6. Chỉ số KPI toàn hệ thống
     const userCountResult = await pool.query('SELECT COUNT(*) FROM Users');
     const totalRevenueResult = await pool.query("SELECT COALESCE(SUM(total_amount), 0) as total FROM Orders WHERE status != 'cancelled'");
     const orderCountResult = await pool.query('SELECT COUNT(*) FROM Orders');
@@ -40,6 +50,8 @@ const getDashboardSummary = async (req, res) => {
       salesSummary: salesResult.rows,
       lowStockProducts: lowStockResult.rows,
       shopPerformance: shopRankResult.rows,
+      monthlyGrowth: monthlyGrowthResult.rows,
+      topPerCategory: topPerCategoryResult.rows,
       kpi: {
         totalUsers: parseInt(userCountResult.rows[0].count),
         totalShops: parseInt(shopCountResult.rows[0].count),

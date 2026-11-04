@@ -5,6 +5,8 @@ const {
   getCategories,
   getCategoryBrands,
   getAllBrands,
+  getProductsByBrandTVF,
+  getCategoryPath,
   createProduct,
   updateProduct,
   deleteProduct,
@@ -17,8 +19,10 @@ const router = express.Router();
 
 // Public routes for Categories & Brands
 router.get('/categories', getCategories);
+router.get('/categories/:id/path', getCategoryPath);
 router.get('/categories/:id/brands', getCategoryBrands);
 router.get('/brands', getAllBrands);
+router.get('/brands/:brandId/products', getProductsByBrandTVF);
 
 // Public product routes
 router.get('/bestsellers', getBestSellers);
