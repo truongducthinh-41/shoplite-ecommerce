@@ -9,8 +9,6 @@ import {
   Lock, 
   User, 
   Mail, 
-  Store, 
-  ShoppingCart, 
   Eye, 
   EyeOff, 
   ArrowRight,
@@ -35,8 +33,6 @@ export default function AuthPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [role, setRole] = useState('customer'); // 'customer' | 'seller'
-  const [shopName, setShopName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   
   // Login form state
@@ -153,11 +149,6 @@ export default function AuthPage() {
       return;
     }
 
-    if (role === 'seller' && !shopName.trim()) {
-      setError('Vui lòng nhập tên gian hàng Shopee của bạn.');
-      return;
-    }
-
     setLoading(true);
     try {
       const cleanPhone = phone.replace(/\D/g, '');
@@ -168,8 +159,6 @@ export default function AuthPage() {
         email: finalEmail,
         phone: cleanPhone,
         password,
-        role,
-        shop_name: role === 'seller' ? shopName.trim() : undefined,
       });
 
       // Advance to Step 3 (Done) matching the image!
@@ -535,57 +524,6 @@ export default function AuthPage() {
                     </div>
                   </div>
 
-                  {/* Role Selector: Customer vs Seller (Shopee Multi-Vendor Platform) */}
-                  <div className="pt-2">
-                    <label className="block text-xs font-bold text-slate-800 mb-2">
-                      Loại tài khoản tham gia ShopLite:
-                    </label>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div
-                        onClick={() => setRole('customer')}
-                        className={`p-3 rounded-xl border-2 cursor-pointer transition-all flex flex-col items-center text-center ${
-                          role === 'customer'
-                            ? 'border-[#EE4D2D] bg-orange-50/50 text-[#EE4D2D]'
-                            : 'border-slate-200 hover:border-slate-300 text-slate-600'
-                        }`}
-                      >
-                        <ShoppingCart className="w-6 h-6 mb-1" />
-                        <span className="text-xs font-bold">Người mua hàng</span>
-                        <span className="text-[10px] text-slate-400 mt-0.5">Mua sắm & Đánh giá</span>
-                      </div>
-
-                      <div
-                        onClick={() => setRole('seller')}
-                        className={`p-3 rounded-xl border-2 cursor-pointer transition-all flex flex-col items-center text-center ${
-                          role === 'seller'
-                            ? 'border-[#EE4D2D] bg-orange-50/50 text-[#EE4D2D]'
-                            : 'border-slate-200 hover:border-slate-300 text-slate-600'
-                        }`}
-                      >
-                        <Store className="w-6 h-6 mb-1" />
-                        <span className="text-xs font-bold">Người bán hàng (Seller)</span>
-                        <span className="text-[10px] text-slate-400 mt-0.5">Mở gian hàng Shopee</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Optional Shop Name input if role is Seller */}
-                  {role === 'seller' && (
-                    <div className="p-3.5 bg-orange-50/40 rounded-xl border border-orange-200/80 mt-2">
-                      <label className="block text-xs font-bold text-[#EE4D2D] mb-1">
-                        Tên gian hàng / Shop Name *
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={shopName}
-                        onChange={(e) => setShopName(e.target.value)}
-                        placeholder="Ví dụ: Thịnh Official Store"
-                        className="w-full px-3 py-2 border border-orange-300 rounded-lg text-slate-900 text-xs focus:ring-2 focus:ring-[#EE4D2D] outline-none bg-white font-medium"
-                      />
-                    </div>
-                  )}
-
                   <div className="pt-3">
                     <button
                       type="submit"
@@ -728,7 +666,7 @@ export default function AuthPage() {
                 <div className="font-semibold text-slate-700 mb-1.5 flex items-center gap-1">
                   ⚡ Tài khoản mẫu thử nghiệm (Password: <code className="text-[#EE4D2D]">password123</code>):
                 </div>
-                <div className="grid grid-cols-3 gap-1.5 text-[11px]">
+                <div className="grid grid-cols-2 gap-2 text-[11px]">
                   <button
                     type="button"
                     onClick={() => { setLoginIdentifier('admin@shoplite.local'); setLoginPassword('password123'); }}
@@ -738,17 +676,10 @@ export default function AuthPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => { setLoginIdentifier('apple_store@shoplite.local'); setLoginPassword('password123'); }}
-                    className="p-1.5 bg-white border border-slate-200 rounded hover:bg-slate-100 font-medium text-blue-700"
-                  >
-                    🏬 Seller
-                  </button>
-                  <button
-                    type="button"
                     onClick={() => { setLoginIdentifier('john_doe@gmail.com'); setLoginPassword('password123'); }}
                     className="p-1.5 bg-white border border-slate-200 rounded hover:bg-slate-100 font-medium text-emerald-700"
                   >
-                    🛒 Customer
+                    👤 Người dùng (User)
                   </button>
                 </div>
               </div>

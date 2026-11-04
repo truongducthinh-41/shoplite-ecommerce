@@ -63,57 +63,35 @@ const verifyOtp = async (req, res) => {
   return res.status(400).json({ error: 'Mã OTP không chính xác hoặc đã hết hạn (Mã demo: 123456).' });
 };
 
-// 3. Đăng ký tài khoản (Hỗ trợ role 'customer' và 'seller')
+// 3. Đăng ký tài khoản (Tạo tài khoản người dùng chuẩn)
 const register = async (req, res) => {
-  const { name, email, password, role = 'customer', phone, shop_name } = req.body;
+  const { name, email, password, phone } = req.body;
   
   if (!name || !password) {
     return res.status(400).json({ error: 'Vui lòng cung cấp họ tên và mật khẩu.' });
   }
 
-  // Validate role
-  const allowedRoles = ['customer', 'seller'];
-  const assignedRole = allowedRoles.includes(role) ? role : 'customer';
-
   const cleanPhone = phone ? phone.replace(/\D/g, '') : null;
   // Fallback email nếu người dùng chỉ đăng ký bằng SĐT
   const finalEmail = (email && email.trim()) ? email.trim() : `${cleanPhone || Date.now()}@shoplite.local`;
 
-  const client = await pool.connect();
   try {
-    await client.query('BEGIN');
-
     const saltRounds = 10;
     const password_hash = await bcrypt.hash(password, saltRounds);
     
-    // Tạo User
-    const userResult = await client.query(
+    // Tạo User chuẩn (role 'customer')
+    const userResult = await pool.query(
       'INSERT INTO Users (name, email, password_hash, phone, role) VALUES ($1, $2, $3, $4, $5) RETURNING id, name, email, phone, role, avatar_url',
-      [name, finalEmail, password_hash, cleanPhone, assignedRole]
+      [name, finalEmail, password_hash, cleanPhone, 'customer']
     );
     const newUser = userResult.rows[0];
-
-    // Nếu đăng ký làm Người bán hàng (Seller), tự động khởi tạo Shop cơ bản
-    let newShop = null;
-    if (assignedRole === 'seller') {
-      const finalShopName = shop_name ? shop_name.trim() : `${name}'s Official Shop`;
-      const shopSlug = finalShopName.toLowerCase().replace(/[^a-z0-9]/g, '-') + '-' + Date.now();
-      
-      const shopResult = await client.query(
-        'INSERT INTO Shops (owner_id, name, slug, description, is_official) VALUES ($1, $2, $3, $4, $5) RETURNING id, name, slug, rating, is_official',
-        [newUser.id, finalShopName, shopSlug, `Gian hàng thương mại điện tử Shopee của ${name}`, false]
-      );
-      newShop = shopResult.rows[0];
-    }
-
-    await client.query('COMMIT');
 
     // Tự động cấp phát JWT token để người dùng đăng nhập ngay sau đăng ký
     const accessToken = jwt.sign(
       { 
         id: newUser.id, 
         role: newUser.role,
-        shopId: newShop ? newShop.id : null 
+        shopId: null 
       },
       process.env.JWT_SECRET || 'supersecretkey',
       { expiresIn: '1d' }
@@ -129,17 +107,14 @@ const register = async (req, res) => {
       message: 'User registered successfully', 
       token: accessToken,
       refreshToken,
-      user: { ...newUser, shop: newShop } 
+      user: newUser 
     });
   } catch (error) {
-    await client.query('ROLLBACK');
     console.error('[Auth Register Error]:', error);
     if (error.code === '23505') {
       return res.status(400).json({ error: 'Email hoặc số điện thoại đã tồn tại trên hệ thống.' });
     }
     res.status(500).json({ error: 'Database error during registration' });
-  } finally {
-    client.release();
   }
 };
 

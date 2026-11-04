@@ -139,11 +139,6 @@ export default function Navbar() {
                     Admin Panel
                   </Link>
                 )}
-                {user.role === 'seller' && (
-                  <Link to="/profile" className="text-xs sm:text-sm font-semibold text-orange-400 bg-orange-500/10 px-3 py-1 rounded-full border border-orange-500/20 hover:bg-orange-500/20 transition-colors hidden md:inline-flex">
-                    🏬 {user.shop ? user.shop.name : 'Kênh Người Bán'}
-                  </Link>
-                )}
                 <Link to="/profile" className="flex items-center gap-2 text-sm text-slate-200 font-medium bg-white/5 px-3 py-1.5 rounded-full border border-white/10 hover:bg-white/10 transition-colors">
                   <User className="h-4 w-4 text-orange-400" />
                   <span className="hidden sm:inline max-w-[120px] truncate">{user.name}</span>
