@@ -71,6 +71,17 @@ const register = async (req, res) => {
     return res.status(400).json({ error: 'Vui lòng cung cấp họ tên và mật khẩu.' });
   }
 
+  // Tiêu chí bảo mật mật khẩu
+  if (password.length < 6) {
+    return res.status(400).json({ error: 'Mật khẩu phải chứa tối thiểu 6 ký tự.' });
+  }
+  if (!/\d/.test(password)) {
+    return res.status(400).json({ error: 'Mật khẩu phải chứa ít nhất 1 chữ số (0-9).' });
+  }
+  if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~`]/.test(password)) {
+    return res.status(400).json({ error: 'Mật khẩu phải chứa ít nhất 1 ký tự đặc biệt (!@#$%...).' });
+  }
+
   const cleanPhone = phone ? phone.replace(/\D/g, '') : null;
   // Fallback email nếu người dùng chỉ đăng ký bằng SĐT
   const finalEmail = (email && email.trim()) ? email.trim() : `${cleanPhone || Date.now()}@shoplite.local`;

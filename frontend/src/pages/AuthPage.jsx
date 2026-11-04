@@ -5,6 +5,7 @@ import {
   ShoppingBag, 
   HelpCircle, 
   Check, 
+  X,
   Phone, 
   Lock, 
   User, 
@@ -34,6 +35,7 @@ export default function AuthPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
   // Login form state
   const [loginIdentifier, setLoginIdentifier] = useState('');
@@ -58,6 +60,24 @@ export default function AuthPage() {
     }
     return `(+84) ${cleaned}`;
   };
+
+  // Tiêu chí kiểm tra mật khẩu theo yêu cầu của đồ án:
+  // 1. Tối thiểu 6 ký tự
+  // 2. Chứa ít nhất một chữ số (0-9)
+  // 3. Chứa ít nhất một ký tự đặc biệt (!@#$...)
+  // 4. (Tiêu chí bổ sung): Chứa chữ cái (A-Z, a-z)
+  const hasMinLen = password.length >= 6;
+  const hasNumber = /\d/.test(password);
+  const hasSpecialChar = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~`]/.test(password);
+  const hasLetter = /[a-zA-Z]/.test(password);
+
+  const criteriaMetCount = [hasMinLen, hasNumber, hasSpecialChar, hasLetter].filter(Boolean).length;
+  const isPasswordValid = hasMinLen && hasNumber && hasSpecialChar && hasLetter;
+
+  // Kiểm tra xác nhận mật khẩu có khớp hay không
+  const isConfirmEntered = confirmPassword.length > 0;
+  const isPasswordMatching = isConfirmEntered && password === confirmPassword;
+  const isPasswordMismatch = isConfirmEntered && password !== confirmPassword;
 
   // Resend OTP countdown timer
   useEffect(() => {
@@ -139,13 +159,28 @@ export default function AuthPage() {
       return;
     }
 
-    if (password.length < 6) {
-      setError('Mật khẩu phải chứa ít nhất 6 ký tự.');
+    if (!hasMinLen) {
+      setError('Mật khẩu phải chứa tối thiểu 6 ký tự.');
+      return;
+    }
+
+    if (!hasNumber) {
+      setError('Mật khẩu phải chứa ít nhất 1 chữ số (0-9).');
+      return;
+    }
+
+    if (!hasSpecialChar) {
+      setError('Mật khẩu phải chứa ít nhất 1 ký tự đặc biệt (!@#$%...).');
+      return;
+    }
+
+    if (!hasLetter) {
+      setError('Mật khẩu phải chứa ít nhất 1 chữ cái (a-z, A-Z).');
       return;
     }
 
     if (password !== confirmPassword) {
-      setError('Mật khẩu xác nhận không trùng khớp.');
+      setError('Mật khẩu xác nhận không trùng khớp với mật khẩu đã nhập.');
       return;
     }
 
@@ -481,7 +516,7 @@ export default function AuthPage() {
                     </div>
                   </div>
 
-                  {/* Password */}
+                  {/* Password Input & Criteria Checklist */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1">Mật khẩu *</label>
                     <div className="relative">
@@ -493,20 +528,105 @@ export default function AuthPage() {
                         required
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Tối thiểu 6 ký tự"
-                        className="w-full pl-10 pr-10 py-2.5 border border-slate-300 rounded-xl text-slate-900 text-sm focus:ring-2 focus:ring-[#EE4D2D] focus:border-[#EE4D2D] outline-none"
+                        placeholder="Tối thiểu 6 ký tự, có số & ký tự đặc biệt"
+                        className={`w-full pl-10 pr-10 py-2.5 border rounded-xl text-slate-900 text-sm outline-none transition-all ${
+                          password.length === 0
+                            ? 'border-slate-300 focus:ring-2 focus:ring-[#EE4D2D] focus:border-[#EE4D2D]'
+                            : isPasswordValid
+                            ? 'border-emerald-500 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-emerald-50/20'
+                            : 'border-amber-400 focus:ring-2 focus:ring-amber-400 focus:border-amber-400 bg-amber-50/20'
+                        }`}
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600"
+                        title={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                       >
                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
                     </div>
+
+                    {/* Password Strength & Criteria Checklist */}
+                    {password.length > 0 && (
+                      <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 space-y-2 mt-2">
+                        {/* Strength Header */}
+                        <div className="flex items-center justify-between text-xs font-semibold text-slate-700">
+                          <span>Độ an toàn mật khẩu:</span>
+                          <span className={
+                            criteriaMetCount <= 1 ? 'text-red-500' :
+                            criteriaMetCount <= 3 ? 'text-amber-600' :
+                            'text-emerald-600'
+                          }>
+                            {criteriaMetCount <= 1 ? 'Yếu' : criteriaMetCount <= 3 ? 'Trung bình' : 'Rất mạnh (Đạt chuẩn)'}
+                          </span>
+                        </div>
+
+                        {/* Strength Bar */}
+                        <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden flex gap-1">
+                          {[1, 2, 3, 4].map((stepIdx) => (
+                            <div
+                              key={stepIdx}
+                              className={`h-full flex-1 rounded-full transition-all duration-300 ${
+                                criteriaMetCount >= stepIdx
+                                  ? criteriaMetCount <= 1 
+                                    ? 'bg-red-500' 
+                                    : criteriaMetCount <= 3 
+                                    ? 'bg-amber-500' 
+                                    : 'bg-emerald-500'
+                                  : 'bg-transparent'
+                              }`}
+                            />
+                          ))}
+                        </div>
+
+                        {/* 4 Criteria Checklist */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1 text-[11px]">
+                          {/* Criterion 1: Length >= 6 */}
+                          <div className={`flex items-center gap-1.5 transition-colors ${hasMinLen ? 'text-emerald-700 font-medium' : 'text-slate-400'}`}>
+                            {hasMinLen ? (
+                              <Check className="w-3.5 h-3.5 stroke-[3] text-emerald-600 flex-shrink-0" />
+                            ) : (
+                              <span className="w-3.5 h-3.5 rounded-full border border-slate-300 inline-flex items-center justify-center text-[8px] text-slate-400">•</span>
+                            )}
+                            <span>Tối thiểu 6 ký tự</span>
+                          </div>
+
+                          {/* Criterion 2: Contains Number */}
+                          <div className={`flex items-center gap-1.5 transition-colors ${hasNumber ? 'text-emerald-700 font-medium' : 'text-slate-400'}`}>
+                            {hasNumber ? (
+                              <Check className="w-3.5 h-3.5 stroke-[3] text-emerald-600 flex-shrink-0" />
+                            ) : (
+                              <span className="w-3.5 h-3.5 rounded-full border border-slate-300 inline-flex items-center justify-center text-[8px] text-slate-400">•</span>
+                            )}
+                            <span>Chứa ít nhất 1 số (0-9)</span>
+                          </div>
+
+                          {/* Criterion 3: Contains Special Character */}
+                          <div className={`flex items-center gap-1.5 transition-colors ${hasSpecialChar ? 'text-emerald-700 font-medium' : 'text-slate-400'}`}>
+                            {hasSpecialChar ? (
+                              <Check className="w-3.5 h-3.5 stroke-[3] text-emerald-600 flex-shrink-0" />
+                            ) : (
+                              <span className="w-3.5 h-3.5 rounded-full border border-slate-300 inline-flex items-center justify-center text-[8px] text-slate-400">•</span>
+                            )}
+                            <span>Ký tự đặc biệt (!@#$...)</span>
+                          </div>
+
+                          {/* Criterion 4: Contains Letter (Tiêu chí 4) */}
+                          <div className={`flex items-center gap-1.5 transition-colors ${hasLetter ? 'text-emerald-700 font-medium' : 'text-slate-400'}`}>
+                            {hasLetter ? (
+                              <Check className="w-3.5 h-3.5 stroke-[3] text-emerald-600 flex-shrink-0" />
+                            ) : (
+                              <span className="w-3.5 h-3.5 rounded-full border border-slate-300 inline-flex items-center justify-center text-[8px] text-slate-400">•</span>
+                            )}
+                            <span>Chứa chữ cái (A-Z, a-z)</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
-                  {/* Confirm Password */}
+                  {/* Confirm Password Input & Real-time Matching Check */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1">Xác nhận mật khẩu *</label>
                     <div className="relative">
@@ -514,21 +634,50 @@ export default function AuthPage() {
                         <Lock className="w-4 h-4" />
                       </div>
                       <input
-                        type={showPassword ? 'text' : 'password'}
+                        type={showConfirmPassword ? 'text' : 'password'}
                         required
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
-                        placeholder="Nhập lại mật khẩu"
-                        className="w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-xl text-slate-900 text-sm focus:ring-2 focus:ring-[#EE4D2D] focus:border-[#EE4D2D] outline-none"
+                        placeholder="Nhập lại chính xác mật khẩu"
+                        className={`w-full pl-10 pr-10 py-2.5 border rounded-xl text-slate-900 text-sm outline-none transition-all ${
+                          !isConfirmEntered
+                            ? 'border-slate-300 focus:ring-2 focus:ring-[#EE4D2D] focus:border-[#EE4D2D]'
+                            : isPasswordMatching
+                            ? 'border-emerald-500 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-emerald-50/20'
+                            : 'border-red-400 focus:ring-2 focus:ring-red-400 focus:border-red-400 bg-red-50/20'
+                        }`}
                       />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600"
+                        title={showConfirmPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                      >
+                        {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
                     </div>
+
+                    {/* Real-time Match Feedback */}
+                    {isConfirmEntered && (
+                      <div className="mt-1.5 flex items-center gap-1.5 text-xs font-semibold">
+                        {isPasswordMatching ? (
+                          <span className="text-emerald-600 flex items-center gap-1">
+                            <Check className="w-4 h-4 stroke-[3]" /> Mật khẩu hoàn toàn trùng khớp
+                          </span>
+                        ) : (
+                          <span className="text-red-500 flex items-center gap-1">
+                            <X className="w-4 h-4 stroke-[3]" /> Mật khẩu xác nhận chưa trùng khớp
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   <div className="pt-3">
                     <button
                       type="submit"
-                      disabled={loading}
-                      className="w-full py-3.5 px-4 rounded-xl text-sm font-bold text-white bg-[#EE4D2D] hover:bg-[#d73211] shadow-lg shadow-orange-500/20 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                      disabled={loading || !isPasswordValid || !isPasswordMatching}
+                      className="w-full py-3.5 px-4 rounded-xl text-sm font-bold text-white bg-[#EE4D2D] hover:bg-[#d73211] shadow-lg shadow-orange-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
                       {loading ? (
                         <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
@@ -536,6 +685,11 @@ export default function AuthPage() {
                         'Đăng ký tài khoản'
                       )}
                     </button>
+                    {(!isPasswordValid || !isPasswordMatching) && confirmPassword.length > 0 && (
+                      <p className="text-[11px] text-slate-400 text-center mt-2">
+                        * Vui lòng đáp ứng đầy đủ tiêu chí bảo mật và xác nhận mật khẩu để kích hoạt đăng ký
+                      </p>
+                    )}
                   </div>
                 </form>
               </div>
