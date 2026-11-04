@@ -15,17 +15,17 @@ const checkout = async (req, res) => {
     // Gọi Stored Procedure sp_checkout thực thi ACID transaction & khóa dòng FOR UPDATE
     const query = 'CALL sp_checkout($1, $2, $3, $4, null)';
     const result = await pool.query(query, [userId, productIds, quantities, shipping_address]);
-    
+
     const orderId = result.rows[0].p_order_id;
-    
-    res.json({ 
-      message: 'Đặt hàng thành công!', 
-      orderId 
+
+    res.json({
+      message: 'Đặt hàng thành công!',
+      orderId
     });
   } catch (error) {
     console.error('[Checkout Error]:', error);
-    res.status(400).json({ 
-      error: error.message || 'Thanh toán thất bại do sản phẩm hết hàng hoặc số lượng không hợp lệ.' 
+    res.status(400).json({
+      error: error.message || 'Thanh toán thất bại do sản phẩm hết hàng hoặc số lượng không hợp lệ.'
     });
   }
 };

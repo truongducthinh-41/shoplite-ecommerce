@@ -38,6 +38,7 @@ CREATE TABLE Users (
     role VARCHAR(20) DEFAULT 'customer' CHECK (role IN ('customer', 'seller', 'admin')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+CREATE INDEX IF NOT EXISTS idx_users_phone ON Users(phone);
 
 -- ------------------------------------------------------------------------------
 -- 2. SHOPS TABLE (Gian hàng Shopee - Liên kết 1-1 với User có quyền Seller)

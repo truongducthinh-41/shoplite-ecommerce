@@ -13,39 +13,73 @@ export const AuthProvider = ({ children }) => {
     const storedToken = localStorage.getItem('token');
     
     if (storedUser && storedToken) {
-      setUser(JSON.parse(storedUser));
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (e) {
+        console.error('Failed to parse stored user', e);
+      }
     }
     setLoading(false);
   }, []);
 
-  const login = async (email, password) => {
+  const login = async (identifier, password) => {
+    // identifier can be either email or phone number
     const data = await apiFetch('/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email: identifier, password }),
     });
-    localStorage.setItem('token', data.token);
+    if (data.token) localStorage.setItem('token', data.token);
+    if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
     localStorage.setItem('user', JSON.stringify(data.user));
     setUser(data.user);
     return data.user;
   };
 
-  const register = async (name, email, password) => {
+  const register = async (userDataOrName, email, password) => {
+    let payload = {};
+    if (typeof userDataOrName === 'object' && userDataOrName !== null) {
+      payload = userDataOrName;
+    } else {
+      payload = { name: userDataOrName, email, password };
+    }
+
     const data = await apiFetch('/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify(payload),
     });
-    // Optional: auto-login after register, but here we just return success
+
+    if (data.token) {
+      localStorage.setItem('token', data.token);
+      if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      setUser(data.user);
+    }
     return data.user;
+  };
+
+  const sendOtp = async (phone) => {
+    return await apiFetch('/auth/send-otp', {
+      method: 'POST',
+      body: JSON.stringify({ phone }),
+    });
+  };
+
+  const verifyOtp = async (phone, otp) => {
+    return await apiFetch('/auth/verify-otp', {
+      method: 'POST',
+      body: JSON.stringify({ phone, otp }),
+    });
   };
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, register, sendOtp, verifyOtp, logout, loading }}>
       {!loading && children}
     </AuthContext.Provider>
   );

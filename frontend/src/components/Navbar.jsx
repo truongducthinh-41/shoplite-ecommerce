@@ -73,7 +73,7 @@ export default function Navbar() {
           {/* Logo & Brand */}
           <div className="flex items-center">
             <Link to="/" className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-sm shadow-indigo-500/20">
+              <div className="w-8 h-8 bg-[#EE4D2D] rounded-lg flex items-center justify-center shadow-sm shadow-orange-500/20">
                 <span className="text-white font-bold text-xl">S</span>
               </div>
               <span className="text-xl font-extrabold text-white tracking-tight">ShopLite</span>
@@ -91,8 +91,8 @@ export default function Navbar() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => setShowSuggestions(true)}
-                className="block w-full pl-10 pr-3 py-2 border border-white/10 rounded-full bg-white/5 placeholder-slate-500 focus:outline-none focus:bg-white/10 focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all text-sm text-white"
-                placeholder="Search products..."
+                className="block w-full pl-10 pr-3 py-2 border border-white/10 rounded-full bg-white/5 placeholder-slate-500 focus:outline-none focus:bg-white/10 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all text-sm text-white"
+                placeholder="Tìm kiếm sản phẩm, thương hiệu..."
               />
             </form>
 
@@ -113,7 +113,7 @@ export default function Navbar() {
                           }}
                           className="w-full text-left px-4 py-3 hover:bg-white/10 transition-colors flex items-center gap-3 border-b border-white/5 last:border-0 group"
                         >
-                          <Search className="w-4 h-4 text-slate-500 group-hover:text-indigo-400 transition-colors shrink-0" />
+                          <Search className="w-4 h-4 text-slate-500 group-hover:text-orange-400 transition-colors shrink-0" />
                           <span className="text-sm text-slate-300 group-hover:text-white truncate transition-colors">{item.name}</span>
                         </button>
                       </li>
@@ -121,7 +121,7 @@ export default function Navbar() {
                   </ul>
                 ) : (
                   <div className="p-4 text-center text-sm text-slate-400">
-                    No results found for "{searchQuery}"
+                    Không tìm thấy kết quả cho "{searchQuery}"
                   </div>
                 )}
               </div>
@@ -129,36 +129,45 @@ export default function Navbar() {
           </div>
 
           {/* Right Navigation */}
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4 sm:gap-6">
             
             {/* User Menu */}
             {user ? (
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3 sm:gap-4">
                 {user.role === 'admin' && (
-                  <Link to="/admin" className="text-sm font-medium text-slate-300 hover:text-indigo-400 transition-colors">
-                    Dashboard
+                  <Link to="/admin" className="text-xs sm:text-sm font-semibold text-purple-400 bg-purple-500/10 px-3 py-1 rounded-full border border-purple-500/20 hover:bg-purple-500/20 transition-colors">
+                    Admin Panel
+                  </Link>
+                )}
+                {user.role === 'seller' && (
+                  <Link to="/profile" className="text-xs sm:text-sm font-semibold text-orange-400 bg-orange-500/10 px-3 py-1 rounded-full border border-orange-500/20 hover:bg-orange-500/20 transition-colors hidden md:inline-flex">
+                    🏬 {user.shop ? user.shop.name : 'Kênh Người Bán'}
                   </Link>
                 )}
                 <Link to="/profile" className="flex items-center gap-2 text-sm text-slate-200 font-medium bg-white/5 px-3 py-1.5 rounded-full border border-white/10 hover:bg-white/10 transition-colors">
-                  <User className="h-4 w-4 text-indigo-400" />
-                  <span className="hidden sm:inline">{user.name}</span>
+                  <User className="h-4 w-4 text-orange-400" />
+                  <span className="hidden sm:inline max-w-[120px] truncate">{user.name}</span>
                 </Link>
-                <button onClick={handleLogout} className="text-slate-400 hover:text-red-500 transition-colors">
+                <button onClick={handleLogout} title="Đăng xuất" className="text-slate-400 hover:text-red-500 transition-colors">
                   <LogOut className="h-5 w-5" />
                 </button>
               </div>
             ) : (
-              <Link to="/auth" className="text-sm font-medium text-slate-300 hover:text-indigo-400 transition-colors flex items-center gap-2">
-                <User className="h-5 w-5" />
-                <span>Log in</span>
-              </Link>
+              <div className="flex items-center gap-2 sm:gap-3">
+                <Link to="/auth?mode=login" className="text-xs sm:text-sm font-medium text-slate-300 hover:text-white transition-colors">
+                  Đăng nhập
+                </Link>
+                <Link to="/auth?mode=signup" className="text-xs font-bold text-white bg-[#EE4D2D] hover:bg-[#d73211] px-3.5 py-1.5 rounded-full transition-all shadow-sm shadow-orange-500/20">
+                  Đăng ký
+                </Link>
+              </div>
             )}
 
             {/* Cart Icon */}
-            <Link to="/checkout" className="relative p-2 text-slate-300 hover:text-indigo-400 transition-colors bg-white/5 rounded-full border border-white/10">
+            <Link to="/checkout" className="relative p-2 text-slate-300 hover:text-orange-400 transition-colors bg-white/5 rounded-full border border-white/10">
               <ShoppingCart className="h-5 w-5" />
               {cartItemCount > 0 && (
-                <span className="absolute -top-1 -right-1 inline-flex items-center justify-center w-5 h-5 text-[10px] font-bold text-white bg-indigo-600 rounded-full border-2 border-white shadow-sm">
+                <span className="absolute -top-1 -right-1 inline-flex items-center justify-center w-5 h-5 text-[10px] font-bold text-white bg-[#EE4D2D] rounded-full border-2 border-white shadow-sm">
                   {cartItemCount}
                 </span>
               )}

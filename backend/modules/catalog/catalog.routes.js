@@ -1,15 +1,15 @@
 const express = require('express');
-const { 
-  getProducts, 
-  getProductById, 
-  getCategories, 
-  getCategoryBrands, 
-  getAllBrands, 
-  createProduct, 
-  updateProduct, 
-  deleteProduct, 
-  getBestSellers, 
-  getProductRecommendations 
+const {
+  getProducts,
+  getProductById,
+  getCategories,
+  getCategoryBrands,
+  getAllBrands,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+  getBestSellers,
+  getProductRecommendations
 } = require('./catalog.controller');
 const { verifyToken, isSellerOrAdmin } = require('../../middleware/authMiddleware');
 
