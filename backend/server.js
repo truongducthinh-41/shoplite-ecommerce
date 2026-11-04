@@ -29,7 +29,12 @@ app.use('/api/', apiLimiter);
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '../public'))); // Serve frontend files
+// Serve static frontend assets if built
+const frontendDist = path.join(__dirname, '../frontend/dist');
+const fs = require('fs');
+if (fs.existsSync(frontendDist)) {
+  app.use(express.static(frontendDist));
+}
 
 // Routes
 app.use('/api/auth', authRoutes);
