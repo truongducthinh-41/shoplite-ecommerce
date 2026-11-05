@@ -307,12 +307,7 @@ export default function CategoryPage() {
       {/* Top Brands Marquee */}
       <div className="mb-8 bg-[#111] rounded-2xl border border-white/10 p-4 sm:p-6 shadow-sm overflow-hidden flex flex-col relative group/brands">
         <div className="flex justify-between items-center mb-5">
-          <div className="flex items-center gap-2">
-            <h2 className="text-base sm:text-lg font-bold text-rose-500 uppercase tracking-wider">Top Brands</h2>
-            <span className="text-xs bg-rose-500/10 text-rose-400 px-2 py-0.5 rounded-full border border-rose-500/20 font-semibold">
-              Official Shopee Mall
-            </span>
-          </div>
+          <h2 className="text-base sm:text-lg font-bold text-rose-500 uppercase tracking-wider">Top Brands</h2>
           <Link to={`/brands/${encodeURIComponent(categoryName || 'All')}`} className="text-sm text-rose-500 hover:text-rose-400 flex items-center gap-1 font-medium transition-colors">
             See All <ChevronRight className="w-4 h-4"/>
           </Link>
@@ -409,7 +404,10 @@ export default function CategoryPage() {
                       src={product.image_url} 
                       alt={product.name} 
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x400/1a1a1a/444?text=No+Image' }}
+                      onError={(e) => { 
+                        e.target.onerror = null; 
+                        e.target.src = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=800'; 
+                      }}
                     />
                   ) : (
                      <div className="w-full h-full bg-white/5 flex items-center justify-center text-slate-500 group-hover:scale-105 transition-transform duration-300">

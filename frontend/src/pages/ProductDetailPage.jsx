@@ -172,7 +172,15 @@ export default function ProductDetailPage() {
                     }
                   }}
                 >
-                  <img src={product.images[activeImageIndex]} alt={product.name} className="w-full h-full object-contain drop-shadow-xl transition-transform duration-200 pointer-events-none" />
+                  <img 
+                    src={product.images[activeImageIndex]} 
+                    alt={product.name} 
+                    className="w-full h-full object-contain drop-shadow-xl transition-transform duration-200 pointer-events-none" 
+                    onError={(e) => { 
+                      e.target.onerror = null; 
+                      e.target.src = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=800'; 
+                    }}
+                  />
                 </div>
                 <div className="flex gap-3 overflow-x-auto pb-2 w-full max-w-md justify-start md:justify-center scrollbar-hide">
                   {product.images.map((img, idx) => (
@@ -209,7 +217,15 @@ export default function ProductDetailPage() {
                   }
                 }}
               >
-                <img src={product.image_url} alt={product.name} className="w-full h-full object-contain drop-shadow-xl transition-transform duration-200 pointer-events-none" />
+                <img 
+                  src={product.image_url} 
+                  alt={product.name} 
+                  className="w-full h-full object-contain drop-shadow-xl transition-transform duration-200 pointer-events-none" 
+                  onError={(e) => { 
+                    e.target.onerror = null; 
+                    e.target.src = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=800'; 
+                  }}
+                />
               </div>
             ) : (
               <div className="w-full max-w-md aspect-square bg-white/5 rounded-2xl flex items-center justify-center text-slate-500">
