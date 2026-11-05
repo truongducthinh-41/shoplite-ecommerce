@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import './VertexHero.css';
+import { getSafeProductImage, handleImageError } from '../utils/productImages';
 
 function makeStars(n, minA, maxA, blur) {
   let a = [];
@@ -258,7 +259,7 @@ export default function VertexHero({ products = [], bestSellers = [] }) {
     return (
       <div key={i} className="card" ref={el => cardsRef.current[i] = el}>
         <div className="ph phf" style={{background: '#fff'}}>
-           {product.image_url && <img alt={product.name} src={product.image_url} style={{objectFit:'cover', width: '100%', height: '100%'}} onError={(e) => { e.currentTarget.parentNode.parentNode.classList.add('broken'); }} />}
+           <img alt={product.name} src={getSafeProductImage(product)} style={{objectFit:'cover', width: '100%', height: '100%'}} onError={handleImageError} />
         </div>
         <div className="fill" style={{background:'linear-gradient(180deg,rgba(4,8,16,0) 38%,rgba(4,8,16,.95) 88%)'}}></div>
         <div className="cv" style={{top:'250px',fontSize:'12px',fontWeight:600,letterSpacing:'.05em',color:'#fff', textAlign:'center', width:'100%', padding:'0 10px'}}>{product.name}</div>

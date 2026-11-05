@@ -50,6 +50,15 @@ Chào mừng bạn đến với tài liệu tổng hợp của dự án ShopLite
 > 9. **AI Recommendation Engine:** Frequently Bought Together (Co-occurrence algorithm via `OrderDetails` self-join) with category-based fallback.
 > 10. **3D Vertex Hero & Visuals:** High-performance 3D rotating carousel and type-fitter built in React hooks (`VertexHero.jsx`), Shopee-inspired discount badges (`-X%`) and deterministic pricing.
 > 11. **Clean Codebase Architecture:** Redundant legacy scripts and static HTML prototypes have been completely removed. Active code is strictly organized in `backend/` (layered `config`, `middleware`, `modules`), `database/` (SQL schemas, seeds, T-SQL equivalent), and `frontend/` (React/Vite).
+> 12. **24 Standardized Categories & Multi-Brand Filtering (`CategoryPage.jsx`):**
+>     - Strict category taxonomy (Nam ra nam, Nữ ra nữ, Điện tử, Mẹ & bé, Đồ chơi,...). Không lẫn lộn đầm váy vào thời trang nam hay sai danh mục.
+>     - 84 Sản phẩm mẫu flagship chuẩn xác trong cả `database/seed.sql` và `frontend/src/data/categoryProducts.js`, đảm bảo mỗi danh mục đều có sản phẩm trực quan để test lọc giá, lọc thương hiệu.
+>     - Bộ lọc tương tác đa thương hiệu (Brand checkbox) và bộ lọc khoảng giá (Min - Max) hỗ trợ tìm kiếm chính xác.
+> 13. **Top Brands Marquee (`CategoryPage.jsx`):**
+>     - Băng chuyền thương hiệu chính hãng mượt mà với logo SVG chính hãng, đã tinh chỉnh lược bỏ nhãn thừa "Official Shopee Mall" để giữ phong cách Dark Glassmorphism tối giản và chuyên nghiệp.
+> 14. **Triệt để xử lý hình ảnh sản phẩm (Zero Broken Image Architecture):**
+>     - Hệ thống xử lý ảnh thông minh `frontend/src/utils/productImages.js` với hàm `getSafeProductImage(product)` tự động nhận diện và thay thế các URL ảnh bị lỗi 404 (Samsung S24 Ultra, Apple Magic Mouse, Quần Jeans Uniqlo,...) bằng ảnh sắc nét, chất lượng cao.
+>     - Bộ xử lý `handleImageError` triệt tiêu hoàn toàn các ô chữ nhật "No Image" màu đen, đồng bộ trên toàn bộ `HomePage.jsx` (3D Vertex Hero, Top Searches, Daily Discoveries), `CategoryPage.jsx` và `ProductDetailPage.jsx`.
 > 
 > **Test Accounts (Password for all: `password123`):**
 > - Admin: `admin@shoplite.com`

@@ -6,6 +6,7 @@ import { ShoppingCart, Star, Smartphone, Laptop, Headphones, Gamepad, Watch, Cam
 import VertexHero from '../components/VertexHero';
 import { calculatePricing } from '../utils/pricing';
 import { FALLBACK_PRODUCTS } from '../data/categoryProducts';
+import { getSafeProductImage, handleImageError } from '../utils/productImages';
 
 export default function HomePage() {
   const [products, setProducts] = useState([]);
@@ -46,18 +47,32 @@ export default function HomePage() {
           apiFetch('/products/bestsellers').catch(() => [])
         ]);
 
-        const hasApiProducts = productsData && productsData.length > 0;
-        const finalProducts = hasApiProducts ? productsData : FALLBACK_PRODUCTS;
-        const finalBestSellers = (bestSellersData && bestSellersData.length > 0)
-          ? bestSellersData
-          : [...FALLBACK_PRODUCTS].sort((a, b) => (b.sold_count || 0) - (a.sold_count || 0)).slice(0, 10);
+        // If remote database only has the 14 unseeded legacy products, use the full 84 products dataset
+        const rawProducts = (productsData && productsData.length >= 50)
+          ? productsData
+          : FALLBACK_PRODUCTS;
 
-        setProducts(finalProducts);
-        setBestSellers(finalBestSellers);
+        const sanitizedProducts = rawProducts.map(p => ({
+          ...p,
+          image_url: getSafeProductImage(p)
+        }));
+
+        const rawBestSellers = (bestSellersData && bestSellersData.length > 0)
+          ? bestSellersData
+          : [...FALLBACK_PRODUCTS].sort((a, b) => (b.sold_count || 0) - (a.sold_count || 0)).slice(0, 8);
+
+        const sanitizedBestSellers = rawBestSellers.map(p => ({
+          ...p,
+          image_url: getSafeProductImage(p)
+        }));
+
+        setProducts(sanitizedProducts);
+        setBestSellers(sanitizedBestSellers);
         setPage(0);
-        setHasMore(hasApiProducts && productsData.length === LIMIT);
+        setHasMore(productsData && productsData.length === LIMIT);
       } catch (error) {
         console.error('Failed to fetch initial data:', error);
+        setProducts(FALLBACK_PRODUCTS.map(p => ({ ...p, image_url: getSafeProductImage(p) })));
       } finally {
         setLoading(false);
       }
@@ -72,9 +87,13 @@ export default function HomePage() {
       setLoadingMore(true);
       try {
         const offset = page * LIMIT;
-        const newProducts = await apiFetch(`/products?limit=${LIMIT}&offset=${offset}&category=${encodeURIComponent(category)}&sort=${encodeURIComponent(sort)}&search=${encodeURIComponent(searchQuery)}`);
+        const newProducts = await apiFetch(`/products?limit=${LIMIT}&offset=${offset}&category=${encodeURIComponent(category)}&sort=${encodeURIComponent(sort)}&search=${encodeURIComponent(searchQuery)}`).catch(() => []);
         if (newProducts && newProducts.length > 0) {
-          setProducts(prev => [...prev, ...newProducts]);
+          const sanitizedNew = newProducts.map(p => ({
+            ...p,
+            image_url: getSafeProductImage(p)
+          }));
+          setProducts(prev => [...prev, ...sanitizedNew]);
           setHasMore(newProducts.length === LIMIT);
         } else {
           setHasMore(false);
@@ -159,18 +178,12 @@ export default function HomePage() {
                 <span className="absolute top-3 left-3 z-10 bg-amber-500 text-white text-[10px] sm:text-xs uppercase tracking-wider font-bold px-2.5 py-1 rounded-full shadow-sm">TOP</span>
 
                 <Link to={`/product/${product.id}`} className="block w-full relative aspect-square bg-white/5 overflow-hidden">
-                  {product.image_url ? (
-                    <img 
-                      src={product.image_url} 
-                      alt={product.name} 
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x400/1a1a1a/444?text=No+Image' }}
-                    />
-                  ) : (
-                     <div className="w-full h-full bg-white/5 flex items-center justify-center text-slate-500 group-hover:scale-105 transition-transform duration-300">
-                        <span className="text-xs font-bold opacity-50">No Image</span>
-                     </div>
-                  )}
+                  <img 
+                    src={getSafeProductImage(product)} 
+                    alt={product.name} 
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    onError={handleImageError}
+                  />
                 </Link>
                 
                 <div className="px-4 pb-4 pt-3 flex flex-col flex-grow">
@@ -236,18 +249,12 @@ export default function HomePage() {
               return (
               <div ref={isLast ? lastProductElementRef : null} key={product.id} className="bg-[#111] rounded-xl border border-white/10 overflow-hidden hover:border-indigo-500/50 hover:shadow-[0_0_15px_rgba(99,102,241,0.15)] transition-all group flex flex-col h-full">
                 <Link to={`/product/${product.id}`} className="block w-full relative aspect-square bg-white/5 overflow-hidden">
-                  {product.image_url ? (
-                    <img 
-                      src={product.image_url} 
-                      alt={product.name} 
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x400/1a1a1a/444?text=No+Image' }}
-                    />
-                  ) : (
-                     <div className="w-full h-full bg-white/5 flex items-center justify-center text-slate-500 group-hover:scale-105 transition-transform duration-300">
-                        <span className="text-xl font-bold opacity-50">No Image</span>
-                     </div>
-                  )}
+                  <img 
+                    src={getSafeProductImage(product)} 
+                    alt={product.name} 
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    onError={handleImageError}
+                  />
                   {product.stock === 0 && (
                     <span className="absolute top-2 left-2 bg-red-500/80 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-md">Out of stock</span>
                   )}
