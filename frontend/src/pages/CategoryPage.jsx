@@ -2,10 +2,21 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { apiFetch } from '../services/api';
 import { useCart } from '../context/CartContext';
-import { ShoppingCart, Star, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
+import { ShoppingCart, Star, ChevronLeft, ChevronRight, ChevronDown, Filter } from 'lucide-react';
 import FilterSidebar from '../components/FilterSidebar';
 import { CATEGORY_BRANDS } from './BrandsPage';
 import { calculatePricing } from '../utils/pricing';
+import { FALLBACK_PRODUCTS } from '../data/categoryProducts';
+
+// Helper to normalize strings (remove accents, quotes, spaces) for fuzzy matching
+const normalizeStr = (s) => 
+  (s || '')
+    .toString()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[''’]/g, "")
+    .toLowerCase()
+    .trim();
 
 export default function CategoryPage() {
   const { categoryName } = useParams();
@@ -26,6 +37,81 @@ export default function CategoryPage() {
   const observer = useRef();
   const { addToCart } = useCart();
   const LIMIT = 100;
+
+  // Filter fallback products locally when cloud DB has not been seeded yet
+  const getFilteredFallbackProducts = useCallback(() => {
+    let list = [...FALLBACK_PRODUCTS];
+
+    // Filter by Category
+    if (categoryName && categoryName !== 'All') {
+      const targetNorm = normalizeStr(categoryName);
+      list = list.filter(p => {
+        const catNorm = normalizeStr(p.category_name);
+        return catNorm === targetNorm || catNorm.includes(targetNorm) || targetNorm.includes(catNorm);
+      });
+    }
+
+    // Filter by Search Query
+    if (searchQuery) {
+      const qNorm = normalizeStr(searchQuery);
+      list = list.filter(p => 
+        normalizeStr(p.name).includes(qNorm) || 
+        normalizeStr(p.description).includes(qNorm) ||
+        normalizeStr(p.brand_name).includes(qNorm)
+      );
+    }
+
+    // Filter by Brands
+    if (brandsFilter && brandsFilter.length > 0) {
+      const normBrands = brandsFilter.map(b => normalizeStr(b));
+      list = list.filter(p => {
+        const pBrandNorm = normalizeStr(p.brand_name);
+        const pNameNorm = normalizeStr(p.name);
+        return normBrands.some(b => 
+          pBrandNorm.includes(b) || b.includes(pBrandNorm) || pNameNorm.includes(b)
+        );
+      });
+    }
+
+    // Filter by Min Price
+    if (minPrice && !isNaN(parseFloat(minPrice))) {
+      list = list.filter(p => Number(p.price) >= parseFloat(minPrice));
+    }
+
+    // Filter by Max Price
+    if (maxPrice && !isNaN(parseFloat(maxPrice))) {
+      list = list.filter(p => Number(p.price) <= parseFloat(maxPrice));
+    }
+
+    // Filter by Rating
+    if (ratingFilter && !isNaN(parseFloat(ratingFilter))) {
+      list = list.filter(p => Number(p.rating_avg) >= parseFloat(ratingFilter));
+    }
+
+    // Filter by Subcategory keyword
+    if (subCategoryFilter) {
+      const subNorm = normalizeStr(subCategoryFilter);
+      list = list.filter(p => 
+        normalizeStr(p.name).includes(subNorm) || 
+        normalizeStr(p.description).includes(subNorm) ||
+        normalizeStr(p.category_name).includes(subNorm)
+      );
+    }
+
+    // Sort order
+    if (sort === 'Price: Low to High') {
+      list.sort((a, b) => Number(a.price) - Number(b.price));
+    } else if (sort === 'Price: High to Low') {
+      list.sort((a, b) => Number(b.price) - Number(a.price));
+    } else if (sort === 'Newest') {
+      list.sort((a, b) => Number(b.id) - Number(a.id));
+    } else {
+      // Default: Popularity (sold_count descending)
+      list.sort((a, b) => Number(b.sold_count || 0) - Number(a.sold_count || 0));
+    }
+
+    return list;
+  }, [categoryName, searchQuery, brandsFilter, minPrice, maxPrice, ratingFilter, subCategoryFilter, sort]);
 
   const lastProductElementRef = useCallback(node => {
     if (loading || loadingMore) return;
@@ -56,17 +142,28 @@ export default function CategoryPage() {
           ...(subCategoryFilter && { subcategory: subCategoryFilter })
         });
         const productsData = await apiFetch(`/products?${queryParams.toString()}`).catch(() => []);
-        setProducts(productsData || []);
+        
+        if (productsData && productsData.length > 0) {
+          setProducts(productsData);
+          setHasMore(productsData.length === LIMIT);
+        } else {
+          // Graceful fallback to local dataset covering all 24 categories
+          const fallbackList = getFilteredFallbackProducts();
+          setProducts(fallbackList);
+          setHasMore(false);
+        }
         setPage(0);
-        setHasMore(productsData?.length === LIMIT);
       } catch (error) {
         console.error('Failed to fetch initial data:', error);
+        const fallbackList = getFilteredFallbackProducts();
+        setProducts(fallbackList);
+        setHasMore(false);
       } finally {
         setLoading(false);
       }
     };
     fetchInitialData();
-  }, [categoryName, sort, searchQuery, minPrice, maxPrice, brandsFilter, ratingFilter, subCategoryFilter]);
+  }, [categoryName, sort, searchQuery, minPrice, maxPrice, brandsFilter, ratingFilter, subCategoryFilter, getFilteredFallbackProducts]);
 
   // Fetch More Data on Page Change
   useEffect(() => {
@@ -87,7 +184,7 @@ export default function CategoryPage() {
           ...(ratingFilter && { rating: ratingFilter }),
           ...(subCategoryFilter && { subcategory: subCategoryFilter })
         });
-        const newProducts = await apiFetch(`/products?${queryParams.toString()}`);
+        const newProducts = await apiFetch(`/products?${queryParams.toString()}`).catch(() => []);
         if (newProducts && newProducts.length > 0) {
           setProducts(prev => [...prev, ...newProducts]);
           setHasMore(newProducts.length === LIMIT);
@@ -96,6 +193,7 @@ export default function CategoryPage() {
         }
       } catch (error) {
         console.error('Failed to load more products:', error);
+        setHasMore(false);
       } finally {
         setLoadingMore(false);
       }
@@ -121,6 +219,14 @@ export default function CategoryPage() {
   };
 
   const brandLogos = getBrandsForCategory();
+
+  const handleClearAllFilters = () => {
+    setMinPrice('');
+    setMaxPrice('');
+    setBrandsFilter([]);
+    setRatingFilter(null);
+    setSubCategoryFilter('');
+  };
 
   return (
     <div className="max-w-7xl mx-auto pb-12 px-4 sm:px-6 lg:px-8 mt-8">
@@ -221,10 +327,20 @@ export default function CategoryPage() {
             ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
               {products.length === 0 ? (
-               <div className="col-span-full py-12 text-center text-slate-500 rounded-2xl border border-dashed border-white/20">
-                  <p>No products found in this category.</p>
-               </div>
-            ) : products.map((product, index) => {
+                <div className="col-span-full py-16 text-center text-slate-400 rounded-2xl border border-dashed border-white/20 p-8 flex flex-col items-center justify-center gap-3 bg-white/[0.02]">
+                  <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-slate-500 mb-2">
+                    <Filter className="w-6 h-6" />
+                  </div>
+                  <p className="text-base text-slate-200 font-medium">Không tìm thấy sản phẩm phù hợp với bộ lọc hiện tại</p>
+                  <p className="text-xs text-slate-500 max-w-sm">Thử điều chỉnh lại khoảng giá, bỏ chọn thương hiệu hoặc làm mới bộ lọc.</p>
+                  <button
+                    onClick={handleClearAllFilters}
+                    className="mt-2 px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold transition-all shadow-lg shadow-indigo-600/30"
+                  >
+                    Xóa tất cả bộ lọc
+                  </button>
+                </div>
+              ) : products.map((product, index) => {
               const isLast = products.length === index + 1;
               const { salePrice, originalPrice, discountPercent, hasDiscount } = calculatePricing(product);
               return (

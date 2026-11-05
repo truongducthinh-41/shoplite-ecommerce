@@ -5,6 +5,7 @@ import { useCart } from '../context/CartContext';
 import { ShoppingCart, Star, Smartphone, Laptop, Headphones, Gamepad, Watch, Camera, Flame, Shirt, ShoppingBag, Baby, Monitor, Home, Sparkles, HeartPulse, Footprints, Briefcase, Coffee, Dumbbell, Store, Car, Book, Gamepad2, Gift, Box, Ticket, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 import VertexHero from '../components/VertexHero';
 import { calculatePricing } from '../utils/pricing';
+import { FALLBACK_PRODUCTS } from '../data/categoryProducts';
 
 export default function HomePage() {
   const [products, setProducts] = useState([]);
@@ -44,10 +45,17 @@ export default function HomePage() {
           apiFetch(`/products?limit=${LIMIT}&offset=0&category=${encodeURIComponent(category)}&sort=${encodeURIComponent(sort)}&search=${encodeURIComponent(searchQuery)}`).catch(() => []),
           apiFetch('/products/bestsellers').catch(() => [])
         ]);
-        setProducts(productsData || []);
-        setBestSellers(bestSellersData || []);
+
+        const hasApiProducts = productsData && productsData.length > 0;
+        const finalProducts = hasApiProducts ? productsData : FALLBACK_PRODUCTS;
+        const finalBestSellers = (bestSellersData && bestSellersData.length > 0)
+          ? bestSellersData
+          : [...FALLBACK_PRODUCTS].sort((a, b) => (b.sold_count || 0) - (a.sold_count || 0)).slice(0, 10);
+
+        setProducts(finalProducts);
+        setBestSellers(finalBestSellers);
         setPage(0);
-        setHasMore(productsData?.length === LIMIT);
+        setHasMore(hasApiProducts && productsData.length === LIMIT);
       } catch (error) {
         console.error('Failed to fetch initial data:', error);
       } finally {
