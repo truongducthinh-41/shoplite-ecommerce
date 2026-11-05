@@ -54,23 +54,53 @@ export default function ProfilePage() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
 
-  // Cards State: Pre-loaded with 1 default VISA card as specifically requested
-  const [cards, setCards] = useState([
-    {
-      id: 1,
-      brand: 'VISA',
-      number: '•••• •••• •••• 8868',
-      holder: user?.name ? user.name.toUpperCase() : 'NGUYEN VAN A',
-      expiry: '12/28',
-      isDefault: true,
-      bank: 'Vietcombank'
+  // Cards State: Synced with Checkout and pre-loaded with VISA ending in 4242
+  const [cards, setCards] = useState(() => {
+    const saved = localStorage.getItem('shoplite_user_cards');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch (e) {}
     }
-  ]);
+    return [
+      {
+        id: 1,
+        brand: 'VISA',
+        type: 'Credit Card',
+        number: '•••• •••• •••• 4242',
+        holder: user?.name ? user.name.toUpperCase() : 'BÀNH THỊ TÒN TÉN',
+        expiry: '12/28',
+        isDefault: true,
+        bank: 'Vietcombank'
+      }
+    ];
+  });
   const [showAddCardModal, setShowAddCardModal] = useState(false);
   const [newCardNumber, setNewCardNumber] = useState('');
   const [newCardHolder, setNewCardHolder] = useState('');
   const [newCardExpiry, setNewCardExpiry] = useState('');
   const [newCardCvv, setNewCardCvv] = useState('');
+
+  // Keep cards in localStorage & update cardholder name when user changes
+  useEffect(() => {
+    localStorage.setItem('shoplite_user_cards', JSON.stringify(cards));
+  }, [cards]);
+
+  useEffect(() => {
+    if (user?.name) {
+      setCards(prevCards => {
+        const updated = prevCards.map(c => {
+          if (c.id === 1 && (c.holder === 'NGUYEN VAN A' || c.holder === 'BÀNH THỊ TÒN TÉN')) {
+            return { ...c, holder: user.name.toUpperCase() };
+          }
+          return c;
+        });
+        localStorage.setItem('shoplite_user_cards', JSON.stringify(updated));
+        return updated;
+      });
+    }
+  }, [user?.name]);
 
   // Bank Accounts State: Empty initially
   const [bankAccounts, setBankAccounts] = useState([]);
@@ -79,14 +109,27 @@ export default function ProfilePage() {
   const [newBankAccountNumber, setNewBankAccountNumber] = useState('');
   const [newBankAccountHolder, setNewBankAccountHolder] = useState('');
 
-  // Addresses State: Empty initially
-  const [addresses, setAddresses] = useState([]);
+  // Addresses State: Synced with Checkout and localStorage
+  const [addresses, setAddresses] = useState(() => {
+    const saved = localStorage.getItem('shoplite_user_addresses');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
+      } catch (e) {}
+    }
+    return [];
+  });
   const [showAddAddressModal, setShowAddAddressModal] = useState(false);
   const [newAddressName, setNewAddressName] = useState('');
   const [newAddressPhone, setNewAddressPhone] = useState('');
   const [newAddressCity, setNewAddressCity] = useState('');
   const [newAddressDetail, setNewAddressDetail] = useState('');
   const [newAddressDefault, setNewAddressDefault] = useState(true);
+
+  useEffect(() => {
+    localStorage.setItem('shoplite_user_addresses', JSON.stringify(addresses));
+  }, [addresses]);
 
   // Orders State (My Purchase)
   const [orders, setOrders] = useState([]);
@@ -210,12 +253,38 @@ export default function ProfilePage() {
       isDefault: cards.length === 0,
       bank: 'Ngân hàng phát hành'
     };
-    setCards([...cards, newCard]);
+    const updated = [...cards, newCard];
+    setCards(updated);
+    localStorage.setItem('shoplite_user_cards', JSON.stringify(updated));
     setShowAddCardModal(false);
     setNewCardNumber('');
     setNewCardHolder('');
     setNewCardExpiry('');
     setNewCardCvv('');
+  };
+
+  const handleDeleteCard = (cardId) => {
+    if (cards.length === 1) {
+      alert('Bạn phải giữ ít nhất 1 thẻ thanh toán mặc định.');
+      return;
+    }
+    if (window.confirm('Bạn có chắc muốn xóa thẻ thanh toán này?')) {
+      const updated = cards.filter(c => c.id !== cardId);
+      if (!updated.some(c => c.isDefault) && updated.length > 0) {
+        updated[0].isDefault = true;
+      }
+      setCards(updated);
+      localStorage.setItem('shoplite_user_cards', JSON.stringify(updated));
+    }
+  };
+
+  const handleSetDefaultCard = (cardId) => {
+    const updated = cards.map(c => ({
+      ...c,
+      isDefault: c.id === cardId
+    }));
+    setCards(updated);
+    localStorage.setItem('shoplite_user_cards', JSON.stringify(updated));
   };
 
   // Handle Add Bank Account
@@ -761,11 +830,31 @@ export default function ProfilePage() {
                               <p className="font-semibold">{c.expiry}</p>
                             </div>
                           </div>
-                          {c.isDefault && (
-                            <span className="absolute top-2 right-2 text-[9px] font-bold px-2 py-0.5 bg-[#EE4D2D] text-white rounded-full">
-                              Default
-                            </span>
-                          )}
+                          <div className="absolute top-2 right-2 flex items-center gap-1.5">
+                            {c.isDefault ? (
+                              <span className="text-[9px] font-bold px-2 py-0.5 bg-[#EE4D2D] text-white rounded-full">
+                                Default
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => handleSetDefaultCard(c.id)}
+                                className="text-[10px] text-slate-300 hover:text-white bg-black/40 hover:bg-black/60 px-2 py-0.5 rounded transition-colors"
+                              >
+                                Set Default
+                              </button>
+                            )}
+                            {cards.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteCard(c.id)}
+                                className="text-slate-400 hover:text-red-400 p-1 rounded transition-colors"
+                                title="Xóa thẻ"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>

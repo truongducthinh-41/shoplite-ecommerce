@@ -13,8 +13,52 @@ export default function CheckoutPage() {
   const [error, setError] = useState('');
   const [step, setStep] = useState(1); // 1: Cart, 2: Shipping, 3: Payment
   
-  // Shipping Form State
-  const [shipping, setShipping] = useState({ address: '', city: '', phone: '' });
+  // Cards State: Synced with Account (ProfilePage) via localStorage
+  const [cards, setCards] = useState(() => {
+    const saved = localStorage.getItem('shoplite_user_cards');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch (e) {}
+    }
+    return [
+      {
+        id: 1,
+        brand: 'VISA',
+        type: 'Credit Card',
+        number: '•••• •••• •••• 4242',
+        holder: user?.name ? user.name.toUpperCase() : 'BÀNH THỊ TÒN TÉN',
+        expiry: '12/28',
+        isDefault: true,
+        bank: 'Vietcombank'
+      }
+    ];
+  });
+
+  const [selectedCardId, setSelectedCardId] = useState(() => {
+    const def = cards.find(c => c.isDefault) || cards[0];
+    return def ? def.id : 1;
+  });
+
+  // Shipping Form State (Synced with Account Addresses in localStorage)
+  const [shipping, setShipping] = useState(() => {
+    const savedAddr = localStorage.getItem('shoplite_user_addresses');
+    if (savedAddr) {
+      try {
+        const list = JSON.parse(savedAddr);
+        const def = list.find(a => a.isDefault) || list[0];
+        if (def) {
+          return {
+            address: def.detail || '',
+            city: def.city || '',
+            phone: def.phone || user?.phone || ''
+          };
+        }
+      } catch (e) {}
+    }
+    return { address: '', city: '', phone: user?.phone || '' };
+  });
 
   const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
@@ -212,15 +256,59 @@ export default function CheckoutPage() {
 
           {step === 3 && (
             <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-8">
-              <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2"><CreditCard className="text-indigo-600"/> Payment Method</h2>
-              <div className="p-4 border-2 border-indigo-600 rounded-2xl bg-indigo-50/50 mb-6 flex items-center gap-4 cursor-pointer relative overflow-hidden">
-                 <div className="absolute top-0 right-0 p-2"><CheckCircle className="w-5 h-5 text-indigo-600"/></div>
-                 <div className="w-12 h-8 bg-indigo-600 rounded text-white flex items-center justify-center font-bold text-xs italic">VISA</div>
-                 <div>
-                   <p className="font-bold text-slate-900">Credit Card</p>
-                   <p className="text-xs text-slate-500">**** **** **** 4242</p>
-                 </div>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                  <CreditCard className="text-indigo-600"/> Payment Method
+                </h2>
+                <Link to="/profile?tab=banks" className="text-xs text-indigo-600 hover:text-indigo-700 font-medium hover:underline flex items-center gap-1">
+                  Manage Cards in Account →
+                </Link>
               </div>
+
+              {/* Synchronized Card List */}
+              <div className="space-y-3 mb-6">
+                {cards.map((c) => {
+                  const isSelected = selectedCardId === c.id;
+                  const last4 = c.number.replace(/\D/g, '').slice(-4) || '4242';
+                  return (
+                    <div
+                      key={c.id}
+                      onClick={() => setSelectedCardId(c.id)}
+                      className={`p-4 border-2 rounded-2xl flex items-center justify-between gap-4 cursor-pointer relative overflow-hidden transition-all ${
+                        isSelected
+                          ? 'border-indigo-600 bg-indigo-50/50 shadow-sm'
+                          : 'border-slate-200 bg-white hover:border-slate-300'
+                      }`}
+                    >
+                      {isSelected && (
+                        <div className="absolute top-0 right-0 p-2">
+                          <CheckCircle className="w-5 h-5 text-indigo-600"/>
+                        </div>
+                      )}
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-8 bg-indigo-600 rounded text-white flex items-center justify-center font-bold text-xs italic tracking-wider shadow-sm">
+                          {c.brand || 'VISA'}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="font-bold text-slate-900">{c.bank ? `${c.bank} Credit Card` : 'Credit Card'}</p>
+                            {c.isDefault && (
+                              <span className="text-[10px] font-semibold px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full">
+                                Default
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-slate-500 font-mono mt-0.5">**** **** **** {last4}</p>
+                          <p className="text-[11px] text-slate-400 mt-0.5">
+                            Card Holder: <span className="font-semibold text-slate-700">{c.holder || user?.name || 'BÀNH THỊ TÒN TÉN'}</span> | Exp: {c.expiry || '12/28'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
               <p className="text-sm text-slate-500 mb-8 bg-slate-50 p-4 rounded-xl border border-slate-100">This is a mock checkout. No real payment will be processed. By clicking "Complete Purchase", you agree to our Terms of Service.</p>
               
               <div className="flex justify-between items-center">
