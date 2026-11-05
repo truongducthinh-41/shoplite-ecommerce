@@ -43,26 +43,45 @@ const getProducts = async (req, res) => {
     `;
     const params = [];
     
-    // Lọc theo Danh mục (Hỗ trợ cả ID hoặc Tên danh mục, bao gồm cả danh mục con)
-    if (category !== 'All') {
+    // Lọc theo Danh mục (Hỗ trợ cả ID, Tên danh mục hoặc Slug, bao gồm cả danh mục con)
+    if (category && category !== 'All') {
       if (!isNaN(parseInt(category))) {
         query += ` AND (p.category_id = $${params.length + 1} OR p.category_id IN (SELECT id FROM Categories WHERE parent_id = $${params.length + 1}))`;
         params.push(parseInt(category));
       } else {
-        query += ` AND (c.name ILIKE $${params.length + 1} OR c.name IN (SELECT name FROM Categories WHERE parent_id = (SELECT id FROM Categories WHERE name ILIKE $${params.length + 1} LIMIT 1)))`;
+        query += ` AND (
+          c.name ILIKE $${params.length + 1} 
+          OR c.slug ILIKE $${params.length + 1}
+          OR p.category_id IN (
+            SELECT id FROM Categories 
+            WHERE parent_id IN (SELECT id FROM Categories WHERE name ILIKE $${params.length + 1} OR slug ILIKE $${params.length + 1})
+          )
+        )`;
         params.push(category);
       }
     }
 
-    // Lọc theo Thương hiệu (Brand ID hoặc Brand Name)
-    if (brand) {
-      if (!isNaN(parseInt(brand))) {
+    // Lọc theo Thương hiệu (Hỗ trợ cả brand đơn lẻ hoặc brands phân cách bằng dấu phẩy)
+    const brandParam = req.query.brands || req.query.brand;
+    if (brandParam) {
+      const brandList = brandParam.split(',').map(b => b.trim()).filter(Boolean);
+      if (brandList.length === 1 && !isNaN(parseInt(brandList[0]))) {
         query += ` AND p.brand_id = $${params.length + 1}`;
-        params.push(parseInt(brand));
-      } else {
-        query += ` AND b.name ILIKE $${params.length + 1}`;
-        params.push(brand);
+        params.push(parseInt(brandList[0]));
+      } else if (brandList.length > 0) {
+        const brandClauses = brandList.map(b => {
+          params.push(`%${b}%`);
+          return `b.name ILIKE $${params.length}`;
+        });
+        query += ` AND (${brandClauses.join(' OR ')})`;
       }
+    }
+
+    // Lọc theo Subcategory (Hỗ trợ từ FilterSidebar)
+    const subcategory = req.query.subcategory;
+    if (subcategory) {
+      query += ` AND (p.name ILIKE $${params.length + 1} OR p.description ILIKE $${params.length + 1} OR c.name ILIKE $${params.length + 1})`;
+      params.push(`%${subcategory}%`);
     }
 
     // Lọc theo Gian hàng (Shop ID)

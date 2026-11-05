@@ -1,63 +1,100 @@
-import { Filter, Star, ChevronDown, Check } from 'lucide-react';
+import { Filter, Star, ChevronDown, Check, RotateCcw } from 'lucide-react';
 import { useState, useMemo, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import CATEGORY_BRANDS_DATA from '../data/brands.json';
 
-export default function FilterSidebar({ onApplyFilter }) {
+export default function FilterSidebar({
+  minPrice = '',
+  setMinPrice,
+  maxPrice = '',
+  setMaxPrice,
+  brandsFilter = [],
+  setBrandsFilter,
+  ratingFilter = null,
+  setRatingFilter,
+  subCategoryFilter = '',
+  setSubCategoryFilter,
+  onApplyFilter
+}) {
   const { categoryName } = useParams();
-  const [priceMin, setPriceMin] = useState('');
-  const [priceMax, setPriceMax] = useState('');
-  const [selectedBrands, setSelectedBrands] = useState([]);
-  const [selectedRating, setSelectedRating] = useState(null);
-  const [selectedSubCategory, setSelectedSubCategory] = useState('');
-  
-  // Visual states for other filters
+  const [localMin, setLocalMin] = useState(minPrice || '');
+  const [localMax, setLocalMax] = useState(maxPrice || '');
+
+  // Keep local price inputs in sync with props
+  useEffect(() => {
+    setLocalMin(minPrice || '');
+  }, [minPrice]);
+
+  useEffect(() => {
+    setLocalMax(maxPrice || '');
+  }, [maxPrice]);
+
+  // Visual decorative states
   const [selectedLocations, setSelectedLocations] = useState([]);
   const [selectedShopTypes, setSelectedShopTypes] = useState([]);
   const [selectedConditions, setSelectedConditions] = useState([]);
   const [isExpress, setIsExpress] = useState(false);
   const [isOnSale, setIsOnSale] = useState(false);
-  
+
   const [showAllCategories, setShowAllCategories] = useState(false);
   const [showAllLocations, setShowAllLocations] = useState(false);
   const [showAllBrands, setShowAllBrands] = useState(false);
   const [showAllShopTypes, setShowAllShopTypes] = useState(false);
 
-  const locations = ["New York", "Los Angeles", "Chicago", "Houston", "Phoenix"];
-  const shopTypes = ["Shopee Mall", "Preferred Shop", "Processed by Shopee"];
-  const conditions = ["New", "Used"];
+  const locations = ["TP. Hồ Chí Minh", "Hà Nội", "Đà Nẵng", "Cần Thơ", "Hải Phòng"];
+  const shopTypes = ["Shopee Mall", "Shop Yêu Thích", "ShopLite Global"];
+  const conditions = ["Mới 100%", "Đã sử dụng"];
 
-  // Dynamic filter mappings
+  // Dynamic subcategories & brands mapping
   const filterData = useMemo(() => {
     const catLower = (categoryName || '').toLowerCase();
     
-    const fashionKeywords = ['fashion', 'shoe', 'bag', 'apparel', 'beauty', 'watch'];
-    const techKeywords = ['smart', 'phone', 'laptop', 'computer', 'electronic', 'audio', 'gaming', 'camera', 'appliance'];
-    
-    if (fashionKeywords.some(kw => catLower.includes(kw))) {
+    // Fashion categories
+    if (catLower.includes('fashion') || catLower.includes('shoe') || catLower.includes('bag') || catLower.includes('apparel')) {
       return {
-        subCategories: ["Jackets", "Suits & Blazers", "Hoodies & Sweaters", "Jeans", "Pants", "Shirts", "T-Shirts", "Shorts"],
+        subCategories: ["Áo Khoác & Blazer", "Hoodie & Sweater", "Quần Jeans", "Áo Thun Polo", "Sơ Mi Công Sở", "Váy & Đầm Dự Tiệc", "Sneaker", "Giày Cao Gót"],
         brands: CATEGORY_BRANDS_DATA[categoryName] 
           ? CATEGORY_BRANDS_DATA[categoryName].slice(0, 15).map(b => b.name)
-          : ["YaMe", "Coolmate", "Zara", "H&M", "Uniqlo", "Aristino", "Gucci", "Adidas"]
+          : ["Nike", "Adidas", "Coolmate", "Uniqlo", "Aristino", "Charles & Keith", "Gucci", "Chanel"]
       };
     }
     
-    if (techKeywords.some(kw => catLower.includes(kw))) {
+    // Tech & Electronics categories
+    if (catLower.includes('smart') || catLower.includes('phone') || catLower.includes('laptop') || catLower.includes('computer') || catLower.includes('electronic') || catLower.includes('audio') || catLower.includes('gaming') || catLower.includes('camera')) {
       return {
-        subCategories: ["Smartphones", "Tablets", "Laptops", "Smartwatches", "Headphones", "Accessories", "Chargers", "Cases"],
+        subCategories: ["Flagship Phone", "Phụ Kiện & Cáp Sạc", "Laptop Văn Phòng", "Laptop Gaming", "Tai Nghe Chống Ồn", "Loa Bluetooth", "Máy Ảnh Mirrorless", "Máy Game Console"],
         brands: CATEGORY_BRANDS_DATA[categoryName] 
           ? CATEGORY_BRANDS_DATA[categoryName].slice(0, 15).map(b => b.name)
-          : ["Apple", "Samsung", "Sony", "Dell", "Baseus", "Anker", "Logitech", "Asus"]
+          : ["Apple", "Samsung", "Sony", "Dell", "Asus", "Logitech", "Canon", "Nintendo", "Marshall", "JBL"]
       };
     }
 
-    // Default generic filters
+    // Home, Appliances & Others
+    if (catLower.includes('home') || catLower.includes('living') || catLower.includes('appliance')) {
+      return {
+        subCategories: ["Máy Hút Bụi", "Nồi Chiên Không Dầu", "Bộ Nồi Chảo", "Chăn Ga Gối Đệm", "Lọc Không Khí"],
+        brands: CATEGORY_BRANDS_DATA[categoryName] 
+          ? CATEGORY_BRANDS_DATA[categoryName].slice(0, 15).map(b => b.name)
+          : ["Dyson", "Bosch", "LG", "Lock&Lock", "Philips"]
+      };
+    }
+
+    // Beauty & Health
+    if (catLower.includes('beauty') || catLower.includes('health') || catLower.includes('baby')) {
+      return {
+        subCategories: ["Serum & Dưỡng Ẩm", "Kem Chống Nắng", "Son Môi Lì", "Nước Tẩy Trang", "Tã Quần & Tã Dán", "Máy Đo Huyết Áp"],
+        brands: CATEGORY_BRANDS_DATA[categoryName] 
+          ? CATEGORY_BRANDS_DATA[categoryName].slice(0, 15).map(b => b.name)
+          : ["L'Oreal", "Maybelline", "Pampers", "Huggies", "Bosch", "Unilever"]
+      };
+    }
+
+    // Default generic fallback
     return {
-      subCategories: ["New Arrivals", "Best Sellers", "Clearance", "Trending Now", "Everyday Essentials"],
+      subCategories: ["Sản Phẩm Mới", "Bán Chạy Nhất", "Khuyến Mãi Hot", "Hàng Chính Hãng", "Combo Tiết Kiệm"],
       brands: CATEGORY_BRANDS_DATA[categoryName] 
         ? CATEGORY_BRANDS_DATA[categoryName].slice(0, 15).map(b => b.name)
-        : ["Shopee", "Amazon", "eBay", "Walmart", "Target", "AliExpress"]
+        : ["Apple", "Samsung", "Nike", "Sony", "L'Oreal", "Casio", "Bosch", "LEGO", "ShopeePay"]
     };
   }, [categoryName]);
 
@@ -67,50 +104,120 @@ export default function FilterSidebar({ onApplyFilter }) {
     setter(prev => prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]);
   };
 
-  useEffect(() => {
+  const handleToggleBrand = (brand) => {
+    if (setBrandsFilter) {
+      if (brandsFilter.includes(brand)) {
+        setBrandsFilter(brandsFilter.filter(b => b !== brand));
+      } else {
+        setBrandsFilter([...brandsFilter, brand]);
+      }
+    }
+  };
+
+  const handleToggleSubCategory = (sub) => {
+    if (setSubCategoryFilter) {
+      setSubCategoryFilter(subCategoryFilter === sub ? '' : sub);
+    }
+  };
+
+  const handleToggleRating = (rating) => {
+    if (setRatingFilter) {
+      setRatingFilter(ratingFilter === rating ? null : rating);
+    }
+  };
+
+  const handleApplyPrice = (e) => {
+    e.preventDefault();
+    if (setMinPrice) setMinPrice(localMin);
+    if (setMaxPrice) setMaxPrice(localMax);
     if (onApplyFilter) {
       onApplyFilter({
-        minPrice: priceMin,
-        maxPrice: priceMax,
-        brandsFilter: selectedBrands,
-        ratingFilter: selectedRating,
-        subCategory: selectedSubCategory
+        minPrice: localMin,
+        maxPrice: localMax,
+        brandsFilter,
+        ratingFilter,
+        subCategory: subCategoryFilter
       });
     }
-  }, [priceMin, priceMax, selectedBrands, selectedRating, selectedSubCategory, onApplyFilter]);
+  };
+
+  const handleClearAll = () => {
+    setLocalMin('');
+    setLocalMax('');
+    if (setMinPrice) setMinPrice('');
+    if (setMaxPrice) setMaxPrice('');
+    if (setBrandsFilter) setBrandsFilter([]);
+    if (setRatingFilter) setRatingFilter(null);
+    if (setSubCategoryFilter) setSubCategoryFilter('');
+    setIsOnSale(false);
+    setIsExpress(false);
+    setSelectedLocations([]);
+    setSelectedShopTypes([]);
+    setSelectedConditions([]);
+    if (onApplyFilter) {
+      onApplyFilter({
+        minPrice: '',
+        maxPrice: '',
+        brandsFilter: [],
+        ratingFilter: null,
+        subCategory: ''
+      });
+    }
+  };
+
+  const hasActiveFilters = Boolean(
+    minPrice || maxPrice || (brandsFilter && brandsFilter.length > 0) || ratingFilter || subCategoryFilter
+  );
 
   return (
-    <div className="w-full bg-[#111] rounded-2xl border border-white/10 p-5 shadow-sm">
+    <div className="w-full lg:w-64 bg-[#111] rounded-2xl border border-white/10 p-5 shadow-sm text-slate-300 h-fit">
       {/* Category List */}
       <div className="mb-6">
-        <h3 className="font-bold text-white mb-4 uppercase tracking-wider flex items-center gap-2">
-          All Categories
-        </h3>
-        <ul className="space-y-2.5 text-sm">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-bold text-white uppercase tracking-wider text-sm flex items-center gap-2">
+            Categories
+          </h3>
+          {hasActiveFilters && (
+            <button
+              onClick={handleClearAll}
+              className="text-[11px] text-rose-400 hover:text-rose-300 flex items-center gap-1 hover:underline"
+              title="Xóa tất cả bộ lọc"
+            >
+              <RotateCcw className="w-3 h-3" /> Reset
+            </button>
+          )}
+        </div>
+        
+        <ul className="space-y-2 text-sm">
           <li>
-            <button className="text-indigo-400 font-semibold hover:text-indigo-300 flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
-              {categoryName || 'All Categories'}
+            <button className="text-indigo-400 font-semibold hover:text-indigo-300 flex items-center gap-2 text-left">
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 flex-shrink-0"></span>
+              <span className="line-clamp-1">{categoryName || 'All Categories'}</span>
             </button>
           </li>
-          {(showAllCategories ? subCategories : subCategories.slice(0, 4)).map((sub, idx) => (
-            <li key={idx}>
-              <button 
-                onClick={() => setSelectedSubCategory(selectedSubCategory === sub ? '' : sub)}
-                className={`pl-3.5 text-left transition-colors font-medium flex items-center gap-2 ${selectedSubCategory === sub ? 'text-indigo-400' : 'text-slate-400 hover:text-slate-200'}`}
-              >
-                {selectedSubCategory === sub && <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>}
-                {sub}
-              </button>
-            </li>
-          ))}
+          {(showAllCategories ? subCategories : subCategories.slice(0, 4)).map((sub, idx) => {
+            const isSubSelected = subCategoryFilter === sub;
+            return (
+              <li key={idx}>
+                <button 
+                  onClick={() => handleToggleSubCategory(sub)}
+                  className={`pl-3.5 text-left transition-colors font-medium text-xs flex items-center gap-2 ${
+                    isSubSelected ? 'text-indigo-400 font-bold' : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  {isSubSelected && <span className="w-1 h-1 rounded-full bg-indigo-400"></span>}
+                  {sub}
+                </button>
+              </li>
+            );
+          })}
           {subCategories.length > 4 && (
             <li>
               <button 
                 onClick={() => setShowAllCategories(!showAllCategories)}
-                className="text-slate-500 hover:text-slate-300 pl-3.5 flex items-center gap-1"
+                className="text-slate-500 hover:text-slate-300 pl-3.5 text-xs flex items-center gap-1 mt-1"
               >
-                {showAllCategories ? 'Less' : 'More'} <ChevronDown className={`w-3 h-3 transition-transform ${showAllCategories ? 'rotate-180' : ''}`} />
+                {showAllCategories ? 'Thu gọn' : 'Xem thêm'} <ChevronDown className={`w-3 h-3 transition-transform ${showAllCategories ? 'rotate-180' : ''}`} />
               </button>
             </li>
           )}
@@ -120,71 +227,48 @@ export default function FilterSidebar({ onApplyFilter }) {
       <div className="w-full h-px bg-white/10 mb-6"></div>
 
       {/* Filter Header */}
-      <h3 className="font-bold text-white mb-5 uppercase tracking-wider flex items-center gap-2">
-        <Filter className="w-4 h-4" />
+      <h3 className="font-bold text-white mb-5 uppercase tracking-wider flex items-center gap-2 text-sm">
+        <Filter className="w-4 h-4 text-indigo-400" />
         Search Filter
       </h3>
 
-      {/* Location */}
+      {/* Brand Filter */}
       <div className="mb-6">
-        <h4 className="text-slate-200 font-medium mb-3 text-sm">Location</h4>
-        <div className="space-y-2.5">
-          {(showAllLocations ? locations : locations.slice(0, 3)).map((loc, idx) => {
-            const isSelected = selectedLocations.includes(loc);
-            return (
-              <div key={idx} onClick={() => toggleArrayItem(setSelectedLocations, loc)} className="flex items-center gap-3 cursor-pointer group">
-                <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${isSelected ? 'bg-indigo-600 border-indigo-600' : 'border-white/20 bg-white/5 group-hover:border-indigo-400'}`}>
-                  {isSelected && <Check className="w-3 h-3 text-white" />}
-                </div>
-                <span className="text-slate-400 text-sm group-hover:text-slate-200 transition-colors">{loc}</span>
-              </div>
-            );
-          })}
-          {locations.length > 3 && (
-            <button onClick={() => setShowAllLocations(!showAllLocations)} className="text-slate-500 text-sm hover:text-slate-300 flex items-center gap-1">
-              {showAllLocations ? 'Less' : 'More'} <ChevronDown className={`w-3 h-3 transition-transform ${showAllLocations ? 'rotate-180' : ''}`} />
-            </button>
+        <h4 className="text-slate-200 font-semibold mb-3 text-xs uppercase tracking-wide flex items-center justify-between">
+          <span>Brand</span>
+          {brandsFilter.length > 0 && (
+            <span className="text-[10px] text-indigo-400 font-normal">({brandsFilter.length} chọn)</span>
           )}
-        </div>
-      </div>
-
-      <div className="w-full h-px bg-white/10 mb-6"></div>
-
-      {/* Shipping */}
-      <div className="mb-6">
-        <h4 className="text-slate-200 font-medium mb-3 text-sm">Shipping Option</h4>
-        <div onClick={() => setIsExpress(!isExpress)} className="flex items-center gap-3 cursor-pointer group">
-          <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${isExpress ? 'bg-indigo-600 border-indigo-600' : 'border-white/20 bg-white/5 group-hover:border-indigo-400'}`}>
-             {isExpress && <Check className="w-3 h-3 text-white" />}
-          </div>
-          <span className="text-slate-400 text-sm group-hover:text-slate-200">Express</span>
-        </div>
-      </div>
-
-      <div className="w-full h-px bg-white/10 mb-6"></div>
-
-      {/* Brand */}
-      <div className="mb-6">
-        <h4 className="text-slate-200 font-medium mb-3 text-sm">Brand</h4>
-        <div className="space-y-2.5">
-          {(showAllBrands ? brands : brands.slice(0, 5)).map((brand, idx) => {
-            const isSelected = selectedBrands.includes(brand);
+        </h4>
+        <div className="space-y-2">
+          {(showAllBrands ? brands : brands.slice(0, 6)).map((brand, idx) => {
+            const isSelected = brandsFilter.includes(brand);
             return (
               <div 
                 key={idx} 
-                onClick={() => toggleArrayItem(setSelectedBrands, brand)}
-                className="flex items-center gap-3 cursor-pointer group"
+                onClick={() => handleToggleBrand(brand)}
+                className="flex items-center gap-2.5 cursor-pointer group select-none"
               >
-                <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${isSelected ? 'bg-indigo-600 border-indigo-600' : 'border-white/20 bg-white/5 group-hover:border-indigo-400'}`}>
+                <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors flex-shrink-0 ${
+                  isSelected ? 'bg-indigo-600 border-indigo-600' : 'border-white/20 bg-white/5 group-hover:border-indigo-400'
+                }`}>
                   {isSelected && <Check className="w-3 h-3 text-white" />}
                 </div>
-                <span className="text-slate-400 text-sm group-hover:text-slate-200 transition-colors">{brand}</span>
+                <span className={`text-xs transition-colors ${
+                  isSelected ? 'text-white font-semibold' : 'text-slate-400 group-hover:text-slate-200'
+                }`}>
+                  {brand}
+                </span>
               </div>
             );
           })}
-          {brands.length > 5 && (
-            <button onClick={() => setShowAllBrands(!showAllBrands)} className="text-slate-500 text-sm hover:text-slate-300 flex items-center gap-1">
-              {showAllBrands ? 'Less' : 'More'} <ChevronDown className={`w-3 h-3 transition-transform ${showAllBrands ? 'rotate-180' : ''}`} />
+          {brands.length > 6 && (
+            <button 
+              onClick={() => setShowAllBrands(!showAllBrands)} 
+              className="text-slate-500 text-xs hover:text-slate-300 flex items-center gap-1 pt-1"
+            >
+              {showAllBrands ? 'Thu gọn' : `Xem thêm (${brands.length - 6})`} 
+              <ChevronDown className={`w-3 h-3 transition-transform ${showAllBrands ? 'rotate-180' : ''}`} />
             </button>
           )}
         </div>
@@ -192,74 +276,59 @@ export default function FilterSidebar({ onApplyFilter }) {
 
       <div className="w-full h-px bg-white/10 mb-6"></div>
 
-      {/* Price Range */}
-      <div className="mb-6">
-        <h4 className="text-slate-200 font-medium mb-3 text-sm">Price Range</h4>
+      {/* Price Range Filter */}
+      <form onSubmit={handleApplyPrice} className="mb-6">
+        <h4 className="text-slate-200 font-semibold mb-3 text-xs uppercase tracking-wide">Price Range ($)</h4>
         <div className="flex items-center gap-2 mb-3">
           <input 
             type="number" 
             placeholder="$ MIN"
-            value={priceMin}
-            onChange={e => setPriceMin(e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-md px-2 py-1.5 text-sm text-white focus:outline-none focus:border-indigo-500 placeholder-slate-600"
+            value={localMin}
+            onChange={e => setLocalMin(e.target.value)}
+            className="w-full bg-white/5 border border-white/10 rounded-md px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500 placeholder-slate-600"
           />
-          <span className="text-slate-500">-</span>
+          <span className="text-slate-500 text-xs">-</span>
           <input 
             type="number" 
             placeholder="$ MAX"
-            value={priceMax}
-            onChange={e => setPriceMax(e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-md px-2 py-1.5 text-sm text-white focus:outline-none focus:border-indigo-500 placeholder-slate-600"
+            value={localMax}
+            onChange={e => setLocalMax(e.target.value)}
+            className="w-full bg-white/5 border border-white/10 rounded-md px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500 placeholder-slate-600"
           />
         </div>
         <button 
-          onClick={() => onApplyFilter && onApplyFilter(priceMin, priceMax, selectedBrands, selectedRating)}
-          className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-md text-sm transition-colors uppercase tracking-wider"
+          type="submit"
+          className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-md text-xs transition-colors uppercase tracking-wider shadow-sm"
         >
-          Apply
+          Apply Filter
         </button>
-      </div>
+      </form>
 
       <div className="w-full h-px bg-white/10 mb-6"></div>
 
-      {/* Shop Type */}
+      {/* Rating Filter */}
       <div className="mb-6">
-        <h4 className="text-slate-200 font-medium mb-3 text-sm">Shop Type</h4>
-        <div className="space-y-2.5">
-          {(showAllShopTypes ? shopTypes : shopTypes.slice(0, 2)).map((type, idx) => {
-            const isSelected = selectedShopTypes.includes(type);
+        <h4 className="text-slate-200 font-semibold mb-3 text-xs uppercase tracking-wide">Rating</h4>
+        <div className="space-y-1.5">
+          {[5, 4, 3, 2, 1].map((rating) => {
+            const isRatingSelected = ratingFilter === rating;
             return (
-              <div key={idx} onClick={() => toggleArrayItem(setSelectedShopTypes, type)} className="flex items-center gap-3 cursor-pointer group">
-                <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${isSelected ? 'bg-indigo-600 border-indigo-600' : 'border-white/20 bg-white/5 group-hover:border-indigo-400'}`}>
-                  {isSelected && <Check className="w-3 h-3 text-white" />}
+              <button 
+                key={rating} 
+                type="button"
+                onClick={() => handleToggleRating(rating)}
+                className={`flex items-center justify-between p-1.5 rounded transition-colors w-full text-left ${
+                  isRatingSelected ? 'bg-indigo-500/20 border border-indigo-500/50' : 'hover:bg-white/5 border border-transparent'
+                }`}
+              >
+                <div className="flex gap-1 items-center">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className={`w-3.5 h-3.5 ${i < rating ? 'fill-amber-400 text-amber-400' : 'text-slate-600'}`} />
+                  ))}
+                  {rating < 5 && <span className="text-slate-400 text-xs ml-1">& Up</span>}
                 </div>
-                <span className="text-slate-400 text-sm group-hover:text-slate-200 transition-colors">{type}</span>
-              </div>
-            );
-          })}
-          {shopTypes.length > 2 && (
-            <button onClick={() => setShowAllShopTypes(!showAllShopTypes)} className="text-slate-500 text-sm hover:text-slate-300 flex items-center gap-1">
-              {showAllShopTypes ? 'Less' : 'More'} <ChevronDown className={`w-3 h-3 transition-transform ${showAllShopTypes ? 'rotate-180' : ''}`} />
-            </button>
-          )}
-        </div>
-      </div>
-
-      <div className="w-full h-px bg-white/10 mb-6"></div>
-
-      {/* Condition */}
-      <div className="mb-6">
-        <h4 className="text-slate-200 font-medium mb-3 text-sm">Condition</h4>
-        <div className="space-y-2.5">
-          {conditions.map((cond, idx) => {
-            const isSelected = selectedConditions.includes(cond);
-            return (
-              <div key={idx} onClick={() => toggleArrayItem(setSelectedConditions, cond)} className="flex items-center gap-3 cursor-pointer group">
-                <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${isSelected ? 'bg-indigo-600 border-indigo-600' : 'border-white/20 bg-white/5 group-hover:border-indigo-400'}`}>
-                  {isSelected && <Check className="w-3 h-3 text-white" />}
-                </div>
-                <span className="text-slate-400 text-sm group-hover:text-slate-200 transition-colors">{cond}</span>
-              </div>
+                {isRatingSelected && <Check className="w-3.5 h-3.5 text-indigo-400" />}
+              </button>
             );
           })}
         </div>
@@ -267,39 +336,31 @@ export default function FilterSidebar({ onApplyFilter }) {
 
       <div className="w-full h-px bg-white/10 mb-6"></div>
 
-      {/* Rating */}
-      <div className="mb-6">
-        <h4 className="text-slate-200 font-medium mb-3 text-sm">Rating</h4>
-        <div className="space-y-2">
-          {[5, 4, 3, 2, 1].map((rating) => (
-            <button 
-              key={rating} 
-              onClick={() => setSelectedRating(selectedRating === rating ? null : rating)}
-              className={`flex items-center gap-2 p-1.5 rounded transition-colors w-full ${selectedRating === rating ? 'bg-indigo-500/20 border border-indigo-500/50' : 'hover:bg-white/5 border border-transparent'}`}
-            >
-              <div className="flex gap-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className={`w-3.5 h-3.5 ${i < rating ? 'fill-amber-400 text-amber-400' : 'text-slate-600'}`} />
-                ))}
-              </div>
-              {rating < 5 && <span className="text-slate-400 text-xs">& Up</span>}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="w-full h-px bg-white/10 mb-6"></div>
-
-      {/* Promotions */}
-      <div className="mb-2">
-        <h4 className="text-slate-200 font-medium mb-3 text-sm">Services & Promotions</h4>
-        <div onClick={() => setIsOnSale(!isOnSale)} className="flex items-center gap-3 cursor-pointer group">
-          <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${isOnSale ? 'bg-indigo-600 border-indigo-600' : 'border-white/20 bg-white/5 group-hover:border-indigo-400'}`}>
+      {/* Services & Promotions */}
+      <div className="mb-4">
+        <h4 className="text-slate-200 font-semibold mb-3 text-xs uppercase tracking-wide">Promotions</h4>
+        <div 
+          onClick={() => setIsOnSale(!isOnSale)} 
+          className="flex items-center gap-2.5 cursor-pointer group select-none"
+        >
+          <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
+            isOnSale ? 'bg-indigo-600 border-indigo-600' : 'border-white/20 bg-white/5 group-hover:border-indigo-400'
+          }`}>
              {isOnSale && <Check className="w-3 h-3 text-white" />}
           </div>
-          <span className="text-slate-400 text-sm group-hover:text-slate-200">On Sale</span>
+          <span className="text-slate-300 text-xs group-hover:text-white">Đang giảm giá (On Sale)</span>
         </div>
       </div>
+
+      {/* Clear All Button */}
+      {hasActiveFilters && (
+        <button
+          onClick={handleClearAll}
+          className="w-full mt-2 py-2 border border-white/10 hover:border-rose-500/50 text-slate-400 hover:text-rose-400 rounded-md text-xs font-medium transition-colors flex items-center justify-center gap-1.5"
+        >
+          <RotateCcw className="w-3 h-3" /> Clear All Filters
+        </button>
+      )}
     </div>
   );
 }

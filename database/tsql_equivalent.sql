@@ -48,7 +48,7 @@ WITH CategoryHierarchy AS (
     -- Anchor Member: Bắt đầu từ danh mục truyền vào
     SELECT id, parent_id, CAST(name AS NVARCHAR(MAX)) AS Breadcrumb
     FROM Categories
-    WHERE id = 5 -- Ví dụ: 'Smartphones & Tablets'
+    WHERE id = 10 -- Ví dụ: 'Smartphones & Accessories' (con của 'Electronics & Technology')
 
     UNION ALL
 

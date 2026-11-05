@@ -142,7 +142,14 @@ export default function CategoryPage() {
           <div className="flex animate-marquee gap-4">
             {/* First Set */}
             {brandLogos.map((brand, idx) => (
-              <div key={idx} className="flex-shrink-0 w-28 h-16 sm:w-32 sm:h-20 flex items-center justify-center bg-white rounded-xl border border-white/5 hover:border-indigo-500 transition-all cursor-pointer shadow-md overflow-hidden p-2">
+              <div 
+                key={idx} 
+                onClick={() => setBrandsFilter(prev => prev.includes(brand.name) ? [] : [brand.name])}
+                className={`flex-shrink-0 w-28 h-16 sm:w-32 sm:h-20 flex items-center justify-center bg-white rounded-xl border transition-all cursor-pointer shadow-md overflow-hidden p-2 ${
+                  brandsFilter.includes(brand.name) ? 'border-indigo-500 ring-2 ring-indigo-500/50' : 'border-white/5 hover:border-indigo-500'
+                }`}
+                title={`Lọc theo thương hiệu: ${brand.name}`}
+              >
                 <img 
                   src={brand.url} 
                   alt={brand.name} 
@@ -153,7 +160,14 @@ export default function CategoryPage() {
             ))}
             {/* Second Set (Duplicate for smooth infinite scroll) */}
             {brandLogos.map((brand, idx) => (
-              <div key={`dup-${idx}`} className="flex-shrink-0 w-28 h-16 sm:w-32 sm:h-20 flex items-center justify-center bg-white rounded-xl border border-white/5 hover:border-indigo-500 transition-all cursor-pointer shadow-md overflow-hidden p-2">
+              <div 
+                key={`dup-${idx}`} 
+                onClick={() => setBrandsFilter(prev => prev.includes(brand.name) ? [] : [brand.name])}
+                className={`flex-shrink-0 w-28 h-16 sm:w-32 sm:h-20 flex items-center justify-center bg-white rounded-xl border transition-all cursor-pointer shadow-md overflow-hidden p-2 ${
+                  brandsFilter.includes(brand.name) ? 'border-indigo-500 ring-2 ring-indigo-500/50' : 'border-white/5 hover:border-indigo-500'
+                }`}
+                title={`Lọc theo thương hiệu: ${brand.name}`}
+              >
                 <img 
                   src={brand.url} 
                   alt={brand.name} 
@@ -193,9 +207,10 @@ export default function CategoryPage() {
                 onChange={(e) => setSort(e.target.value)}
                 className="bg-black/50 border border-white/10 text-white text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:border-indigo-500"
               >
-                <option value="Popularity">Popularity</option>
-                <option value="Price: Low to High">Price: Low to High</option>
-                <option value="Price: High to Low">Price: High to Low</option>
+                <option value="Popularity">Popularity (Bán chạy)</option>
+                <option value="Price: Low to High">Price: Low to High (Giá tăng dần)</option>
+                <option value="Price: High to Low">Price: High to Low (Giá giảm dần)</option>
+                <option value="Newest">Newest (Mới nhất)</option>
               </select>
             </div>
           </div>
