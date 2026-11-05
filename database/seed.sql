@@ -328,9 +328,17 @@ INSERT INTO Products (id, shop_id, category_id, brand_id, sku, name, description
 -- [24] Vouchers (category_id: 33)
 (76, 1, 33, 32, 'VOU-SHP-50K', 'E-Voucher ShopeePay Giảm 50.000đ Áp Dụng Mọi Hóa Đơn Sàn', 'Mã voucher điện tử nhận ngay qua tin nhắn, giảm trực tiếp 50K cho đơn hàng từ 150K thanh toán qua ShopeePay.', 2.00, 3.00, 500, 3500, 4.95, 450, 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&q=80&w=800'),
 (77, 1, 33, 32, 'VOU-STARBUCKS', 'Thẻ Quà Tặng Starbucks E-Gift Card Trị Giá 100.000đ Điện Tử', 'Sử dụng thanh toán trực tiếp tại mọi cửa hàng Starbucks toàn quốc hoặc nạp vào ứng dụng Starbucks Vietnam.', 4.00, 5.00, 200, 890, 4.91, 130, 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&q=80&w=800'),
-(78, 1, 33, 32, 'VOU-COIN-100K', 'Gói Nạp 100.000 Shopee Xu Hoàn Tiền Tiết Kiệm Mua Sắm', 'Quy đổi 100.000 Xu trực tiếp vào ví xu tài khoản để trừ tiền mặt khi thanh toán các đơn hàng kế tiếp.', 4.00, 5.00, 350, 2100, 4.88, 290, 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&q=80&w=800');
+(78, 1, 33, 32, 'VOU-COIN-100K', 'Gói Nạp 100.000 Shopee Xu Hoàn Tiền Tiết Kiệm Mua Sắm', 'Quy đổi 100.000 Xu trực tiếp vào ví xu tài khoản để trừ tiền mặt khi thanh toán các đơn hàng kế tiếp.', 4.00, 5.00, 350, 2100, 4.88, 290, 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&q=80&w=800'),
 
-SELECT setval('products_id_seq', 78);
+-- Thêm sản phẩm bổ sung chuẩn hóa nghiêm ngặt từng danh mục
+(79, 2, 16, 33, 'CLM-JACKET-WIND', 'Áo Khoác Gió Nam Thể Thao Coolmate Chống Nước Chống Tia UV', 'Chất liệu vải dù cao cấp nhẹ tênh, công nghệ trượt nước bảo vệ cơ thể khi trời mưa nhỏ và cản gió lạnh hiệu quả.', 32.00, 42.00, 90, 480, 4.90, 76, 'https://images.unsplash.com/photo-1544441893-675973e31985?auto=format&fit=crop&q=80&w=800'),
+(80, 2, 16, 4, 'CK-BELT-LTHR', 'Thắt Lưng Nam Da Bò Calvin Klein Mặt Khóa Kim Loại Xoay 2 Mặt', 'Da bò thật 100% nguyên tấm mềm mịn, khóa kim loại sang trọng xoay đảo 2 màu đen nâu tiện lợi cho nam giới.', 45.00, 60.00, 65, 310, 4.85, 52, 'https://images.unsplash.com/photo-1624222247344-550fb60583dc?auto=format&fit=crop&q=80&w=800'),
+(81, 2, 17, 16, 'ZRA-BLAZER-OVR', 'Áo Blazer Nữ Zara Dáng Suông 2 Lớp Công Sở Thanh Lịch', 'Form áo đứng thanh mảnh tôn dáng, đệm vai tinh tế phối cùng quần tây hoặc chân váy cực kỳ sang trọng.', 69.00, 89.00, 50, 260, 4.88, 48, 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&q=80&w=800'),
+(82, 2, 17, 17, 'HM-MAXI-FLWR', 'Đầm Maxi Nữ H&M Hoa Nhí Dáng Dài Đi Biển Cổ V Duyên Dáng', 'Chất liệu voan cát mềm rũ bay bổng, hoa văn rực rỡ ngọt ngào lý tưởng cho kỳ nghỉ hè dạo phố và du lịch.', 38.00, 49.00, 70, 390, 4.86, 65, 'https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&q=80&w=800'),
+(83, 6, 27, 14, 'PGN-BOTTLE-240', 'Bình Sữa Cổ Rộng Kháng Khuẩn Pigeon Streamline 240ml PPSU', 'Chất liệu nhựa PPSU cao cấp chịu nhiệt 180 độ C, núm ti silicon siêu mềm mô phỏng bầu ngực mẹ giúp bé bú dễ dàng.', 14.00, 18.00, 120, 620, 4.95, 130, 'https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&q=80&w=800'),
+(84, 8, 32, 31, 'HSB-TF-OPTIMUS', 'Mô Hình Đồ Chơi Robot Transformers Optimus Prime Hasbro 30cm', 'Biến hình linh hoạt giữa xe tải đầu kéo và robot chiến binh chỉ qua 25 bước lắp ghép, khớp nối cử động linh hoạt.', 42.00, 55.00, 55, 270, 4.92, 58, 'https://images.unsplash.com/photo-1563089145-599997674d42?auto=format&fit=crop&q=80&w=800');
+
+SELECT setval('products_id_seq', 84);
 
 -- ------------------------------------------------------------------------------
 -- 7. SEED ORDERS & ORDERDETAILS (Đa gian hàng, mô phỏng doanh thu theo từng tháng)

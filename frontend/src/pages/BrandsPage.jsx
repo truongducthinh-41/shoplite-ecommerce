@@ -7,12 +7,12 @@ export const CATEGORY_BRANDS = CATEGORY_BRANDS_DATA;
 
 // Fallback brands for unspecified categories
 const FALLBACK_BRANDS = [
-  { name: "Shopee", url: "https://cdn.simpleicons.org/shopee/white" },
-  { name: "Amazon", url: "https://cdn.simpleicons.org/amazon/white" },
-  { name: "eBay", url: "https://cdn.simpleicons.org/ebay/white" },
-  { name: "Walmart", url: "https://cdn.simpleicons.org/walmart/white" },
-  { name: "Target", url: "https://cdn.simpleicons.org/target/white" },
-  { name: "AliExpress", url: "https://cdn.simpleicons.org/aliexpress/white" },
+  { name: "Shopee", url: "https://upload.wikimedia.org/wikipedia/commons/f/fe/Shopee.svg" },
+  { name: "Apple", url: "https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" },
+  { name: "Nike", url: "https://upload.wikimedia.org/wikipedia/commons/a/a6/Logo_NIKE.svg" },
+  { name: "Samsung", url: "https://upload.wikimedia.org/wikipedia/commons/2/24/Samsung_Logo.svg" },
+  { name: "Sony", url: "https://upload.wikimedia.org/wikipedia/commons/c/ca/Sony_logo.svg" },
+  { name: "Uniqlo", url: "https://upload.wikimedia.org/wikipedia/commons/9/92/UNIQLO_logo.svg" }
 ];
 
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ#".split("");
@@ -23,7 +23,7 @@ export default function BrandsPage() {
 
   const brands = useMemo(() => {
     let list = CATEGORY_BRANDS[categoryName];
-    if (!list) {
+    if (!list || list.length === 0) {
       list = FALLBACK_BRANDS;
     }
     
@@ -51,9 +51,9 @@ export default function BrandsPage() {
     <div className="max-w-7xl mx-auto pb-12 px-4 sm:px-6 lg:px-8 mt-8">
       {/* Breadcrumb */}
       <div className="mb-6 flex items-center gap-2 text-sm">
-        <Link to="/" className="text-slate-400 hover:text-indigo-400">Home</Link>
+        <Link to="/" className="text-slate-400 hover:text-indigo-400 transition-colors">Home</Link>
         <ChevronRight className="w-4 h-4 text-slate-600" />
-        <Link to={`/category/${encodeURIComponent(categoryName)}`} className="text-slate-400 hover:text-indigo-400">{categoryName}</Link>
+        <Link to={`/category/${encodeURIComponent(categoryName)}`} className="text-slate-400 hover:text-indigo-400 transition-colors">{categoryName}</Link>
         <ChevronRight className="w-4 h-4 text-slate-600" />
         <span className="text-white font-medium">All Brands</span>
       </div>
@@ -61,12 +61,12 @@ export default function BrandsPage() {
       <div className="bg-[#111] rounded-2xl border border-white/10 shadow-sm overflow-hidden min-h-[500px]">
         {/* Header */}
         <div className="p-6 border-b border-white/10">
-          <h1 className="text-2xl font-bold text-white uppercase tracking-wider mb-4">
+          <h1 className="text-2xl font-bold text-white uppercase tracking-wider mb-2">
             Brands in {categoryName}
           </h1>
-          <p className="text-slate-400 text-sm mb-6">Showing {brands.length} brands</p>
+          <p className="text-slate-400 text-sm mb-6">Showing {brands.length} official brands</p>
 
-          {/* Alphabet Index (Like Shopee) */}
+          {/* Alphabet Index */}
           <div className="flex flex-wrap gap-2 sm:gap-4 justify-center items-center py-4 border-t border-b border-white/5">
              <button 
                 onClick={() => setActiveLetter(null)}
@@ -107,17 +107,29 @@ export default function BrandsPage() {
                 {/* Brand Cards Grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                   {filteredGroups[letter].map((brand, idx) => (
-                    <div key={idx} className="group flex flex-col items-center">
-                      <div className="w-full aspect-[4/3] bg-white/5 rounded-xl border border-white/10 group-hover:border-indigo-500 transition-all cursor-pointer shadow-md flex items-center justify-center p-4 mb-3 group-hover:shadow-[0_0_15px_rgba(99,102,241,0.15)] relative overflow-hidden">
+                    <Link
+                      to={`/category/${encodeURIComponent(categoryName)}`}
+                      key={idx}
+                      className="group flex flex-col items-center select-none"
+                    >
+                      <div className="w-full aspect-[4/3] bg-[#18181c] rounded-xl border border-white/10 group-hover:border-indigo-500 transition-all cursor-pointer shadow-md flex flex-col items-center justify-center p-3 mb-2 group-hover:shadow-[0_0_15px_rgba(99,102,241,0.2)] relative overflow-hidden">
                         <img 
                            src={brand.url} 
                            alt={brand.name} 
-                           className="max-w-full max-h-full object-contain filter group-hover:scale-110 transition-transform opacity-90 group-hover:opacity-100" 
-                           onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x300/222222/FFFFFF?text=' + encodeURIComponent(brand.name.charAt(0)) }}
+                           className="max-h-12 max-w-[80%] object-contain filter group-hover:scale-110 transition-transform opacity-95 group-hover:opacity-100" 
+                           onError={(e) => {
+                             e.target.style.display = 'none';
+                             if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
+                           }}
                         />
+                        <div className="hidden flex-col items-center justify-center">
+                          <span className="text-xs font-black tracking-wider uppercase text-white font-mono bg-white/10 px-2 py-0.5 rounded border border-white/10">
+                            {brand.name}
+                          </span>
+                        </div>
                       </div>
-                      <span className="text-slate-300 font-medium text-sm text-center group-hover:text-indigo-400 transition-colors line-clamp-1">{brand.name}</span>
-                    </div>
+                      <span className="text-slate-300 font-medium text-xs sm:text-sm text-center group-hover:text-indigo-400 transition-colors line-clamp-1">{brand.name}</span>
+                    </Link>
                   ))}
                 </div>
               </div>

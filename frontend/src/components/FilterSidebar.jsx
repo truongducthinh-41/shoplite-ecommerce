@@ -45,56 +45,49 @@ export default function FilterSidebar({
   const shopTypes = ["Shopee Mall", "Shop Yêu Thích", "ShopLite Global"];
   const conditions = ["Mới 100%", "Đã sử dụng"];
 
-  // Dynamic subcategories & brands mapping
+  // Dynamic subcategories & brands mapping tailored accurately for each category
   const filterData = useMemo(() => {
-    const catLower = (categoryName || '').toLowerCase();
+    const cat = categoryName || '';
+    const catLower = cat.toLowerCase();
     
-    // Fashion categories
-    if (catLower.includes('fashion') || catLower.includes('shoe') || catLower.includes('bag') || catLower.includes('apparel')) {
-      return {
-        subCategories: ["Áo Khoác & Blazer", "Hoodie & Sweater", "Quần Jeans", "Áo Thun Polo", "Sơ Mi Công Sở", "Váy & Đầm Dự Tiệc", "Sneaker", "Giày Cao Gót"],
-        brands: CATEGORY_BRANDS_DATA[categoryName] 
-          ? CATEGORY_BRANDS_DATA[categoryName].slice(0, 15).map(b => b.name)
-          : ["Nike", "Adidas", "Coolmate", "Uniqlo", "Aristino", "Charles & Keith", "Gucci", "Chanel"]
-      };
-    }
-    
-    // Tech & Electronics categories
-    if (catLower.includes('smart') || catLower.includes('phone') || catLower.includes('laptop') || catLower.includes('computer') || catLower.includes('electronic') || catLower.includes('audio') || catLower.includes('gaming') || catLower.includes('camera')) {
-      return {
-        subCategories: ["Flagship Phone", "Phụ Kiện & Cáp Sạc", "Laptop Văn Phòng", "Laptop Gaming", "Tai Nghe Chống Ồn", "Loa Bluetooth", "Máy Ảnh Mirrorless", "Máy Game Console"],
-        brands: CATEGORY_BRANDS_DATA[categoryName] 
-          ? CATEGORY_BRANDS_DATA[categoryName].slice(0, 15).map(b => b.name)
-          : ["Apple", "Samsung", "Sony", "Dell", "Asus", "Logitech", "Canon", "Nintendo", "Marshall", "JBL"]
-      };
-    }
+    // Category-specific subcategories
+    const SUB_MAP = {
+      "Men's Fashion": ["Áo Sơ Mi Nam", "Áo Polo Nam", "Áo Hoodie & Sweatshirt", "Quần Jeans Nam", "Áo Thun Thể Thao", "Áo Khoác Gió Nam"],
+      "Women's Fashion": ["Đầm Dự Tiệc", "Chân Váy Xếp Ly", "Áo Sơ Mi Lụa Nữ", "Áo Blazer Nữ", "Áo Kiểu & Blouse", "Quần Ống Rộng Nữ"],
+      "Men's Shoes": ["Sneaker Nam", "Giày Chạy Bộ", "Giày Tây Công Sở", "Giày Lười Loafer", "Sandal Nam"],
+      "Women's Shoes": ["Giày Cao Gót", "Sneaker Nữ", "Giày Sandal Quai Mảnh", "Giày Búp Bê", "Boot Nữ"],
+      "Women's Bags": ["Túi Xách Tay", "Túi Đeo Chéo", "Balo Nữ Mini", "Ví Cầm Tay", "Túi Kẹp Nách"],
+      "Watches": ["Đồng Hồ Nam Thể Thao", "Đồng Hồ Cơ Automatic", "Smartwatch Thông Minh", "Đồng Hồ Nữ Đính Đá"],
+      "Smartphones & Accessories": ["Flagship Smartphone", "Ốp Lưng MagSafe", "Củ Sạc & Cáp Nhanh", "Sạc Dự Phòng", "Kính Cường Lực"],
+      "Electronics": ["Smart TV OLED/4K", "Màn Hình Gaming", "Máy Chiếu Mini", "Soundbar Gia Đình"],
+      "Laptops & Computers": ["MacBook & Ultrabook", "Laptop Gaming", "Chuột Công Thái Học", "Bàn Phím Cơ PC", "Màn Hình Đồ Họa"],
+      "Cameras": ["Máy Ảnh Mirrorless", "Máy Ảnh Full-Frame", "Ống Kính Chân Dung", "Gimbal Chống Rung", "Flycam & Drone"],
+      "Audio": ["Tai Nghe Chống Ồn", "Loa Bluetooth Di Động", "Tai Nghe True Wireless", "Loa Phòng Khách"],
+      "Gaming": ["Máy Game Console", "Tay Cầm Chơi Game", "Bàn Phím Cơ Gaming", "Chuột Gaming", "Tai Nghe Gaming"],
+      "Home & Living": ["Chăn Ga Gối Lụa", "Bộ Nồi Chảo Inox", "Bình Giữ Nhiệt", "Hộp Đựng Thực Phẩm"],
+      "Smart Home & Appliances": ["Máy Hút Bụi Cầm Tay", "Máy Xay Sinh Tố", "Máy Lọc Không Khí", "Nồi Chiên Không Dầu"],
+      "Pet Supplies": ["Hạt Cho Mèo", "Hạt Cho Chó", "Pate Đóng Gói", "Cát Vệ Sinh", "Phụ Kiện Thú Cưng"],
+      "Beauty": ["Serum Dưỡng Sáng", "Son Kem Lì", "Kem Chống Nắng", "Nước Tẩy Trang", "Kem Dưỡng Da"],
+      "Health": ["Máy Đo Huyết Áp", "Gel Rửa Tay Khô", "Thực Phẩm Dinh Dưỡng", "Nước Súc Miệng", "Vitamin & Khoáng Chất"],
+      "Mom & Baby": ["Tã Quần & Tã Dán", "Khăn Ướt Kháng Khuẩn", "Bình Sữa Kháng Khuẩn", "Sữa Bột Dinh Dưỡng", "Xe Đẩy Trẻ Em"],
+      "Sports & Outdoors": ["Thảm Tập Yoga", "Tạ Tay Gym", "Túi Trống Thể Thao", "Lều Cắm Trại Dã Ngoại"],
+      "Automotive": ["Cần Gạt Mưa Ô Tô", "Lốp Xe Du Lịch", "Bơm Lốp Điện Tử", "Nước Rửa Kính Ô Tô"],
+      "Books & Stationery": ["Sách Kỹ Năng Sống", "Bút Ký Kim Loại", "Sổ Tay Vintage", "Hộp Màu & Bút Vẽ"],
+      "Groceries": ["Cà Phê Hòa Tan", "Gia Vị & Hạt Nêm", "Sữa Lúa Mạch", "Bánh Kẹo & Bổ Sung"],
+      "Gifts": ["Đồ Chơi LEGO", "Bó Hoa Sáp & Botanical", "Hộp Quà & Nến Thơm", "Mô Hình Nhân Vật", "Đồ Chơi Sáng Tạo"],
+      "Vouchers": ["E-Voucher ShopeePay", "Thẻ Quà Tặng Starbucks", "Gói Shopee Xu", "Voucher Ẩm Thực"]
+    };
 
-    // Home, Appliances & Others
-    if (catLower.includes('home') || catLower.includes('living') || catLower.includes('appliance')) {
-      return {
-        subCategories: ["Máy Hút Bụi", "Nồi Chiên Không Dầu", "Bộ Nồi Chảo", "Chăn Ga Gối Đệm", "Lọc Không Khí"],
-        brands: CATEGORY_BRANDS_DATA[categoryName] 
-          ? CATEGORY_BRANDS_DATA[categoryName].slice(0, 15).map(b => b.name)
-          : ["Dyson", "Bosch", "LG", "Lock&Lock", "Philips"]
-      };
-    }
+    const subCats = SUB_MAP[cat] || [
+      "Sản Phẩm Mới", "Bán Chạy Nhất", "Khuyến Mãi Hot", "Hàng Chính Hãng", "Combo Tiết Kiệm"
+    ];
 
-    // Beauty & Health
-    if (catLower.includes('beauty') || catLower.includes('health') || catLower.includes('baby')) {
-      return {
-        subCategories: ["Serum & Dưỡng Ẩm", "Kem Chống Nắng", "Son Môi Lì", "Nước Tẩy Trang", "Tã Quần & Tã Dán", "Máy Đo Huyết Áp"],
-        brands: CATEGORY_BRANDS_DATA[categoryName] 
-          ? CATEGORY_BRANDS_DATA[categoryName].slice(0, 15).map(b => b.name)
-          : ["L'Oreal", "Maybelline", "Pampers", "Huggies", "Bosch", "Unilever"]
-      };
-    }
+    const catBrands = (CATEGORY_BRANDS_DATA[cat] || []).map(b => b.name);
+    const fallbackBrands = ["Nike", "Adidas", "Apple", "Samsung", "Sony", "Coolmate", "Uniqlo", "L'Oréal"];
 
-    // Default generic fallback
     return {
-      subCategories: ["Sản Phẩm Mới", "Bán Chạy Nhất", "Khuyến Mãi Hot", "Hàng Chính Hãng", "Combo Tiết Kiệm"],
-      brands: CATEGORY_BRANDS_DATA[categoryName] 
-        ? CATEGORY_BRANDS_DATA[categoryName].slice(0, 15).map(b => b.name)
-        : ["Apple", "Samsung", "Nike", "Sony", "L'Oreal", "Casio", "Bosch", "LEGO", "ShopeePay"]
+      subCategories: subCats,
+      brands: catBrands.length > 0 ? catBrands : fallbackBrands
     };
   }, [categoryName]);
 

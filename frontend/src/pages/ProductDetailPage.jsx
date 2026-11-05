@@ -17,7 +17,7 @@ export default function ProductDetailPage() {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const { addToCart } = useCart();
   const { user } = useAuth();
-  
+
   const [newReview, setNewReview] = useState({ rating: 5, comment: '' });
   const [submittingReview, setSubmittingReview] = useState(false);
   const [reviewError, setReviewError] = useState('');
@@ -104,7 +104,7 @@ export default function ProductDetailPage() {
       setReviewError('Please write a comment.');
       return;
     }
-    
+
     setSubmittingReview(true);
     setReviewError('');
     try {
@@ -131,7 +131,7 @@ export default function ProductDetailPage() {
     }
   };
 
-  const averageRating = reviews.length > 0 
+  const averageRating = reviews.length > 0
     ? (reviews.reduce((acc, r) => acc + Number(r.rating), 0) / reviews.length).toFixed(1)
     : (product.rating_avg ? parseFloat(product.rating_avg).toFixed(1) : 4.8);
 
@@ -145,12 +145,12 @@ export default function ProductDetailPage() {
 
       <div className="bg-[#111] rounded-3xl shadow-sm border border-white/10 overflow-hidden mb-12">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
-          
+
           {/* Product Image Gallery */}
           <div className="bg-white/5 p-8 md:p-12 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-white/10 relative">
             {product.images && product.images.length > 0 ? (
               <>
-                <div 
+                <div
                   className="w-full mb-6 flex-grow flex items-center justify-center h-64 md:h-80 overflow-hidden cursor-zoom-in relative"
                   onMouseMove={(e) => {
                     const img = e.currentTarget.querySelector('img');
@@ -176,8 +176,8 @@ export default function ProductDetailPage() {
                 </div>
                 <div className="flex gap-3 overflow-x-auto pb-2 w-full max-w-md justify-start md:justify-center scrollbar-hide">
                   {product.images.map((img, idx) => (
-                    <button 
-                      key={idx} 
+                    <button
+                      key={idx}
                       onClick={() => setActiveImageIndex(idx)}
                       className={`flex-shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-xl bg-white/5 overflow-hidden border-2 transition-all ${activeImageIndex === idx ? 'border-indigo-500 scale-105 shadow-md' : 'border-transparent opacity-60 hover:opacity-100'}`}
                     >
@@ -187,30 +187,30 @@ export default function ProductDetailPage() {
                 </div>
               </>
             ) : product.image_url ? (
-                <div 
-                  className="w-full max-w-md h-auto overflow-hidden cursor-zoom-in"
-                  onMouseMove={(e) => {
-                    const img = e.currentTarget.querySelector('img');
-                    if (!img) return;
-                    const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
-                    const x = ((e.clientX - left) / width) * 100;
-                    const y = ((e.clientY - top) / height) * 100;
-                    img.style.transformOrigin = `${x}% ${y}%`;
-                  }}
-                  onMouseEnter={(e) => {
-                    const img = e.currentTarget.querySelector('img');
-                    if (img) img.style.transform = 'scale(2)';
-                  }}
-                  onMouseLeave={(e) => {
-                    const img = e.currentTarget.querySelector('img');
-                    if (img) {
-                      img.style.transform = 'scale(1)';
-                      img.style.transformOrigin = 'center center';
-                    }
-                  }}
-                >
-                  <img src={product.image_url} alt={product.name} className="w-full h-full object-contain drop-shadow-xl transition-transform duration-200 pointer-events-none" />
-                </div>
+              <div
+                className="w-full max-w-md h-auto overflow-hidden cursor-zoom-in"
+                onMouseMove={(e) => {
+                  const img = e.currentTarget.querySelector('img');
+                  if (!img) return;
+                  const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
+                  const x = ((e.clientX - left) / width) * 100;
+                  const y = ((e.clientY - top) / height) * 100;
+                  img.style.transformOrigin = `${x}% ${y}%`;
+                }}
+                onMouseEnter={(e) => {
+                  const img = e.currentTarget.querySelector('img');
+                  if (img) img.style.transform = 'scale(2)';
+                }}
+                onMouseLeave={(e) => {
+                  const img = e.currentTarget.querySelector('img');
+                  if (img) {
+                    img.style.transform = 'scale(1)';
+                    img.style.transformOrigin = 'center center';
+                  }
+                }}
+              >
+                <img src={product.image_url} alt={product.name} className="w-full h-full object-contain drop-shadow-xl transition-transform duration-200 pointer-events-none" />
+              </div>
             ) : (
               <div className="w-full max-w-md aspect-square bg-white/5 rounded-2xl flex items-center justify-center text-slate-500">
                 <span className="text-3xl font-bold opacity-50">No Image</span>
@@ -230,9 +230,9 @@ export default function ProductDetailPage() {
                 </span>
               )}
             </div>
-            
+
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-3 text-white">{product.name}</h1>
-            
+
             <div className="flex items-center gap-2 mb-6">
               <div className="flex text-amber-400">
                 <Star className="w-5 h-5 fill-current" />
@@ -262,18 +262,18 @@ export default function ProductDetailPage() {
             <div className="mt-auto space-y-6">
               <div className="flex items-center gap-4">
                 <div className="flex items-center border border-white/10 rounded-xl bg-black/40">
-                  <button 
+                  <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
                     className="px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 transition-colors rounded-l-xl"
                   >-</button>
                   <span className="w-12 text-center font-medium text-white">{quantity}</span>
-                  <button 
+                  <button
                     onClick={() => setQuantity(Math.min(product.stock || 99, quantity + 1))}
                     className="px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 transition-colors rounded-r-xl"
                   >+</button>
                 </div>
-                
-                <button 
+
+                <button
                   onClick={handleAddToCart}
                   disabled={product.stock === 0}
                   className="flex-1 bg-indigo-600 text-white px-6 py-3.5 rounded-xl font-bold hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 disabled:bg-slate-800 disabled:text-slate-500 disabled:shadow-none disabled:cursor-not-allowed"
@@ -317,17 +317,17 @@ export default function ProductDetailPage() {
           <div className="md:col-span-1">
             <h3 className="font-bold text-lg mb-4">Write a Review</h3>
             {reviewError && <p className="text-rose-400 text-sm mb-4 bg-rose-500/10 p-3 rounded-lg border border-rose-500/20">{reviewError}</p>}
-            
+
             {user ? (
               <form onSubmit={submitReview} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-400 mb-2">Rating</label>
                   <div className="flex gap-1">
                     {[1, 2, 3, 4, 5].map(star => (
-                      <button 
-                        type="button" 
-                        key={star} 
-                        onClick={() => setNewReview({...newReview, rating: star})}
+                      <button
+                        type="button"
+                        key={star}
+                        onClick={() => setNewReview({ ...newReview, rating: star })}
                         className="focus:outline-none"
                       >
                         <Star className={`w-8 h-8 ${star <= newReview.rating ? 'fill-amber-400 text-amber-400' : 'text-slate-600'} hover:scale-110 transition-transform`} />
@@ -337,16 +337,16 @@ export default function ProductDetailPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-400 mb-2">Your Review</label>
-                  <textarea 
-                    rows="4" 
+                  <textarea
+                    rows="4"
                     value={newReview.comment}
-                    onChange={e => setNewReview({...newReview, comment: e.target.value})}
+                    onChange={e => setNewReview({ ...newReview, comment: e.target.value })}
                     className="w-full border border-white/10 bg-black/50 text-white rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none resize-none transition-all"
                     placeholder="What did you like or dislike?"
                   ></textarea>
                 </div>
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   disabled={submittingReview}
                   className="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-500 transition-colors disabled:opacity-50 flex justify-center shadow-lg shadow-indigo-600/30"
                 >
@@ -364,7 +364,7 @@ export default function ProductDetailPage() {
           {/* Review List */}
           <div className="md:col-span-2 space-y-6">
             {reviews.length === 0 ? (
-               <p className="text-slate-500 text-center py-12 bg-white/5 rounded-2xl border border-dashed border-white/10">No reviews yet. Be the first to review this product!</p>
+              <p className="text-slate-500 text-center py-12 bg-white/5 rounded-2xl border border-dashed border-white/10">No reviews yet. Be the first to review this product!</p>
             ) : (
               reviews.map((review, idx) => (
                 <div key={idx} className="border-b border-white/10 pb-6 last:border-0 last:pb-0">
@@ -407,34 +407,34 @@ export default function ProductDetailPage() {
               {recommendations.items.map((rec, idx) => {
                 const recPricing = calculatePricing(rec);
                 return (
-                <Link 
-                  key={rec.id} 
-                  to={`/product/${rec.id}`} 
-                  className="bg-white/5 rounded-2xl p-3 sm:p-4 border border-white/5 hover:border-indigo-500/50 hover:shadow-lg transition-all group flex flex-col h-full relative"
-                >
-                  <div className="aspect-square w-full bg-black/40 rounded-xl mb-3 overflow-hidden relative">
-                    {rec.image_url ? (
-                      <img src={rec.image_url} alt={rec.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-slate-600 group-hover:scale-110 transition-transform duration-300">
-                        <span className="font-bold text-xs">No Image</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex flex-col flex-grow">
-                    <h3 className="font-medium text-slate-200 text-xs mb-1 line-clamp-2 min-h-[32px] group-hover:text-indigo-400 transition-colors">{rec.name}</h3>
-                    <div className="mt-auto">
-                      <div className="flex flex-col">
-                        {recPricing.hasDiscount ? (
-                          <span className="text-[10px] text-slate-500 line-through">${recPricing.originalPrice}</span>
-                        ) : null}
-                        <span className="text-indigo-400 font-bold text-sm">${recPricing.salePrice}</span>
+                  <Link
+                    key={rec.id}
+                    to={`/product/${rec.id}`}
+                    className="bg-white/5 rounded-2xl p-3 sm:p-4 border border-white/5 hover:border-indigo-500/50 hover:shadow-lg transition-all group flex flex-col h-full relative"
+                  >
+                    <div className="aspect-square w-full bg-black/40 rounded-xl mb-3 overflow-hidden relative">
+                      {rec.image_url ? (
+                        <img src={rec.image_url} alt={rec.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-slate-600 group-hover:scale-110 transition-transform duration-300">
+                          <span className="font-bold text-xs">No Image</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex flex-col flex-grow">
+                      <h3 className="font-medium text-slate-200 text-xs mb-1 line-clamp-2 min-h-[32px] group-hover:text-indigo-400 transition-colors">{rec.name}</h3>
+                      <div className="mt-auto">
+                        <div className="flex flex-col">
+                          {recPricing.hasDiscount ? (
+                            <span className="text-[10px] text-slate-500 line-through">${recPricing.originalPrice}</span>
+                          ) : null}
+                          <span className="text-indigo-400 font-bold text-sm">${recPricing.salePrice}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </Link>
-              );
-            })}
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </div>

@@ -2,13 +2,13 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { apiFetch } from '../services/api';
 import { useCart } from '../context/CartContext';
-import { ShoppingCart, Star, ChevronLeft, ChevronRight, ChevronDown, Filter } from 'lucide-react';
+import { ShoppingCart, Star, ChevronRight, Filter, Sparkles, CheckCircle2 } from 'lucide-react';
 import FilterSidebar from '../components/FilterSidebar';
 import { CATEGORY_BRANDS } from './BrandsPage';
 import { calculatePricing } from '../utils/pricing';
 import { FALLBACK_PRODUCTS } from '../data/categoryProducts';
 
-// Helper to normalize strings (remove accents, quotes, spaces) for fuzzy matching
+// Helper to normalize strings (remove accents, quotes, spaces) for matching
 const normalizeStr = (s) => 
   (s || '')
     .toString()
@@ -17,6 +17,69 @@ const normalizeStr = (s) =>
     .replace(/[''’]/g, "")
     .toLowerCase()
     .trim();
+
+// Hierarchy parent-child mapping for high-level category views
+const PARENT_CATEGORY_MAP = {
+  'Electronics & Technology': ['Smartphones & Accessories', 'Electronics', 'Laptops & Computers', 'Cameras', 'Audio', 'Gaming'],
+  'Fashion & Apparel': ["Men's Fashion", "Women's Fashion", "Men's Shoes", "Women's Shoes", "Women's Bags", 'Watches'],
+  'Home & Living Ecosystem': ['Home & Living', 'Smart Home & Appliances', 'Pet Supplies'],
+  'Beauty & Personal Care': ['Beauty', 'Health', 'Mom & Baby'],
+  'Sports, Auto & Lifestyle': ['Sports & Outdoors', 'Automotive', 'Books & Stationery', 'Groceries', 'Gifts', 'Vouchers']
+};
+
+// Strict category matcher: prevents "Women's Fashion" from showing inside "Men's Fashion"
+const isCategoryMatch = (productCat, selectedCat) => {
+  if (!selectedCat || selectedCat === 'All') return true;
+  const pNorm = normalizeStr(productCat);
+  const sNorm = normalizeStr(selectedCat);
+
+  // 1. Exact match (e.g. "Men's Fashion" === "Men's Fashion")
+  if (pNorm === sNorm) return true;
+
+  // 2. Parent category match (only if selectedCat is an explicit parent category)
+  for (const [parent, subs] of Object.entries(PARENT_CATEGORY_MAP)) {
+    if (normalizeStr(parent) === sNorm) {
+      return subs.some(sub => normalizeStr(sub) === pNorm);
+    }
+  }
+
+  return false;
+};
+
+// Sleek Brand Card for Marquee: high-res logo with elegant typography badge fallback
+function BrandLogoCard({ brand, isSelected, onClick }) {
+  const [imgError, setImgError] = useState(false);
+
+  return (
+    <div
+      onClick={onClick}
+      className={`flex-shrink-0 w-32 h-20 sm:w-36 sm:h-22 rounded-2xl border transition-all cursor-pointer shadow-lg overflow-hidden p-2.5 flex flex-col items-center justify-center gap-1.5 group select-none ${
+        isSelected
+          ? 'bg-indigo-950/80 border-indigo-500 ring-2 ring-indigo-500/70 shadow-indigo-500/30'
+          : 'bg-[#18181c] border-white/10 hover:border-indigo-400 hover:bg-[#22222a]'
+      }`}
+      title={`Lọc theo thương hiệu: ${brand.name}`}
+    >
+      <div className="h-9 w-full flex items-center justify-center overflow-hidden">
+        {!imgError && brand.url ? (
+          <img
+            src={brand.url}
+            alt={brand.name}
+            className="max-h-8 max-w-[85%] object-contain filter brightness-95 contrast-125 group-hover:scale-110 transition-transform duration-200"
+            onError={() => setImgError(true)}
+          />
+        ) : (
+          <span className="text-[12px] font-black tracking-widest uppercase text-white font-mono bg-white/10 px-2 py-0.5 rounded border border-white/10 shadow-sm">
+            {brand.name}
+          </span>
+        )}
+      </div>
+      <span className={`text-[11px] font-semibold tracking-tight truncate max-w-full text-center ${isSelected ? 'text-indigo-300 font-bold' : 'text-slate-300 group-hover:text-white'}`}>
+        {brand.name}
+      </span>
+    </div>
+  );
+}
 
 export default function CategoryPage() {
   const { categoryName } = useParams();
@@ -38,20 +101,16 @@ export default function CategoryPage() {
   const { addToCart } = useCart();
   const LIMIT = 100;
 
-  // Filter fallback products locally when cloud DB has not been seeded yet
+  // Filter fallback products locally with strict category boundaries
   const getFilteredFallbackProducts = useCallback(() => {
     let list = [...FALLBACK_PRODUCTS];
 
-    // Filter by Category
+    // 1. Strict Category Matching (Nam ra nam, Nữ ra nữ, Công nghệ ra công nghệ)
     if (categoryName && categoryName !== 'All') {
-      const targetNorm = normalizeStr(categoryName);
-      list = list.filter(p => {
-        const catNorm = normalizeStr(p.category_name);
-        return catNorm === targetNorm || catNorm.includes(targetNorm) || targetNorm.includes(catNorm);
-      });
+      list = list.filter(p => isCategoryMatch(p.category_name, categoryName));
     }
 
-    // Filter by Search Query
+    // 2. Search Query filter
     if (searchQuery) {
       const qNorm = normalizeStr(searchQuery);
       list = list.filter(p => 
@@ -61,7 +120,7 @@ export default function CategoryPage() {
       );
     }
 
-    // Filter by Brands
+    // 3. Brands filter
     if (brandsFilter && brandsFilter.length > 0) {
       const normBrands = brandsFilter.map(b => normalizeStr(b));
       list = list.filter(p => {
@@ -73,22 +132,22 @@ export default function CategoryPage() {
       });
     }
 
-    // Filter by Min Price
+    // 4. Min Price filter
     if (minPrice && !isNaN(parseFloat(minPrice))) {
       list = list.filter(p => Number(p.price) >= parseFloat(minPrice));
     }
 
-    // Filter by Max Price
+    // 5. Max Price filter
     if (maxPrice && !isNaN(parseFloat(maxPrice))) {
       list = list.filter(p => Number(p.price) <= parseFloat(maxPrice));
     }
 
-    // Filter by Rating
+    // 6. Rating filter
     if (ratingFilter && !isNaN(parseFloat(ratingFilter))) {
       list = list.filter(p => Number(p.rating_avg) >= parseFloat(ratingFilter));
     }
 
-    // Filter by Subcategory keyword
+    // 7. Subcategory keyword filter
     if (subCategoryFilter) {
       const subNorm = normalizeStr(subCategoryFilter);
       list = list.filter(p => 
@@ -98,7 +157,7 @@ export default function CategoryPage() {
       );
     }
 
-    // Sort order
+    // 8. Sorting
     if (sort === 'Price: Low to High') {
       list.sort((a, b) => Number(a.price) - Number(b.price));
     } else if (sort === 'Price: High to Low') {
@@ -106,7 +165,7 @@ export default function CategoryPage() {
     } else if (sort === 'Newest') {
       list.sort((a, b) => Number(b.id) - Number(a.id));
     } else {
-      // Default: Popularity (sold_count descending)
+      // Default: Popularity
       list.sort((a, b) => Number(b.sold_count || 0) - Number(a.sold_count || 0));
     }
 
@@ -144,10 +203,18 @@ export default function CategoryPage() {
         const productsData = await apiFetch(`/products?${queryParams.toString()}`).catch(() => []);
         
         if (productsData && productsData.length > 0) {
-          setProducts(productsData);
-          setHasMore(productsData.length === LIMIT);
+          // If remote API returns products, filter out cross-category contaminants if any
+          const sanitized = productsData.filter(p => isCategoryMatch(p.category_name, categoryName));
+          if (sanitized.length > 0) {
+            setProducts(sanitized);
+            setHasMore(sanitized.length === LIMIT);
+          } else {
+            const fallbackList = getFilteredFallbackProducts();
+            setProducts(fallbackList);
+            setHasMore(false);
+          }
         } else {
-          // Graceful fallback to local dataset covering all 24 categories
+          // Fallback to local catalog when cloud DB is empty
           const fallbackList = getFilteredFallbackProducts();
           setProducts(fallbackList);
           setHasMore(false);
@@ -186,7 +253,8 @@ export default function CategoryPage() {
         });
         const newProducts = await apiFetch(`/products?${queryParams.toString()}`).catch(() => []);
         if (newProducts && newProducts.length > 0) {
-          setProducts(prev => [...prev, ...newProducts]);
+          const sanitized = newProducts.filter(p => isCategoryMatch(p.category_name, categoryName));
+          setProducts(prev => [...prev, ...sanitized]);
           setHasMore(newProducts.length === LIMIT);
         } else {
           setHasMore(false);
@@ -199,21 +267,20 @@ export default function CategoryPage() {
       }
     };
     loadMore();
-  }, [page]);
+  }, [page, categoryName]);
 
   const getBrandsForCategory = () => {
     if (categoryName && CATEGORY_BRANDS[categoryName]) {
-      return CATEGORY_BRANDS[categoryName].slice(0, 15);
+      return CATEGORY_BRANDS[categoryName];
     }
-    // Fallback to random popular brands if category not specifically mapped
     return [
-      { name: "Apple", url: "https://cdn.simpleicons.org/apple/white" },
-      { name: "Nike", url: "https://cdn.simpleicons.org/nike/white" },
-      { name: "Samsung", url: "https://cdn.simpleicons.org/samsung/white" },
-      { name: "Zara", url: "https://upload.wikimedia.org/wikipedia/commons/f/fd/Zara_Logo.svg" },
-      { name: "Sony", url: "https://cdn.simpleicons.org/sony/white" },
-      { name: "Gucci", url: "https://cdn.simpleicons.org/gucci/white" },
-      { name: "Dell", url: "https://cdn.simpleicons.org/dell/white" },
+      { name: "Nike", url: "https://upload.wikimedia.org/wikipedia/commons/a/a6/Logo_NIKE.svg" },
+      { name: "Adidas", url: "https://upload.wikimedia.org/wikipedia/commons/2/20/Adidas_Logo.svg" },
+      { name: "Apple", url: "https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" },
+      { name: "Samsung", url: "https://upload.wikimedia.org/wikipedia/commons/2/24/Samsung_Logo.svg" },
+      { name: "Sony", url: "https://upload.wikimedia.org/wikipedia/commons/c/ca/Sony_logo.svg" },
+      { name: "Coolmate", url: "https://media3.coolmate.me/cdn-cgi/image/quality=80,format=auto/uploads/January2024/Coolmate-logo-web.png" },
+      { name: "Uniqlo", url: "https://upload.wikimedia.org/wikipedia/commons/9/92/UNIQLO_logo.svg" },
       { name: "L'Oréal", url: "https://upload.wikimedia.org/wikipedia/commons/9/9d/L%27Or%C3%A9al_logo.svg" }
     ];
   };
@@ -232,55 +299,44 @@ export default function CategoryPage() {
     <div className="max-w-7xl mx-auto pb-12 px-4 sm:px-6 lg:px-8 mt-8">
       {/* Breadcrumb / Title */}
       <div className="mb-6 flex items-center gap-2 text-sm">
-        <Link to="/" className="text-slate-400 hover:text-indigo-400">Home</Link>
+        <Link to="/" className="text-slate-400 hover:text-indigo-400 transition-colors">Home</Link>
         <ChevronRight className="w-4 h-4 text-slate-600" />
         <span className="text-white font-medium">{categoryName || 'All Categories'}</span>
       </div>
 
       {/* Top Brands Marquee */}
       <div className="mb-8 bg-[#111] rounded-2xl border border-white/10 p-4 sm:p-6 shadow-sm overflow-hidden flex flex-col relative group/brands">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-base sm:text-lg font-bold text-rose-500 uppercase tracking-wider">Top Brands</h2>
-          <Link to={`/brands/${encodeURIComponent(categoryName || 'All')}`} className="text-sm text-rose-500 hover:text-rose-400 flex items-center gap-1">See All <ChevronRight className="w-4 h-4"/></Link>
+        <div className="flex justify-between items-center mb-5">
+          <div className="flex items-center gap-2">
+            <h2 className="text-base sm:text-lg font-bold text-rose-500 uppercase tracking-wider">Top Brands</h2>
+            <span className="text-xs bg-rose-500/10 text-rose-400 px-2 py-0.5 rounded-full border border-rose-500/20 font-semibold">
+              Official Shopee Mall
+            </span>
+          </div>
+          <Link to={`/brands/${encodeURIComponent(categoryName || 'All')}`} className="text-sm text-rose-500 hover:text-rose-400 flex items-center gap-1 font-medium transition-colors">
+            See All <ChevronRight className="w-4 h-4"/>
+          </Link>
         </div>
         
         <div className="relative w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
-          <div className="flex animate-marquee gap-4">
+          <div className="flex animate-marquee gap-4 py-1">
             {/* First Set */}
             {brandLogos.map((brand, idx) => (
-              <div 
-                key={idx} 
+              <BrandLogoCard
+                key={idx}
+                brand={brand}
+                isSelected={brandsFilter.includes(brand.name)}
                 onClick={() => setBrandsFilter(prev => prev.includes(brand.name) ? [] : [brand.name])}
-                className={`flex-shrink-0 w-28 h-16 sm:w-32 sm:h-20 flex items-center justify-center bg-white rounded-xl border transition-all cursor-pointer shadow-md overflow-hidden p-2 ${
-                  brandsFilter.includes(brand.name) ? 'border-indigo-500 ring-2 ring-indigo-500/50' : 'border-white/5 hover:border-indigo-500'
-                }`}
-                title={`Lọc theo thương hiệu: ${brand.name}`}
-              >
-                <img 
-                  src={brand.url} 
-                  alt={brand.name} 
-                  className="max-w-full max-h-full object-contain filter hover:scale-110 transition-transform" 
-                  onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x300/222222/FFFFFF?text=' + encodeURIComponent(brand.name.charAt(0)) }}
-                />
-              </div>
+              />
             ))}
             {/* Second Set (Duplicate for smooth infinite scroll) */}
             {brandLogos.map((brand, idx) => (
-              <div 
-                key={`dup-${idx}`} 
+              <BrandLogoCard
+                key={`dup-${idx}`}
+                brand={brand}
+                isSelected={brandsFilter.includes(brand.name)}
                 onClick={() => setBrandsFilter(prev => prev.includes(brand.name) ? [] : [brand.name])}
-                className={`flex-shrink-0 w-28 h-16 sm:w-32 sm:h-20 flex items-center justify-center bg-white rounded-xl border transition-all cursor-pointer shadow-md overflow-hidden p-2 ${
-                  brandsFilter.includes(brand.name) ? 'border-indigo-500 ring-2 ring-indigo-500/50' : 'border-white/5 hover:border-indigo-500'
-                }`}
-                title={`Lọc theo thương hiệu: ${brand.name}`}
-              >
-                <img 
-                  src={brand.url} 
-                  alt={brand.name} 
-                  className="max-w-full max-h-full object-contain filter hover:scale-110 transition-transform" 
-                  onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x300/222222/FFFFFF?text=' + encodeURIComponent(brand.name.charAt(0)) }}
-                />
-              </div>
+              />
             ))}
           </div>
         </div>
@@ -304,14 +360,16 @@ export default function CategoryPage() {
         {/* Product Grid Area */}
         <div className="flex-1">
           {/* Controls Bar */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 bg-[#111] p-4 rounded-xl border border-white/10">
-            <span className="text-sm text-slate-400 font-medium">{products.length} Products Found</span>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 bg-[#111] p-4 rounded-xl border border-white/10 shadow-sm">
+            <span className="text-sm text-slate-400 font-medium">
+              <strong className="text-white font-bold">{products.length}</strong> Products Found
+            </span>
             <div className="flex items-center gap-2">
               <span className="text-sm text-slate-400">Sort by:</span>
               <select
                 value={sort}
                 onChange={(e) => setSort(e.target.value)}
-                className="bg-black/50 border border-white/10 text-white text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:border-indigo-500"
+                className="bg-black/60 border border-white/15 text-white text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:border-indigo-500 cursor-pointer"
               >
                 <option value="Popularity">Popularity (Bán chạy)</option>
                 <option value="Price: Low to High">Price: Low to High (Giá tăng dần)</option>
@@ -323,7 +381,7 @@ export default function CategoryPage() {
 
           <div className="w-full">
             {loading ? (
-               <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div></div>
+               <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div></div>
             ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
               {products.length === 0 ? (
