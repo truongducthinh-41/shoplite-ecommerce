@@ -1,10 +1,4 @@
--- ==============================================================================
--- SHOPLITE AI - CHUYÊN ĐỀ HỆ THỐNG CƠ SỞ DỮ LIỆU NÂNG CAO (ADVANCED DATABASE SYSTEM)
--- Kiến trúc: Shopee Multi-Vendor E-Commerce Platform
--- Chuẩn hóa: 3NF & BCNF | ACID Transactions | Row-Level Locking | Window Functions
--- ==============================================================================
 
--- 0. Xóa các đối tượng cũ theo thứ tự phụ thuộc ngược (Reverse Dependency Order)
 DROP VIEW IF EXISTS vw_monthly_sales_growth CASCADE;
 DROP VIEW IF EXISTS vw_top_selling_per_category CASCADE;
 DROP VIEW IF EXISTS vw_shop_sales_performance CASCADE;

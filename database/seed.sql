@@ -1,11 +1,3 @@
--- ==============================================================================
--- SHOPLITE AI - SEED DATA FOR DEMO & CAPSTONE PROJECT PRESENTATION
--- Đầy đủ 24 Danh mục hiển thị trên giao diện sàn Shopee, 8 Shop Mall ủy quyền,
--- 40 Thương hiệu toàn cầu và gần 80 Sản phẩm flagship chất lượng cao.
--- Đảm bảo tương thích 100% với các tính năng T-SQL / DBMS nâng cao:
--- (Advanced Joins, CTE đệ quy, Window Functions, TVF, Triggers, Stored Procedure)
--- ==============================================================================
-
 -- Xóa dữ liệu cũ theo thứ tự ràng buộc khóa ngoại
 TRUNCATE TABLE 
     ProductAuditLogs,

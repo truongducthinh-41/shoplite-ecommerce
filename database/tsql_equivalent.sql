@@ -1,14 +1,3 @@
--- ==============================================================================
--- SHOPLITE AI - KỊCH BẢN T-SQL CHUẨN MICROSOFT SQL SERVER (T-SQL EQUIVALENT)
--- Dành cho báo cáo học phần: Hệ Quản Trị Cơ Sở Dữ Liệu Nâng Cao (Advanced DBMS)
--- Bao gồm đầy đủ: Advanced Joins, Subquery & CTE, Window Functions, Scalar & TVF,
--- Triggers trên bảng ảo inserted/deleted, Stored Procedure & Locking chống Overselling
--- ==============================================================================
-
--- ==============================================================================
--- 1. KĨ THUẬT TRUY VẤN T-SQL NÂNG CAO
--- ==============================================================================
-
 -- 1.1. Advanced Joins & Kiểm soát hạt dữ liệu (Grain Control)
 -- Tránh lỗi nhân đôi dòng (Row Multiplication) khi nối quan hệ 1-N:
 SELECT 
