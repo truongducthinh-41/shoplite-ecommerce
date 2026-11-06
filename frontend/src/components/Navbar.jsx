@@ -80,10 +80,10 @@ export default function Navbar() {
           {/* Logo & Brand */}
           <div className="flex items-center">
             <Link to="/" className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-[#EE4D2D] rounded-lg flex items-center justify-center shadow-sm shadow-orange-500/20">
-                <span className="text-white font-bold text-xl">S</span>
+              <div className="w-8 h-8 bg-gradient-to-tr from-indigo-600 to-violet-600 rounded-lg flex items-center justify-center shadow-md shadow-indigo-500/30">
+                <span className="text-white font-bold text-xl">A</span>
               </div>
-              <span className="text-xl font-extrabold text-white tracking-tight">ShopLite</span>
+              <span className="text-xl font-extrabold text-white tracking-tight">Aurastore</span>
             </Link>
           </div>
 
@@ -98,7 +98,7 @@ export default function Navbar() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => setShowSuggestions(true)}
-                className="block w-full pl-10 pr-3 py-2 border border-white/10 rounded-full bg-white/5 placeholder-slate-500 focus:outline-none focus:bg-white/10 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all text-sm text-white"
+                className="block w-full pl-10 pr-3 py-2 border border-white/10 rounded-full bg-white/5 placeholder-slate-500 focus:outline-none focus:bg-white/10 focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all text-sm text-white"
                 placeholder="Tìm kiếm sản phẩm, thương hiệu..."
               />
             </form>
@@ -120,7 +120,7 @@ export default function Navbar() {
                           }}
                           className="w-full text-left px-4 py-3 hover:bg-white/10 transition-colors flex items-center gap-3 border-b border-white/5 last:border-0 group"
                         >
-                          <Search className="w-4 h-4 text-slate-500 group-hover:text-orange-400 transition-colors shrink-0" />
+                          <Search className="w-4 h-4 text-slate-500 group-hover:text-indigo-400 transition-colors shrink-0" />
                           <span className="text-sm text-slate-300 group-hover:text-white truncate transition-colors">{item.name}</span>
                         </button>
                       </li>
@@ -180,20 +180,20 @@ export default function Navbar() {
                         <Link 
                           to="/profile?tab=profile"
                           onClick={() => setShowUserDropdown(false)}
-                          className="block px-4 py-2.5 text-sm font-normal text-slate-700 hover:text-[#EE4D2D] hover:bg-slate-50 transition-colors"
+                          className="block px-4 py-2.5 text-sm font-normal text-slate-700 hover:text-indigo-600 hover:bg-slate-50 transition-colors"
                         >
                           My Account
                         </Link>
                         <Link 
                           to="/profile?tab=purchase"
                           onClick={() => setShowUserDropdown(false)}
-                          className="block px-4 py-2.5 text-sm font-normal text-slate-700 hover:text-[#EE4D2D] hover:bg-slate-50 transition-colors"
+                          className="block px-4 py-2.5 text-sm font-normal text-slate-700 hover:text-indigo-600 hover:bg-slate-50 transition-colors"
                         >
                           My Purchase
                         </Link>
                         <button 
                           onClick={handleLogout}
-                          className="w-full text-left px-4 py-2.5 text-sm font-normal text-slate-700 hover:text-[#EE4D2D] hover:bg-slate-50 transition-colors border-t border-slate-100"
+                          className="w-full text-left px-4 py-2.5 text-sm font-normal text-slate-700 hover:text-indigo-600 hover:bg-slate-50 transition-colors border-t border-slate-100"
                         >
                           Logout
                         </button>
@@ -208,17 +208,17 @@ export default function Navbar() {
                 <Link to="/auth?mode=login" className="text-xs sm:text-sm font-medium text-slate-300 hover:text-white transition-colors">
                   Đăng nhập
                 </Link>
-                <Link to="/auth?mode=signup" className="text-xs font-bold text-white bg-[#EE4D2D] hover:bg-[#d73211] px-3.5 py-1.5 rounded-full transition-all shadow-sm shadow-orange-500/20">
+                <Link to="/auth?mode=signup" className="text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 px-3.5 py-1.5 rounded-full transition-all shadow-sm shadow-indigo-500/25">
                   Đăng ký
                 </Link>
               </div>
             )}
 
             {/* Cart Icon */}
-            <Link to="/checkout" className="relative p-2 text-slate-300 hover:text-orange-400 transition-colors bg-white/5 rounded-full border border-white/10">
+            <Link to="/checkout" className="relative p-2 text-slate-300 hover:text-indigo-400 transition-colors bg-white/5 rounded-full border border-white/10">
               <ShoppingCart className="h-5 w-5" />
               {cartItemCount > 0 && (
-                <span className="absolute -top-1 -right-1 inline-flex items-center justify-center w-5 h-5 text-[10px] font-bold text-white bg-[#EE4D2D] rounded-full border-2 border-white shadow-sm">
+                <span className="absolute -top-1 -right-1 inline-flex items-center justify-center w-5 h-5 text-[10px] font-bold text-white bg-indigo-600 rounded-full border-2 border-[#020204] shadow-sm">
                   {cartItemCount}
                 </span>
               )}

@@ -62,8 +62,10 @@ export default function VertexHero({ products = [], bestSellers = [] }) {
       el.style.transform = pre;
       const cr = capRatio(el);
       el.style.fontSize = `${tc / cr}px`;
-      const iw = inkWidth(el);
-      el.style.transform = `${pre}${pre ? ' ' : ''}scaleX(${tw / iw})`;
+      if (tw) {
+        const iw = inkWidth(el);
+        el.style.transform = `${pre}${pre ? ' ' : ''}scaleX(${tw / iw})`;
+      }
     }
     function baseline(el, y) {
       if(!el) return;
@@ -132,10 +134,9 @@ export default function VertexHero({ products = [], bestSellers = [] }) {
       
       const T = tboost;
       // Shifted elements up by 15px to accommodate the button above the cards
-      fitBox(els.h1a, 563.5 * T, 37.2 * T, 'translateX(-50%)'); baseline(els.h1a, 149.5);
-      fitBox(els.h1b, 197.5 * T, 37.2 * T, 'translateX(-50%)'); baseline(els.h1b, 203.5);
-      fitBox(els.sub1, 389 * T, 8.4 * T, 'translateX(-50%)'); baseline(els.sub1, 245.5);
-      fitBox(els.sub2, 311 * T, 8.4 * T, 'translateX(-50%)'); baseline(els.sub2, 261.5);
+      fitBox(els.h1a, null, 37.2 * T, 'translateX(-50%)'); baseline(els.h1a, 149.5);
+      fitBox(els.h1b, null, 37.2 * T, 'translateX(-50%)'); baseline(els.h1b, 203.5);
+      fitBox(els.sub1, null, 11.5 * T, 'translateX(-50%)'); baseline(els.sub1, 244);
       
       for (const id in els) {
         if(els[id]) save[id] = { fontSize: els[id].style.fontSize, top: els[id].style.top, transform: els[id].style.transform };
@@ -285,8 +286,10 @@ export default function VertexHero({ products = [], bestSellers = [] }) {
           <div className="h1 h1-a" ref={h1aRef}>Streamline your</div>
           <div className="h1 h1-b" ref={h1bRef}>Shopping</div>
 
-          <div className="sub sub-1" ref={sub1Ref}><b>Intelligent product discovery / <span className="nb">E-commerce</span></b> orchestrated with</div>
-          <div className="sub sub-2" ref={sub2Ref}>seamless checkouts, performance, and dark aesthetics.</div>
+          <div className="sub sub-1" ref={sub1Ref}>
+            <p><b>AuraStore</b> – Định hình phong cách mua sắm hiện đại.</p>
+            <p>Nơi trải nghiệm đẳng cấp nâng tầm giá trị cuộc sống.</p>
+          </div>
 
           <a 
             href="#products" 

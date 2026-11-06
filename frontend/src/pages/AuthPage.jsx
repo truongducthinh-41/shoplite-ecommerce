@@ -232,10 +232,10 @@ export default function AuthPage() {
         <div className="px-6 sm:px-10 py-5 border-b border-slate-100 flex items-center justify-between bg-white">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#EE4D2D] to-orange-500 flex items-center justify-center text-white shadow-md shadow-orange-500/30">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/30">
                 <ShoppingBag className="w-6 h-6 stroke-[2.2]" />
               </div>
-              <span className="text-2xl font-black tracking-tight text-[#EE4D2D]">ShopLite</span>
+              <span className="text-2xl font-black tracking-tight text-indigo-600">Aurastore</span>
             </div>
             <span className="text-xl sm:text-2xl font-medium text-slate-700 pl-3 border-l border-slate-300">
               {mode === 'signup' ? 'Đăng ký' : 'Đăng nhập'}
@@ -244,8 +244,8 @@ export default function AuthPage() {
 
           <div className="flex items-center gap-4">
             <button 
-              onClick={() => alert('Trung tâm trợ giúp ShopLite: Hỗ trợ 24/7 qua hotline 1900-1234 hoặc email support@shoplite.vn')}
-              className="text-sm font-medium text-[#EE4D2D] hover:underline flex items-center gap-1.5"
+              onClick={() => alert('Trung tâm trợ giúp Aurastore: Hỗ trợ 24/7 qua hotline 1900-1234 hoặc email support@aurastore.vn')}
+              className="text-sm font-medium text-indigo-600 hover:underline flex items-center gap-1.5"
             >
               <HelpCircle className="w-4 h-4" /> Bạn cần giúp đỡ?
             </button>
@@ -353,7 +353,7 @@ export default function AuthPage() {
                       <label className="block text-xs font-semibold uppercase text-slate-600 mb-1.5 tracking-wider">
                         Số điện thoại
                       </label>
-                      <div className="flex rounded-xl border border-slate-300 overflow-hidden focus-within:ring-2 focus-within:ring-[#EE4D2D] focus-within:border-[#EE4D2D] transition-all">
+                      <div className="flex rounded-xl border border-slate-300 overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-all">
                         <div className="bg-slate-100 px-3.5 py-3 border-r border-slate-300 text-slate-700 font-semibold text-sm flex items-center gap-1.5">
                           <span>🇻🇳</span>
                           <span>+84</span>
@@ -376,7 +376,7 @@ export default function AuthPage() {
                     <button
                       type="submit"
                       disabled={loading || !phone}
-                      className="w-full py-3.5 px-4 rounded-xl text-sm font-bold text-white bg-[#EE4D2D] hover:bg-[#d73211] shadow-lg shadow-orange-500/20 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                      className="w-full py-3.5 px-4 rounded-xl text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-500/25 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                     >
                       {loading ? (
                         <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
@@ -402,7 +402,7 @@ export default function AuthPage() {
                         <button
                           type="button"
                           onClick={() => { setOtpSent(false); setError(''); }}
-                          className="text-xs text-[#EE4D2D] hover:underline font-medium"
+                          className="text-xs text-indigo-600 hover:underline font-medium"
                         >
                           Đổi số khác
                         </button>
@@ -419,7 +419,7 @@ export default function AuthPage() {
                           value={otp}
                           onChange={(e) => setOtp(e.target.value)}
                           placeholder="Nhập 6 số (123456)"
-                          className="w-full pl-11 pr-4 py-3 border border-slate-300 rounded-xl text-slate-900 font-mono text-base tracking-widest text-center focus:ring-2 focus:ring-[#EE4D2D] focus:border-[#EE4D2D] outline-none"
+                          className="w-full pl-11 pr-4 py-3 border border-slate-300 rounded-xl text-slate-900 font-mono text-base tracking-widest text-center focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
                           autoFocus
                         />
                       </div>
@@ -433,7 +433,7 @@ export default function AuthPage() {
                         <button
                           type="button"
                           onClick={handleSendOtp}
-                          className="text-[#EE4D2D] font-bold hover:underline"
+                          className="text-indigo-600 font-bold hover:underline"
                         >
                           Gửi lại mã OTP
                         </button>
@@ -443,7 +443,7 @@ export default function AuthPage() {
                     <button
                       type="submit"
                       disabled={loading || !otp}
-                      className="w-full py-3.5 px-4 rounded-xl text-sm font-bold text-white bg-[#EE4D2D] hover:bg-[#d73211] shadow-lg shadow-orange-500/20 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                      className="w-full py-3.5 px-4 rounded-xl text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-500/25 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                     >
                       {loading ? (
                         <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
@@ -458,7 +458,7 @@ export default function AuthPage() {
                   <span className="text-xs text-slate-500">Bạn đã có tài khoản? </span>
                   <button
                     onClick={() => { setMode('login'); setError(''); }}
-                    className="text-xs font-bold text-[#EE4D2D] hover:underline"
+                    className="text-xs font-bold text-indigo-600 hover:underline"
                   >
                     Đăng nhập
                   </button>
@@ -492,7 +492,7 @@ export default function AuthPage() {
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         placeholder="Nguyễn Văn A"
-                        className="w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-xl text-slate-900 text-sm focus:ring-2 focus:ring-[#EE4D2D] focus:border-[#EE4D2D] outline-none"
+                        className="w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-xl text-slate-900 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
                       />
                     </div>
                   </div>
@@ -511,7 +511,7 @@ export default function AuthPage() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="example@gmail.com"
-                        className="w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-xl text-slate-900 text-sm focus:ring-2 focus:ring-[#EE4D2D] focus:border-[#EE4D2D] outline-none"
+                        className="w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-xl text-slate-900 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
                       />
                     </div>
                   </div>
@@ -531,7 +531,7 @@ export default function AuthPage() {
                         placeholder="Tối thiểu 6 ký tự, có số & ký tự đặc biệt"
                         className={`w-full pl-10 pr-10 py-2.5 border rounded-xl text-slate-900 text-sm outline-none transition-all ${
                           password.length === 0
-                            ? 'border-slate-300 focus:ring-2 focus:ring-[#EE4D2D] focus:border-[#EE4D2D]'
+                            ? 'border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
                             : isPasswordValid
                             ? 'border-emerald-500 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-emerald-50/20'
                             : 'border-amber-400 focus:ring-2 focus:ring-amber-400 focus:border-amber-400 bg-amber-50/20'
@@ -641,7 +641,7 @@ export default function AuthPage() {
                         placeholder="Nhập lại chính xác mật khẩu"
                         className={`w-full pl-10 pr-10 py-2.5 border rounded-xl text-slate-900 text-sm outline-none transition-all ${
                           !isConfirmEntered
-                            ? 'border-slate-300 focus:ring-2 focus:ring-[#EE4D2D] focus:border-[#EE4D2D]'
+                            ? 'border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
                             : isPasswordMatching
                             ? 'border-emerald-500 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-emerald-50/20'
                             : 'border-red-400 focus:ring-2 focus:ring-red-400 focus:border-red-400 bg-red-50/20'
@@ -677,7 +677,7 @@ export default function AuthPage() {
                     <button
                       type="submit"
                       disabled={loading || !isPasswordValid || !isPasswordMatching}
-                      className="w-full py-3.5 px-4 rounded-xl text-sm font-bold text-white bg-[#EE4D2D] hover:bg-[#d73211] shadow-lg shadow-orange-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      className="w-full py-3.5 px-4 rounded-xl text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
                       {loading ? (
                         <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
@@ -709,23 +709,23 @@ export default function AuthPage() {
 
                 {/* Description matching exact text in user screenshot */}
                 <p className="text-sm text-slate-600 mb-3 px-2 leading-relaxed">
-                  You have successfully created a ShopLite account with the number{' '}
-                  <span className="text-[#EE4D2D] font-bold">
+                  You have successfully created an Aurastore account with the number{' '}
+                  <span className="text-indigo-600 font-bold">
                     {formatPhoneDisplay(phone)}
                   </span>
                 </p>
 
                 {/* Countdown subtext */}
                 <p className="text-xs text-slate-400 mb-8">
-                  You will be redirected to ShopLite in <span className="font-bold text-slate-700">{redirectCountdown}</span> seconds.
+                  You will be redirected to Aurastore in <span className="font-bold text-slate-700">{redirectCountdown}</span> seconds.
                 </p>
 
                 {/* Back to Shopee/ShopLite Primary Action Button */}
                 <button
                   onClick={() => navigate('/')}
-                  className="w-full py-3.5 px-4 rounded-lg text-sm font-bold text-white bg-[#EE4D2D] hover:bg-[#d73211] shadow-lg shadow-orange-500/25 transition-all transform active:scale-[0.99]"
+                  className="w-full py-3.5 px-4 rounded-lg text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-500/25 transition-all transform active:scale-[0.99]"
                 >
-                  Back to ShopLite
+                  Back to Aurastore
                 </button>
               </div>
             )}
@@ -766,7 +766,7 @@ export default function AuthPage() {
                       value={loginIdentifier}
                       onChange={(e) => setLoginIdentifier(e.target.value)}
                       placeholder="admin@shoplite.local hoặc 0987270635"
-                      className="w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-xl text-slate-900 text-sm focus:ring-2 focus:ring-[#EE4D2D] focus:border-[#EE4D2D] outline-none"
+                      className="w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-xl text-slate-900 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
                     />
                   </div>
                 </div>
@@ -774,7 +774,7 @@ export default function AuthPage() {
                 <div>
                   <div className="flex justify-between items-center mb-1">
                     <label className="block text-xs font-semibold text-slate-700">Mật khẩu</label>
-                    <a href="#help" onClick={(e) => { e.preventDefault(); alert('Vui lòng liên hệ Admin để khôi phục mật khẩu.'); }} className="text-xs text-[#EE4D2D] hover:underline">
+                    <a href="#help" onClick={(e) => { e.preventDefault(); alert('Vui lòng liên hệ Admin để khôi phục mật khẩu.'); }} className="text-xs text-indigo-600 hover:underline">
                       Quên mật khẩu?
                     </a>
                   </div>
@@ -788,7 +788,7 @@ export default function AuthPage() {
                       value={loginPassword}
                       onChange={(e) => setLoginPassword(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full pl-10 pr-10 py-2.5 border border-slate-300 rounded-xl text-slate-900 text-sm focus:ring-2 focus:ring-[#EE4D2D] focus:border-[#EE4D2D] outline-none"
+                      className="w-full pl-10 pr-10 py-2.5 border border-slate-300 rounded-xl text-slate-900 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
                     />
                     <button
                       type="button"
@@ -804,7 +804,7 @@ export default function AuthPage() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-3.5 px-4 rounded-xl text-sm font-bold text-white bg-[#EE4D2D] hover:bg-[#d73211] shadow-lg shadow-orange-500/20 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="w-full py-3.5 px-4 rounded-xl text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-500/25 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {loading ? (
                       <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
@@ -818,7 +818,7 @@ export default function AuthPage() {
               {/* Quick Sample Credentials */}
               <div className="mt-5 p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-600">
                 <div className="font-semibold text-slate-700 mb-1.5 flex items-center gap-1">
-                  ⚡ Tài khoản mẫu thử nghiệm (Password: <code className="text-[#EE4D2D]">password123</code>):
+                  ⚡ Tài khoản mẫu thử nghiệm (Password: <code className="text-indigo-600">password123</code>):
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-[11px]">
                   <button
@@ -840,10 +840,10 @@ export default function AuthPage() {
 
               {/* Switch to Register */}
               <div className="mt-6 pt-5 border-t border-slate-100 text-center">
-                <span className="text-xs text-slate-500">Bạn mới biết đến ShopLite? </span>
+                <span className="text-xs text-slate-500">Bạn mới biết đến Aurastore? </span>
                 <button
                   onClick={() => { setMode('signup'); setStep(1); setError(''); }}
-                  className="text-xs font-bold text-[#EE4D2D] hover:underline"
+                  className="text-xs font-bold text-indigo-600 hover:underline"
                 >
                   Đăng ký ngay
                 </button>

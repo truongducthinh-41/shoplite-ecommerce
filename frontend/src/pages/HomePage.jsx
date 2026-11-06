@@ -26,6 +26,16 @@ export default function HomePage() {
   const { addToCart } = useCart();
   const LIMIT = 100; // Increased limit for Gợi ý hôm nay
 
+  const handleScroll = (direction) => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = 450;
+      scrollContainerRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   const lastProductElementRef = useCallback(node => {
     if (loading || loadingMore) return;
     if (observer.current) observer.current.disconnect();
@@ -108,30 +118,30 @@ export default function HomePage() {
   }, [page]);
 
   const categoryIcons = [
-    { name: "Men's Fashion", icon: Shirt },
-    { name: "Women's Fashion", icon: ShoppingBag },
-    { name: 'Smartphones & Accessories', icon: Smartphone },
-    { name: 'Mom & Baby', icon: Baby },
-    { name: 'Electronics', icon: Monitor },
-    { name: 'Home & Living', icon: Home },
-    { name: 'Laptops & Computers', icon: Laptop },
-    { name: 'Beauty', icon: Sparkles },
-    { name: 'Cameras', icon: Camera },
-    { name: 'Health', icon: HeartPulse },
-    { name: 'Watches', icon: Watch },
-    { name: "Women's Shoes", icon: Footprints },
-    { name: "Men's Shoes", icon: Footprints },
-    { name: "Women's Bags", icon: Briefcase },
-    { name: 'Smart Home & Appliances', icon: Coffee },
-    { name: 'Audio', icon: Headphones },
-    { name: 'Sports & Outdoors', icon: Dumbbell },
-    { name: 'Groceries', icon: Store },
-    { name: 'Automotive', icon: Car },
-    { name: 'Books & Stationery', icon: Book },
-    { name: 'Gaming', icon: Gamepad2 },
-    { name: 'Pet Supplies', icon: Box },
-    { name: 'Gifts', icon: Gift },
-    { name: 'Vouchers', icon: Ticket },
+    { name: "Men's Fashion",           label: 'Thời Trang Nam',          icon: Shirt },
+    { name: "Women's Fashion",         label: 'Thời Trang Nữ',           icon: ShoppingBag },
+    { name: 'Smartphones & Accessories', label: 'Điện Thoại & Phụ Kiện', icon: Smartphone },
+    { name: 'Mom & Baby',              label: 'Mẹ & Bé',                 icon: Baby },
+    { name: 'Electronics',             label: 'Điện Tử',                 icon: Monitor },
+    { name: 'Home & Living',           label: 'Nhà Cửa & Đời Sống',      icon: Home },
+    { name: 'Laptops & Computers',     label: 'Máy Tính & Laptop',       icon: Laptop },
+    { name: 'Beauty',                  label: 'Làm Đẹp',                 icon: Sparkles },
+    { name: 'Cameras',                 label: 'Máy Ảnh',                 icon: Camera },
+    { name: 'Health',                  label: 'Sức Khỏe',                icon: HeartPulse },
+    { name: 'Watches',                 label: 'Đồng Hồ',                 icon: Watch },
+    { name: "Women's Shoes",           label: 'Giày Nữ',                 icon: Footprints },
+    { name: "Men's Shoes",             label: 'Giày Nam',                icon: Footprints },
+    { name: "Women's Bags",            label: 'Túi Xách Nữ',             icon: Briefcase },
+    { name: 'Smart Home & Appliances', label: 'Nhà Thông Minh',          icon: Coffee },
+    { name: 'Audio',                   label: 'Âm Thanh',                icon: Headphones },
+    { name: 'Sports & Outdoors',       label: 'Thể Thao & Ngoài Trời',   icon: Dumbbell },
+    { name: 'Groceries',               label: 'Thực Phẩm',               icon: Store },
+    { name: 'Automotive',              label: 'Ô Tô & Xe Máy',           icon: Car },
+    { name: 'Books & Stationery',      label: 'Sách & Văn Phòng Phẩm',   icon: Book },
+    { name: 'Gaming',                  label: 'Gaming',                  icon: Gamepad2 },
+    { name: 'Pet Supplies',            label: 'Thú Cưng',                icon: Box },
+    { name: 'Gifts',                   label: 'Quà Tặng',                icon: Gift },
+    { name: 'Vouchers',                label: 'Phiếu Giảm Giá',          icon: Ticket },
   ];
 
   return (
@@ -142,11 +152,27 @@ export default function HomePage() {
 
       {/* Categories Section (Danh Mục) */}
       <div className="mb-8 bg-[#111] rounded-2xl border border-white/10 p-4 sm:p-6 shadow-sm relative group/cats">
-        <h2 className="text-base sm:text-lg font-bold text-white mb-0 uppercase tracking-wider">Categories</h2>
+        <h2 className="text-base sm:text-lg font-bold text-white mb-2 uppercase tracking-wider">Danh Mục</h2>
+
+        {/* Floating Side Arrows on desktop hover */}
+        <button
+          onClick={() => handleScroll('left')}
+          className="hidden md:flex absolute left-2 top-[58%] -translate-y-1/2 z-20 w-9 h-9 items-center justify-center rounded-full bg-[#18181b]/90 border border-white/20 text-white shadow-xl backdrop-blur-md opacity-0 group-hover/cats:opacity-100 hover:bg-indigo-600 hover:border-indigo-500 transition-all active:scale-90"
+          title="Trượt sang trái"
+        >
+          <ChevronLeft className="w-5 h-5" />
+        </button>
+        <button
+          onClick={() => handleScroll('right')}
+          className="hidden md:flex absolute right-2 top-[58%] -translate-y-1/2 z-20 w-9 h-9 items-center justify-center rounded-full bg-[#18181b]/90 border border-white/20 text-white shadow-xl backdrop-blur-md opacity-0 group-hover/cats:opacity-100 hover:bg-indigo-600 hover:border-indigo-500 transition-all active:scale-90"
+          title="Trượt sang phải"
+        >
+          <ChevronRight className="w-5 h-5" />
+        </button>
 
         <div 
           ref={scrollContainerRef}
-          className="grid grid-rows-2 auto-cols-[80px] sm:auto-cols-[90px] grid-flow-col overflow-x-auto gap-y-3 gap-x-3 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] py-4 -mx-2 px-2 sm:-mx-4 sm:px-4 snap-x"
+          className="grid grid-rows-2 auto-cols-[85px] sm:auto-cols-[95px] grid-flow-col overflow-x-auto gap-y-3 gap-x-3 pb-2.5 pt-1 -mx-2 px-2 sm:-mx-4 sm:px-4 snap-x [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-track]:bg-white/5 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-indigo-500/40 hover:[&::-webkit-scrollbar-thumb]:bg-indigo-500 [&::-webkit-scrollbar-thumb]:rounded-full transition-all"
         >
           {categoryIcons.map((cat, idx) => (
             <button
@@ -155,18 +181,18 @@ export default function HomePage() {
               className={`flex flex-col items-center justify-center gap-2 p-3 rounded-xl border transition-all snap-start bg-white/5 border-transparent text-slate-400 hover:bg-indigo-500/20 hover:border-indigo-500 hover:text-indigo-400 hover:scale-105 hover:shadow-[0_0_10px_rgba(99,102,241,0.2)]`}
             >
               <cat.icon className="w-6 h-6 sm:w-7 sm:h-7" />
-              <span className="text-[10px] font-semibold text-center leading-tight line-clamp-2">{cat.name}</span>
+              <span className="text-[10px] font-semibold text-center leading-tight line-clamp-2">{cat.label}</span>
             </button>
           ))}
         </div>
       </div>
 
-      {/* Best Sellers / Top Searches (Tìm Kiếm Hàng Đầu) */}
+      {/* Best Sellers / Tìm Kiếm Hàng Đầu (Tìm Kiếm Hàng Đầu) */}
       {bestSellers.length > 0 && (
         <div className="mb-12">
           <div className="flex items-center gap-2 mb-6 text-amber-500">
             <Flame className="w-6 h-6 fill-current" />
-            <h2 className="text-xl font-bold uppercase tracking-wider text-white">Top Searches</h2>
+            <h2 className="text-xl font-bold uppercase tracking-wider text-white">Tìm Kiếm Hàng Đầu</h2>
           </div>
           
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
@@ -222,7 +248,7 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Daily Discoveries / Search Results (Gợi Ý Hôm Nay) */}
+      {/* Gợi Ý Hôm Nay / Search Results (Gợi Ý Hôm Nay) */}
       <div className="mb-12">
         {searchQuery ? (
           <h2 className="text-xl font-bold text-indigo-400 uppercase tracking-wider text-center mb-8">
@@ -230,7 +256,7 @@ export default function HomePage() {
           </h2>
         ) : (
           <h2 className="text-xl font-bold text-indigo-400 uppercase tracking-wider text-center mb-8">
-            Daily Discoveries
+            Gợi Ý Hôm Nay
           </h2>
         )}
 

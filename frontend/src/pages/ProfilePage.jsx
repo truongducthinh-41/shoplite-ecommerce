@@ -413,7 +413,7 @@ export default function ProfilePage() {
               </h3>
               <button
                 onClick={() => setTab('profile')}
-                className="text-xs text-slate-500 hover:text-[#EE4D2D] flex items-center gap-1 mt-0.5"
+                className="text-xs text-slate-500 hover:text-[#4F46E5] flex items-center gap-1 mt-0.5"
               >
                 <Edit2 className="w-3 h-3" /> Edit Profile
               </button>
@@ -428,11 +428,11 @@ export default function ProfilePage() {
               <button
                 onClick={() => setTab('notifications')}
                 className={`w-full flex items-center gap-2.5 py-2 px-1 text-left transition-colors ${activeTab === 'notifications'
-                    ? 'text-[#EE4D2D] font-bold'
-                    : 'text-slate-700 hover:text-[#EE4D2D]'
+                    ? 'text-[#4F46E5] font-bold'
+                    : 'text-slate-700 hover:text-[#4F46E5]'
                   }`}
               >
-                <Bell className={`w-4 h-4 ${activeTab === 'notifications' ? 'text-[#EE4D2D]' : 'text-[#EE4D2D]/80'}`} />
+                <Bell className={`w-4 h-4 ${activeTab === 'notifications' ? 'text-[#4F46E5]' : 'text-[#4F46E5]/80'}`} />
                 <span>Notifications</span>
               </button>
             </div>
@@ -455,7 +455,7 @@ export default function ProfilePage() {
 
                 <button
                   onClick={() => setTab('profile')}
-                  className={`block w-full text-left py-1 transition-colors ${activeTab === 'profile' ? 'text-[#EE4D2D] font-bold' : 'text-slate-600 hover:text-[#EE4D2D]'
+                  className={`block w-full text-left py-1 transition-colors ${activeTab === 'profile' ? 'text-[#4F46E5] font-bold' : 'text-slate-600 hover:text-[#4F46E5]'
                     }`}
                 >
                   Profile
@@ -463,7 +463,7 @@ export default function ProfilePage() {
 
                 <button
                   onClick={() => setTab('banks')}
-                  className={`block w-full text-left py-1 transition-colors ${activeTab === 'banks' ? 'text-[#EE4D2D] font-bold' : 'text-slate-600 hover:text-[#EE4D2D]'
+                  className={`block w-full text-left py-1 transition-colors ${activeTab === 'banks' ? 'text-[#4F46E5] font-bold' : 'text-slate-600 hover:text-[#4F46E5]'
                     }`}
                 >
                   Banks & Cards
@@ -471,7 +471,7 @@ export default function ProfilePage() {
 
                 <button
                   onClick={() => setTab('addresses')}
-                  className={`block w-full text-left py-1 transition-colors ${activeTab === 'addresses' ? 'text-[#EE4D2D] font-bold' : 'text-slate-600 hover:text-[#EE4D2D]'
+                  className={`block w-full text-left py-1 transition-colors ${activeTab === 'addresses' ? 'text-[#4F46E5] font-bold' : 'text-slate-600 hover:text-[#4F46E5]'
                     }`}
                 >
                   Addresses
@@ -479,7 +479,7 @@ export default function ProfilePage() {
 
                 <button
                   onClick={() => setTab('password')}
-                  className={`block w-full text-left py-1 transition-colors ${activeTab === 'password' ? 'text-[#EE4D2D] font-bold' : 'text-slate-600 hover:text-[#EE4D2D]'
+                  className={`block w-full text-left py-1 transition-colors ${activeTab === 'password' ? 'text-[#4F46E5] font-bold' : 'text-slate-600 hover:text-[#4F46E5]'
                     }`}
                 >
                   Change Password
@@ -487,7 +487,7 @@ export default function ProfilePage() {
 
                 <button
                   onClick={() => setTab('noti_settings')}
-                  className={`block w-full text-left py-1 transition-colors ${activeTab === 'noti_settings' ? 'text-[#EE4D2D] font-bold' : 'text-slate-600 hover:text-[#EE4D2D]'
+                  className={`block w-full text-left py-1 transition-colors ${activeTab === 'noti_settings' ? 'text-[#4F46E5] font-bold' : 'text-slate-600 hover:text-[#4F46E5]'
                     }`}
                 >
                   Notification Settings
@@ -495,7 +495,7 @@ export default function ProfilePage() {
 
                 <button
                   onClick={() => setTab('privacy')}
-                  className={`block w-full text-left py-1 transition-colors ${activeTab === 'privacy' ? 'text-[#EE4D2D] font-bold' : 'text-slate-600 hover:text-[#EE4D2D]'
+                  className={`block w-full text-left py-1 transition-colors ${activeTab === 'privacy' ? 'text-[#4F46E5] font-bold' : 'text-slate-600 hover:text-[#4F46E5]'
                     }`}
                 >
                   Privacy Settings
@@ -503,7 +503,7 @@ export default function ProfilePage() {
 
                 <button
                   onClick={() => setTab('personal_info')}
-                  className={`block w-full text-left py-1 transition-colors ${activeTab === 'personal_info' ? 'text-[#EE4D2D] font-bold' : 'text-slate-600 hover:text-[#EE4D2D]'
+                  className={`block w-full text-left py-1 transition-colors ${activeTab === 'personal_info' ? 'text-[#4F46E5] font-bold' : 'text-slate-600 hover:text-[#4F46E5]'
                     }`}
                 >
                   Personal Information
@@ -517,8 +517,8 @@ export default function ProfilePage() {
               <button
                 onClick={() => setTab('purchase')}
                 className={`w-full flex items-center gap-2.5 py-2 px-1 text-left transition-colors ${activeTab === 'purchase'
-                    ? 'text-[#EE4D2D] font-bold'
-                    : 'text-slate-700 hover:text-[#EE4D2D]'
+                    ? 'text-[#4F46E5] font-bold'
+                    : 'text-slate-700 hover:text-[#4F46E5]'
                   }`}
               >
                 <FileText className="w-4 h-4 text-blue-600" />
@@ -670,7 +670,7 @@ export default function ProfilePage() {
                           value="Male"
                           checked={gender === 'Male'}
                           onChange={() => setGender('Male')}
-                          className="text-[#EE4D2D] focus:ring-[#EE4D2D]"
+                          className="text-[#4F46E5] focus:ring-[#4F46E5]"
                         />
                         <span>Male</span>
                       </label>
@@ -681,7 +681,7 @@ export default function ProfilePage() {
                           value="Female"
                           checked={gender === 'Female'}
                           onChange={() => setGender('Female')}
-                          className="text-[#EE4D2D] focus:ring-[#EE4D2D]"
+                          className="text-[#4F46E5] focus:ring-[#4F46E5]"
                         />
                         <span>Female</span>
                       </label>
@@ -692,7 +692,7 @@ export default function ProfilePage() {
                           value="Other"
                           checked={gender === 'Other'}
                           onChange={() => setGender('Other')}
-                          className="text-[#EE4D2D] focus:ring-[#EE4D2D]"
+                          className="text-[#4F46E5] focus:ring-[#4F46E5]"
                         />
                         <span>Other</span>
                       </label>
@@ -745,7 +745,7 @@ export default function ProfilePage() {
                     <button
                       type="submit"
                       disabled={loading}
-                      className="px-8 py-2.5 bg-[#EE4D2D] hover:bg-[#d73211] text-white text-sm font-medium rounded shadow-sm transition-colors disabled:opacity-50"
+                      className="px-8 py-2.5 bg-[#4F46E5] hover:bg-[#4338CA] text-white text-sm font-medium rounded shadow-sm transition-colors disabled:opacity-50"
                     >
                       {loading ? 'Saving...' : 'Save'}
                     </button>
@@ -801,7 +801,7 @@ export default function ProfilePage() {
                   <h3 className="text-base font-normal text-slate-800">Credit / Debit Card</h3>
                   <button
                     onClick={() => setShowAddCardModal(true)}
-                    className="px-4 py-2 bg-[#EE4D2D] hover:bg-[#d73211] text-white text-xs font-medium rounded flex items-center gap-1.5 shadow-sm transition-colors"
+                    className="px-4 py-2 bg-[#4F46E5] hover:bg-[#4338CA] text-white text-xs font-medium rounded flex items-center gap-1.5 shadow-sm transition-colors"
                   >
                     <Plus className="w-3.5 h-3.5" /> Add New Card
                   </button>
@@ -832,7 +832,7 @@ export default function ProfilePage() {
                           </div>
                           <div className="absolute top-2 right-2 flex items-center gap-1.5">
                             {c.isDefault ? (
-                              <span className="text-[9px] font-bold px-2 py-0.5 bg-[#EE4D2D] text-white rounded-full">
+                              <span className="text-[9px] font-bold px-2 py-0.5 bg-[#4F46E5] text-white rounded-full">
                                 Default
                               </span>
                             ) : (
@@ -872,7 +872,7 @@ export default function ProfilePage() {
                   <h3 className="text-base font-normal text-slate-800">My Bank Accounts</h3>
                   <button
                     onClick={() => setShowAddBankModal(true)}
-                    className="px-4 py-2 bg-[#EE4D2D] hover:bg-[#d73211] text-white text-xs font-medium rounded flex items-center gap-1.5 shadow-sm transition-colors"
+                    className="px-4 py-2 bg-[#4F46E5] hover:bg-[#4338CA] text-white text-xs font-medium rounded flex items-center gap-1.5 shadow-sm transition-colors"
                   >
                     <Plus className="w-3.5 h-3.5" /> Add New Bank Account
                   </button>
@@ -917,7 +917,7 @@ export default function ProfilePage() {
                 <h3 className="text-base font-normal text-slate-800">My Addresses</h3>
                 <button
                   onClick={() => setShowAddAddressModal(true)}
-                  className="px-4 py-2 bg-[#EE4D2D] hover:bg-[#d73211] text-white text-xs font-medium rounded flex items-center gap-1.5 shadow-sm transition-colors"
+                  className="px-4 py-2 bg-[#4F46E5] hover:bg-[#4338CA] text-white text-xs font-medium rounded flex items-center gap-1.5 shadow-sm transition-colors"
                 >
                   <Plus className="w-3.5 h-3.5" /> Add Address
                 </button>
@@ -934,7 +934,7 @@ export default function ProfilePage() {
                             <span className="text-slate-300">|</span>
                             <span className="text-xs text-slate-500">{a.phone}</span>
                             {a.isDefault && (
-                              <span className="text-[10px] bg-red-50 text-[#EE4D2D] border border-[#EE4D2D]/30 px-1.5 py-0.5 rounded">
+                              <span className="text-[10px] bg-red-50 text-[#4F46E5] border border-[#4F46E5]/30 px-1.5 py-0.5 rounded">
                                 Mặc định
                               </span>
                             )}
@@ -991,7 +991,7 @@ export default function ProfilePage() {
                       value={currentPassword}
                       onChange={(e) => setCurrentPassword(e.target.value)}
                       placeholder="Nhập mật khẩu hiện tại"
-                      className="w-full px-3 py-2 pr-10 border border-slate-300 rounded text-sm outline-none focus:border-[#EE4D2D]"
+                      className="w-full px-3 py-2 pr-10 border border-slate-300 rounded text-sm outline-none focus:border-[#4F46E5]"
                     />
                     <button
                       type="button"
@@ -1012,7 +1012,7 @@ export default function ProfilePage() {
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder="Tối thiểu 6 ký tự, có số và ký tự đặc biệt"
-                      className="w-full px-3 py-2 pr-10 border border-slate-300 rounded text-sm outline-none focus:border-[#EE4D2D]"
+                      className="w-full px-3 py-2 pr-10 border border-slate-300 rounded text-sm outline-none focus:border-[#4F46E5]"
                     />
                     <button
                       type="button"
@@ -1045,7 +1045,7 @@ export default function ProfilePage() {
                     value={confirmNewPassword}
                     onChange={(e) => setConfirmNewPassword(e.target.value)}
                     placeholder="Nhập lại mật khẩu mới"
-                    className="w-full px-3 py-2 border border-slate-300 rounded text-sm outline-none focus:border-[#EE4D2D]"
+                    className="w-full px-3 py-2 border border-slate-300 rounded text-sm outline-none focus:border-[#4F46E5]"
                   />
                   {confirmNewPassword && (
                     <p className={`text-xs mt-1 font-semibold ${newPassword === confirmNewPassword ? 'text-emerald-600' : 'text-red-500'}`}>
@@ -1058,7 +1058,7 @@ export default function ProfilePage() {
                   <button
                     type="submit"
                     disabled={loading || !newPassword || newPassword !== confirmNewPassword}
-                    className="px-6 py-2.5 bg-[#EE4D2D] hover:bg-[#d73211] text-white text-xs font-medium rounded transition-colors disabled:opacity-50"
+                    className="px-6 py-2.5 bg-[#4F46E5] hover:bg-[#4338CA] text-white text-xs font-medium rounded transition-colors disabled:opacity-50"
                   >
                     {loading ? 'Đang cập nhật...' : 'Xác nhận đổi mật khẩu'}
                   </button>
@@ -1074,7 +1074,7 @@ export default function ProfilePage() {
             <div>
               <div className="pb-4 border-b border-slate-100">
                 <h2 className="text-lg font-medium text-slate-800">Notification Settings</h2>
-                <p className="text-xs text-slate-500 mt-1">Quản lý cách ShopLite gửi thông báo cho bạn</p>
+                <p className="text-xs text-slate-500 mt-1">Quản lý cách Aurastore gửi thông báo cho bạn</p>
               </div>
 
               <div className="pt-6 divide-y divide-slate-100 text-sm">
@@ -1083,21 +1083,21 @@ export default function ProfilePage() {
                     <h4 className="font-semibold text-slate-800 text-xs sm:text-sm">Email Notifications</h4>
                     <p className="text-xs text-slate-400 mt-0.5">Nhận thông báo đơn hàng và ưu đãi qua email</p>
                   </div>
-                  <input type="checkbox" defaultChecked className="w-4 h-4 text-[#EE4D2D] rounded" />
+                  <input type="checkbox" defaultChecked className="w-4 h-4 text-[#4F46E5] rounded" />
                 </div>
                 <div className="py-4 flex justify-between items-center">
                   <div>
                     <h4 className="font-semibold text-slate-800 text-xs sm:text-sm">SMS Notifications</h4>
                     <p className="text-xs text-slate-400 mt-0.5">Nhận mã bảo mật OTP và cập nhật giao vận qua tin nhắn</p>
                   </div>
-                  <input type="checkbox" defaultChecked className="w-4 h-4 text-[#EE4D2D] rounded" />
+                  <input type="checkbox" defaultChecked className="w-4 h-4 text-[#4F46E5] rounded" />
                 </div>
                 <div className="py-4 flex justify-between items-center">
                   <div>
                     <h4 className="font-semibold text-slate-800 text-xs sm:text-sm">In-App Notifications</h4>
                     <p className="text-xs text-slate-400 mt-0.5">Thông báo tức thời trên chuông thông báo ứng dụng</p>
                   </div>
-                  <input type="checkbox" defaultChecked className="w-4 h-4 text-[#EE4D2D] rounded" />
+                  <input type="checkbox" defaultChecked className="w-4 h-4 text-[#4F46E5] rounded" />
                 </div>
               </div>
             </div>
@@ -1121,7 +1121,7 @@ export default function ProfilePage() {
                   </p>
                   <div className="mt-3">
                     <label className="inline-flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-700">
-                      <input type="checkbox" className="w-4 h-4 text-[#EE4D2D] rounded" />
+                      <input type="checkbox" className="w-4 h-4 text-[#4F46E5] rounded" />
                       <span>Kích hoạt chế độ riêng tư</span>
                     </label>
                   </div>
@@ -1167,7 +1167,7 @@ export default function ProfilePage() {
 
                 <div className="p-4 border border-slate-200 rounded-lg flex justify-between items-center">
                   <div>
-                    <h4 className="font-semibold text-slate-800">Ngày tham gia ShopLite</h4>
+                    <h4 className="font-semibold text-slate-800">Ngày tham gia Aurastore</h4>
                     <p className="text-xs text-slate-400 mt-0.5">{user.created_at ? new Date(user.created_at).toLocaleDateString() : '01/01/2026'}</p>
                   </div>
                   <span className="text-xs text-slate-500 font-medium">Active</span>
@@ -1197,7 +1197,7 @@ export default function ProfilePage() {
               <div className="pb-4 border-b border-slate-100 flex justify-between items-center">
                 <div>
                   <h2 className="text-lg font-medium text-slate-800">Notifications</h2>
-                  <p className="text-xs text-slate-500 mt-1">Cập nhật đơn hàng & thông báo từ ShopLite</p>
+                  <p className="text-xs text-slate-500 mt-1">Cập nhật đơn hàng & thông báo từ Aurastore</p>
                 </div>
                 <button
                   onClick={() => alert('Đã đánh dấu tất cả thông báo là đã đọc')}
@@ -1209,11 +1209,11 @@ export default function ProfilePage() {
 
               <div className="pt-4 divide-y divide-slate-100">
                 <div className="py-3 flex gap-3 items-start">
-                  <div className="w-8 h-8 rounded-full bg-orange-100 text-[#EE4D2D] flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <div className="w-8 h-8 rounded-full bg-indigo-100 text-[#4F46E5] flex items-center justify-center flex-shrink-0 mt-0.5">
                     <Bell className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-xs sm:text-sm font-semibold text-slate-800">Chào mừng bạn đến với ShopLite AI!</p>
+                    <p className="text-xs sm:text-sm font-semibold text-slate-800">Chào mừng bạn đến với Aurastore AI!</p>
                     <p className="text-xs text-slate-500 mt-0.5">Khám phá hàng ngàn sản phẩm chính hãng với công nghệ gợi ý mua sắm thông minh.</p>
                     <span className="text-[10px] text-slate-400 mt-1 block">Hôm nay</span>
                   </div>
@@ -1245,7 +1245,7 @@ export default function ProfilePage() {
                     key={filter}
                     onClick={() => setPurchaseFilter(filter)}
                     className={`py-3 px-4 font-medium whitespace-nowrap border-b-2 transition-colors ${purchaseFilter === filter
-                        ? 'border-[#EE4D2D] text-[#EE4D2D] font-bold'
+                        ? 'border-[#4F46E5] text-[#4F46E5] font-bold'
                         : 'border-transparent text-slate-600 hover:text-slate-900'
                       }`}
                   >
@@ -1258,7 +1258,7 @@ export default function ProfilePage() {
               <div className="pt-6">
                 {ordersLoading ? (
                   <div className="text-center py-12 text-slate-400 text-xs">
-                    <div className="animate-spin rounded-full h-6 w-6 border-2 border-[#EE4D2D] border-t-transparent mx-auto mb-2" />
+                    <div className="animate-spin rounded-full h-6 w-6 border-2 border-[#4F46E5] border-t-transparent mx-auto mb-2" />
                     Đang tải đơn mua...
                   </div>
                 ) : orders.length > 0 ? (
@@ -1269,7 +1269,7 @@ export default function ProfilePage() {
                         <div key={o.id} className="p-4 border border-slate-200 rounded-lg bg-slate-50/50 hover:shadow-sm transition-shadow">
                           <div className="flex justify-between items-center pb-3 border-b border-slate-100 text-xs">
                             <span className="font-semibold text-slate-700">Đơn hàng #{o.id}</span>
-                            <span className="text-[#EE4D2D] font-bold uppercase">{o.status || 'Completed'}</span>
+                            <span className="text-[#4F46E5] font-bold uppercase">{o.status || 'Completed'}</span>
                           </div>
                           <div className="py-3 text-xs text-slate-600">
                             <p>Ngày đặt: {new Date(o.order_date).toLocaleString()}</p>
@@ -1277,7 +1277,7 @@ export default function ProfilePage() {
                           </div>
                           <div className="flex justify-between items-center pt-3 border-t border-slate-100">
                             <span className="text-xs text-slate-500">Thành tiền:</span>
-                            <span className="text-base font-bold text-[#EE4D2D]">
+                            <span className="text-base font-bold text-[#4F46E5]">
                               ${parseFloat(o.total_amount).toFixed(2)}
                             </span>
                           </div>
@@ -1318,7 +1318,7 @@ export default function ProfilePage() {
                   placeholder="4111 2222 3333 4444"
                   value={newCardNumber}
                   onChange={(e) => setNewCardNumber(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded outline-none focus:border-[#EE4D2D]"
+                  className="w-full px-3 py-2 border border-slate-300 rounded outline-none focus:border-[#4F46E5]"
                 />
               </div>
               <div>
@@ -1329,7 +1329,7 @@ export default function ProfilePage() {
                   placeholder="NGUYEN VAN A"
                   value={newCardHolder}
                   onChange={(e) => setNewCardHolder(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded outline-none focus:border-[#EE4D2D] uppercase"
+                  className="w-full px-3 py-2 border border-slate-300 rounded outline-none focus:border-[#4F46E5] uppercase"
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -1341,7 +1341,7 @@ export default function ProfilePage() {
                     placeholder="12/28"
                     value={newCardExpiry}
                     onChange={(e) => setNewCardExpiry(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded outline-none focus:border-[#EE4D2D]"
+                    className="w-full px-3 py-2 border border-slate-300 rounded outline-none focus:border-[#4F46E5]"
                   />
                 </div>
                 <div>
@@ -1353,7 +1353,7 @@ export default function ProfilePage() {
                     placeholder="123"
                     value={newCardCvv}
                     onChange={(e) => setNewCardCvv(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded outline-none focus:border-[#EE4D2D]"
+                    className="w-full px-3 py-2 border border-slate-300 rounded outline-none focus:border-[#4F46E5]"
                   />
                 </div>
               </div>
@@ -1367,7 +1367,7 @@ export default function ProfilePage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-[#EE4D2D] hover:bg-[#d73211] text-white font-medium rounded shadow-sm"
+                  className="px-5 py-2 bg-[#4F46E5] hover:bg-[#4338CA] text-white font-medium rounded shadow-sm"
                 >
                   Save Card
                 </button>
@@ -1413,7 +1413,7 @@ export default function ProfilePage() {
                   placeholder="0123456789"
                   value={newBankAccountNumber}
                   onChange={(e) => setNewBankAccountNumber(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded outline-none focus:border-[#EE4D2D]"
+                  className="w-full px-3 py-2 border border-slate-300 rounded outline-none focus:border-[#4F46E5]"
                 />
               </div>
               <div>
@@ -1424,7 +1424,7 @@ export default function ProfilePage() {
                   placeholder="NGUYEN VAN A"
                   value={newBankAccountHolder}
                   onChange={(e) => setNewBankAccountHolder(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded outline-none focus:border-[#EE4D2D] uppercase"
+                  className="w-full px-3 py-2 border border-slate-300 rounded outline-none focus:border-[#4F46E5] uppercase"
                 />
               </div>
               <div className="pt-3 flex gap-2 justify-end">
@@ -1437,7 +1437,7 @@ export default function ProfilePage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-[#EE4D2D] hover:bg-[#d73211] text-white font-medium rounded shadow-sm"
+                  className="px-5 py-2 bg-[#4F46E5] hover:bg-[#4338CA] text-white font-medium rounded shadow-sm"
                 >
                   Save Account
                 </button>
@@ -1468,7 +1468,7 @@ export default function ProfilePage() {
                   placeholder="Nguyễn Văn A"
                   value={newAddressName}
                   onChange={(e) => setNewAddressName(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded outline-none focus:border-[#EE4D2D]"
+                  className="w-full px-3 py-2 border border-slate-300 rounded outline-none focus:border-[#4F46E5]"
                 />
               </div>
               <div>
@@ -1479,7 +1479,7 @@ export default function ProfilePage() {
                   placeholder="0987270635"
                   value={newAddressPhone}
                   onChange={(e) => setNewAddressPhone(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded outline-none focus:border-[#EE4D2D]"
+                  className="w-full px-3 py-2 border border-slate-300 rounded outline-none focus:border-[#4F46E5]"
                 />
               </div>
               <div>
@@ -1490,7 +1490,7 @@ export default function ProfilePage() {
                   placeholder="TP. Hồ Chí Minh"
                   value={newAddressCity}
                   onChange={(e) => setNewAddressCity(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded outline-none focus:border-[#EE4D2D]"
+                  className="w-full px-3 py-2 border border-slate-300 rounded outline-none focus:border-[#4F46E5]"
                 />
               </div>
               <div>
@@ -1501,7 +1501,7 @@ export default function ProfilePage() {
                   placeholder="Số 123 Đường Nguyễn Huệ, Phường Bến Nghé, Quận 1"
                   value={newAddressDetail}
                   onChange={(e) => setNewAddressDetail(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded outline-none focus:border-[#EE4D2D]"
+                  className="w-full px-3 py-2 border border-slate-300 rounded outline-none focus:border-[#4F46E5]"
                 />
               </div>
               <div>
@@ -1510,7 +1510,7 @@ export default function ProfilePage() {
                     type="checkbox"
                     checked={newAddressDefault}
                     onChange={(e) => setNewAddressDefault(e.target.checked)}
-                    className="w-4 h-4 text-[#EE4D2D] rounded"
+                    className="w-4 h-4 text-[#4F46E5] rounded"
                   />
                   <span>Đặt làm địa chỉ mặc định</span>
                 </label>
@@ -1525,7 +1525,7 @@ export default function ProfilePage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-[#EE4D2D] hover:bg-[#d73211] text-white font-medium rounded shadow-sm"
+                  className="px-5 py-2 bg-[#4F46E5] hover:bg-[#4338CA] text-white font-medium rounded shadow-sm"
                 >
                   Submit
                 </button>
@@ -1547,7 +1547,7 @@ export default function ProfilePage() {
               value={modalInput}
               onChange={(e) => setModalInput(e.target.value)}
               placeholder="new_email@example.com"
-              className="w-full px-3 py-2 border border-slate-300 rounded text-sm outline-none focus:border-[#EE4D2D]"
+              className="w-full px-3 py-2 border border-slate-300 rounded text-sm outline-none focus:border-[#4F46E5]"
             />
             <div className="pt-4 flex gap-2 justify-end">
               <button
@@ -1563,7 +1563,7 @@ export default function ProfilePage() {
                   setEmail(modalInput);
                   setShowEditEmailModal(false);
                 }}
-                className="px-4 py-1.5 bg-[#EE4D2D] text-white text-xs rounded"
+                className="px-4 py-1.5 bg-[#4F46E5] text-white text-xs rounded"
               >
                 Confirm
               </button>
@@ -1584,7 +1584,7 @@ export default function ProfilePage() {
               value={modalInput}
               onChange={(e) => setModalInput(e.target.value)}
               placeholder="0987270635"
-              className="w-full px-3 py-2 border border-slate-300 rounded text-sm outline-none focus:border-[#EE4D2D]"
+              className="w-full px-3 py-2 border border-slate-300 rounded text-sm outline-none focus:border-[#4F46E5]"
             />
             <div className="pt-4 flex gap-2 justify-end">
               <button
@@ -1600,7 +1600,7 @@ export default function ProfilePage() {
                   setPhone(modalInput);
                   setShowEditPhoneModal(false);
                 }}
-                className="px-4 py-1.5 bg-[#EE4D2D] text-white text-xs rounded"
+                className="px-4 py-1.5 bg-[#4F46E5] text-white text-xs rounded"
               >
                 Confirm
               </button>
