@@ -26,7 +26,9 @@ export default function AuraAIChatbot() {
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(1); // Mặc định 1 tin nhắn chào mừng từ Aura AI
   const messagesEndRef = useRef(null);
+  const chatWindowRef = useRef(null);
   const { addToCart } = useCart();
 
   const scrollToBottom = () => {
@@ -35,9 +37,21 @@ export default function AuraAIChatbot() {
 
   useEffect(() => {
     if (isOpen) {
+      setUnreadCount(0); // Đã mở xem tin nhắn -> Xóa chấm đỏ noti
       scrollToBottom();
     }
   }, [messages, isOpen]);
+
+  // Tự động đóng cửa sổ chat khi click chuột ra ngoài
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isOpen && chatWindowRef.current && !chatWindowRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isOpen]);
 
   const handleSendMessage = async (textToSend) => {
     const messageContent = (textToSend || inputMessage).trim();
@@ -97,7 +111,10 @@ export default function AuraAIChatbot() {
           <span className="absolute -inset-1 rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-40 blur-[3px] animate-signal-beacon pointer-events-none"></span>
 
           <button
-            onClick={() => setIsOpen(true)}
+            onClick={() => {
+              setIsOpen(true);
+              setUnreadCount(0);
+            }}
             className="group relative flex items-center h-11 sm:h-12 px-3 group-hover:px-4 rounded-full bg-gradient-to-r from-indigo-600/40 via-purple-600/35 to-pink-500/40 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-500 backdrop-blur-md hover:backdrop-blur-none text-white border border-white/20 hover:border-white/50 shadow-[0_4px_20px_rgba(0,0,0,0.35)] hover:shadow-[0_0_30px_rgba(168,85,247,0.7)] hover:scale-105 active:scale-95 transition-all duration-300 ease-out cursor-pointer select-none"
             aria-label="Aura AI"
           >
@@ -115,13 +132,23 @@ export default function AuraAIChatbot() {
                 Aura AI
               </span>
             </div>
+
+            {/* Chấm đỏ thông báo số tin nhắn chưa đọc (Red Notification Badge) */}
+            {unreadCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1.5 flex items-center justify-center bg-rose-500 text-white text-[10px] font-extrabold rounded-full border-2 border-[#020204] shadow-lg shadow-rose-500/70 animate-bounce">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
           </button>
         </div>
       )}
 
       {/* 2. Cửa sổ Chatbot Popup hiện đại, nhỏ gọn & trong suốt thanh lịch */}
       {isOpen && (
-        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 w-[92vw] sm:w-[380px] h-[530px] max-h-[82vh] bg-[#0a0b12]/80 backdrop-blur-xl border border-indigo-500/30 rounded-3xl shadow-[0_15px_50px_rgba(0,0,0,0.85)] flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-300">
+        <div 
+          ref={chatWindowRef}
+          className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 w-[92vw] sm:w-[380px] h-[530px] max-h-[82vh] bg-[#0a0b12]/80 backdrop-blur-xl border border-indigo-500/30 rounded-3xl shadow-[0_15px_50px_rgba(0,0,0,0.85)] flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-300"
+        >
           
           {/* Header */}
           <div className="bg-gradient-to-r from-indigo-900/70 via-purple-900/50 to-slate-900/70 p-3.5 sm:p-4 border-b border-white/10 flex items-center justify-between">
