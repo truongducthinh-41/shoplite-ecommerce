@@ -2,17 +2,16 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { apiFetch } from '../services/api';
 import { useCart } from '../context/CartContext';
-import { ShoppingCart, Star, Smartphone, Laptop, Headphones, Gamepad, Watch, Camera, Flame, Shirt, ShoppingBag, Baby, Monitor, Home, Sparkles, HeartPulse, Footprints, Briefcase, Coffee, Dumbbell, Store, Car, Book, Gamepad2, Gift, Box, Ticket, ChevronLeft, ChevronRight, ChevronDown, History } from 'lucide-react';
+import { ShoppingCart, Star, Smartphone, Laptop, Headphones, Gamepad, Watch, Camera, Flame, Shirt, ShoppingBag, Baby, Monitor, Home, Sparkles, HeartPulse, Footprints, Briefcase, Coffee, Dumbbell, Store, Car, Book, Gamepad2, Gift, Box, Ticket, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 import VertexHero from '../components/VertexHero';
 import { calculatePricing } from '../utils/pricing';
 import { FALLBACK_PRODUCTS } from '../data/categoryProducts';
 import { getSafeProductImage, handleImageError } from '../utils/productImages';
-import { getRecentlyViewedProducts, generateBlendedDiscoverFeed, trackSearchQuery, matchProductSearch, trackProductInteraction } from '../utils/userTracker';
+import { generateBlendedDiscoverFeed, trackSearchQuery, matchProductSearch, trackProductInteraction } from '../utils/userTracker';
 
 export default function HomePage() {
   const [products, setProducts] = useState([]);
   const [bestSellers, setBestSellers] = useState([]);
-  const [recentlyViewed, setRecentlyViewed] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -124,10 +123,6 @@ export default function HomePage() {
 
         setProducts(displayProducts);
         setBestSellers(sanitizedBestSellers);
-
-        // Lấy danh sách sản phẩm vừa xem
-        const recent = getRecentlyViewedProducts();
-        setRecentlyViewed(recent);
 
         setPage(0);
         setHasMore(productsData && productsData.length === LIMIT);
@@ -298,34 +293,6 @@ export default function HomePage() {
               </div>
             );
           })}
-          </div>
-        </div>
-      )}
-
-      {/* Recently Viewed Products Section (Sản phẩm vừa xem) */}
-      {!searchQuery && recentlyViewed.length > 0 && (
-        <div className="mb-10 bg-[#0e0f17]/90 rounded-2xl p-4 sm:p-5 border border-white/5 backdrop-blur-sm">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2 text-slate-300">
-              <History className="w-4 h-4 text-indigo-400" />
-              <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-white">Đã Xem Gần Đây</h3>
-            </div>
-            <span className="text-[11px] text-slate-500">Lịch sử duyệt web cá nhân</span>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2.5">
-            {recentlyViewed.map(item => (
-              <Link 
-                key={`recent-${item.id}`} 
-                to={`/product/${item.id}`}
-                className="bg-white/5 hover:bg-white/10 p-2 rounded-xl border border-white/5 hover:border-indigo-500/30 transition-all flex flex-col group"
-              >
-                <div className="aspect-square w-full rounded-lg overflow-hidden bg-black/40 mb-1.5">
-                  <img src={getSafeProductImage(item)} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" onError={handleImageError} />
-                </div>
-                <p className="text-[11px] text-slate-300 line-clamp-1 group-hover:text-indigo-400 font-medium">{item.name}</p>
-                <p className="text-[11px] font-bold text-rose-400 mt-auto">${item.price}</p>
-              </Link>
-            ))}
           </div>
         </div>
       )}
