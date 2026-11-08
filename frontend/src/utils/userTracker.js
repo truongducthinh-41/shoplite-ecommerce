@@ -7,284 +7,309 @@ const RECENT_VIEWS_KEY = 'aurastore_recent_views';
 const CATEGORY_WEIGHTS_KEY = 'aurastore_category_weights';
 const RECENT_SEARCHES_KEY = 'aurastore_recent_searches';
 
-// Hàm chuẩn hóa chuỗi tiếng Việt (bỏ dấu, chuyển chữ thường)
+/**
+ * Hàm chuẩn hóa chuỗi tiếng Việt & tiếng Anh chuyên sâu:
+ * - Khử toàn bộ dấu thanh sắc huyền hỏi ngã nặng
+ * - XỬ LÝ TRIỆT ĐỂ ký tự đ/Đ thành d/D (tránh lỗi font tiếng Việt nổi tiếng)
+ * - Chuyển chữ thường và trim khoảng trắng
+ */
 export const normalizeText = (text) =>
   (text || '')
     .toString()
+    .toLowerCase()
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'd')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
     .trim();
 
-// Bản đồ từ khóa tìm kiếm (hỗ trợ cả tiếng Anh lẫn tiếng Việt) ánh xạ chính xác Category ID và Tên Category
-export const KEYWORD_CATEGORY_MAP = [
+// TỪ ĐIỂN TỪ ĐỒNG NGHĨA VIỆT - ANH (QUERY SYNONYMS EXPANSION)
+export const QUERY_SYNONYMS = {
+  phone: ['dien thoai', 'smartphone', 'iphone', 'samsung'],
+  'dien thoai': ['phone', 'smartphone', 'iphone', 'samsung'],
+  smartphone: ['phone', 'dien thoai'],
+  dt: ['dien thoai', 'phone'],
+  laptop: ['may tinh', 'macbook'],
+  'may tinh': ['laptop', 'pc', 'macbook'],
+  computer: ['laptop', 'may tinh'],
+  pc: ['may tinh', 'laptop'],
+  'tai nghe': ['headphone', 'airpod', 'earphone'],
+  headphone: ['tai nghe', 'airpod'],
+  airpod: ['tai nghe', 'airpods'],
+  loa: ['soundbar', 'speaker', 'marshall'],
+  speaker: ['loa'],
+  'dong ho': ['watch', 'smartwatch', 'apple watch'],
+  watch: ['dong ho', 'smartwatch'],
+  smartwatch: ['dong ho', 'watch'],
+  giay: ['sneaker', 'shoes'],
+  sneaker: ['giay'],
+  shoes: ['giay'],
+  ao: ['shirt', 'hoodie', 'polo', 'ao thun', 'ao so mi', 'ao khoac'],
+  shirt: ['ao', 'ao thun', 'ao so mi'],
+  quan: ['jean', 'pants', 'trousers', 'quan jean', 'quan tay'],
+  pants: ['quan'],
+  jean: ['quan jean', 'quan'],
+  vay: ['dam', 'dress', 'skirt'],
+  dam: ['vay', 'dress'],
+  dress: ['dam', 'vay'],
+  tui: ['bag', 'balo', 'backpack', 'tui xach', 'vi'],
+  bag: ['tui', 'tui xach', 'vi'],
+  balo: ['backpack', 'tui'],
+  backpack: ['balo', 'tui'],
+  son: ['son moi', 'lipstick'],
+  lipstick: ['son', 'son moi'],
+  'my pham': ['beauty', 'cosmetics', 'duong da', 'serum', 'kem'],
+  cosmetics: ['my pham', 'beauty'],
+  'nuoc hoa': ['perfume'],
+  perfume: ['nuoc hoa']
+};
+
+// TỪ ĐIỂN CỤM TỪ TÌM KIẾM PHỔ BIẾN (AUTOCOMPLETE SUGGESTIONS) TRÊN TOÀN SÀN
+export const ALL_SEARCH_SUGGESTIONS = [
+  // 1. Điện thoại & Phụ kiện công nghệ (Category 10)
+  'điện thoại thông minh',
+  'điện thoại iphone chính hãng',
+  'điện thoại samsung galaxy',
+  'điện thoại chơi game cấu hình cao',
+  'điện thoại giá rẻ pin trâu',
+  'điện thoại xiaomi redmi',
+  'smartphone 5g cao cấp',
+  'phone case ốp lưng điện thoại',
+  'củ sạc nhanh 45w type-c',
+  'phụ kiện điện thoại thông minh',
+
+  // 2. Thời trang nam (Category 16)
+  'áo thun nam cotton thoáng mát',
+  'áo hoodie unisex thể thao',
+  'áo polo nam cao cấp chính hãng',
+  'áo sơ mi nam công sở chống nhăn',
+  'áo khoác gió nam chống nước',
+  'áo khoác blazer nam lịch lãm',
+  'quần jean nam slimfit co giãn',
+  'quần tây âu nam công sở',
+  'quần short nam thể thao',
+
+  // 3. Thời trang nữ (Category 17)
+  'áo sơ mi lụa nữ công sở',
+  'áo blazer nữ thanh lịch',
+  'áo len nữ cổ lọ giữ nhiệt',
+  'áo kiểu nữ thời trang',
+  'váy đầm dạ hội dự tiệc',
+  'chân váy xếp ly dáng dài',
+  'đầm maxi hoa nhí đi biển',
+  'quần ống rộng nữ cạp cao',
+
+  // 4. Máy tính & Laptop (Category 12)
+  'laptop văn phòng mỏng nhẹ sinh viên',
+  'laptop gaming đồ họa rtx',
+  'macbook pro m3 space black',
+  'chuột công thái học logitech không dây',
+  'bàn phím cơ không dây bluetooth',
+  'màn hình máy tính gaming 2k',
+
+  // 5. Âm thanh (Category 14)
+  'tai nghe bluetooth không dây',
+  'tai nghe chống ồn chủ động sony',
+  'tai nghe airpods pro 2 chính hãng',
+  'loa bluetooth di động marshall',
+  'loa soundbar phòng khách',
+
+  // 6. Giày dép nam & nữ (Category 18 & 19)
+  'giày sneaker thể thao nam',
+  'giày chạy bộ êm chân thoáng khí',
+  'giày tây da bò nam công sở',
+  'giày cao gót nữ quai mảnh',
+  'giày sneaker nữ thời trang',
+  'dép sandal nữ quai ngang',
+
+  // 7. Làm đẹp & Mỹ phẩm (Category 25)
+  'son môi cao cấp chính hãng lì mịn',
+  'son kem lì lâu trôi chính hãng',
+  'kem chống nắng bảo vệ da quang phổ rộng',
+  'serum dưỡng ẩm vitamin c sáng da',
+  'nước hoa nam nữ chính hãng cao cấp',
+  'nước tẩy trang dịu nhẹ cho da nhạy cảm',
+
+  // 8. Đồng hồ (Category 21)
+  'đồng hồ thông minh apple watch',
+  'đồng hồ nam casio chính hãng',
+  'đồng hồ cơ nam rolex sang trọng',
+  'smartwatch thể thao đo nhịp tim',
+
+  // 9. Túi xách & Balo (Category 20)
+  'túi xách nữ đeo chéo da thật',
+  'balo laptop chống nước du lịch',
+  'ví da nam cầm tay cao cấp',
+
+  // 10. Gaming (Category 15)
+  'máy chơi game playstation 5 ps5',
+  'tay cầm chơi game không dây',
+  'máy chơi game nintendo switch oled',
+  'tai nghe gaming âm thanh vòm 7.1',
+
+  // 11. Gia dụng thông minh & Nhà cửa (Category 22 & 23)
+  'robot hút bụi lau nhà thông minh',
+  'nồi chiên không dầu điện tử',
+  'máy lọc không khí gia đình',
+  'chăn ga gối đệm lụa tencel cao cấp',
+
+  // 12. Mẹ & Bé (Category 27)
+  'sữa bột phát triển chiều cao trí não cho bé',
+  'tã bỉm dán sơ sinh chống tràn',
+  'xe đẩy em bé gấp gọn du lịch',
+  'đồ chơi trẻ em thông minh',
+
+  // 13. Máy ảnh (Category 13)
+  'máy ảnh mirrorless canon eos',
+  'máy ảnh full-frame sony alpha a7',
+  'ống kính chân dung lens kit',
+
+  // 14. Thể thao & Sức khỏe (Category 26 & 28)
+  'thảm tập yoga định tuyến chống trượt',
+  'bộ tạ tay đa năng tập tại nhà',
+  'viên uống dầu cá omega 3 nhập khẩu'
+];
+
+// Bản đồ từ khóa ngành hàng chuẩn xác 100% với Category ID trong Database & Fallback Catalog
+export const CATEGORY_SYNONYMS = [
   {
+    catId: 10,
     categoryName: 'Smartphones & Accessories',
-    catIds: [10, 3],
-    keywords: ['phone', 'dien thoai', 'smartphone', 'iphone', 'samsung', 'xiaomi', 'oppo', 'pixel', 'redmi', 'galaxy', 'op lung', 'cu sac', 'cap sac', 'phu kien dien thoai', 'sac nhanh', 'mobile', 'cellphone', 'apple'],
-    querySuggestions: [
-      'điện thoại thông minh',
-      'điện thoại iphone',
-      'điện thoại samsung galaxy',
-      'điện thoại chơi game',
-      'phụ kiện điện thoại & sạc nhanh',
-      'ốp lưng điện thoại cao cấp'
-    ]
+    keywords: ['phone', 'dien thoai', 'smartphone', 'iphone', 'samsung', 'xiaomi', 'oppo', 'pixel', 'redmi', 'galaxy', 'op lung', 'cu sac', 'cap sac', 'phu kien dien thoai', 'sac nhanh', 'mobile', 'cellphone', 'apple']
   },
   {
+    catId: 14,
     categoryName: 'Audio',
-    catIds: [14, 16],
-    keywords: ['tai nghe', 'airpod', 'headphone', 'earphone', 'loa', 'marshall', 'sony wh', 'am thanh', 'audio', 'loa bluetooth', 'soundbar'],
-    querySuggestions: [
-      'tai nghe bluetooth không dây',
-      'tai nghe chống ồn sony',
-      'tai nghe airpods pro',
-      'loa bluetooth marshall'
-    ]
+    keywords: ['tai nghe', 'airpod', 'headphone', 'earphone', 'loa', 'marshall', 'sony wh', 'am thanh', 'audio', 'loa bluetooth', 'soundbar']
   },
   {
+    catId: 12,
     categoryName: 'Laptops & Computers',
-    catIds: [12, 7],
-    keywords: ['laptop', 'macbook', 'dell', 'asus', 'may tinh', 'pc', 'ban phim', 'chuot may tinh', 'thinkpad', 'acer', 'man hinh', 'computer'],
-    querySuggestions: [
-      'laptop văn phòng sinh viên',
-      'laptop gaming đồ họa',
-      'macbook pro m3',
-      'chuột công thái học logitech'
-    ]
+    keywords: ['laptop', 'macbook', 'dell', 'asus', 'may tinh', 'pc', 'ban phim', 'chuot may tinh', 'thinkpad', 'acer', 'man hinh', 'computer']
   },
   {
+    catId: 15,
     categoryName: 'Gaming',
-    catIds: [15, 21],
-    keywords: ['game', 'gaming', 'ps5', 'tay cam', 'nintendo', 'playstation', 'xbox', 'chuot gaming', 'ban phim co'],
-    querySuggestions: [
-      'máy chơi game playstation 5',
-      'tay cầm chơi game không dây',
-      'nintendo switch oled',
-      'bàn phím cơ gaming rgb'
-    ]
+    keywords: ['game', 'gaming', 'ps5', 'tay cam', 'nintendo', 'playstation', 'xbox', 'chuot gaming', 'ban phim co']
   },
   {
+    catId: 11,
     categoryName: 'Electronics',
-    catIds: [11, 5],
-    keywords: ['tivi', 'tv', 'lg oled', 'may chieu', 'man hinh oled', 'dien tu', 'electronics'],
-    querySuggestions: [
-      'smart tv 4k oled',
-      'máy chiếu mini thông minh',
-      'màn hình máy tính gaming'
-    ]
+    keywords: ['tivi', 'tv', 'lg oled', 'may chieu', 'man hinh oled', 'dien tu', 'electronics']
   },
   {
+    catId: 16,
     categoryName: "Men's Fashion",
-    catIds: [16, 1],
-    keywords: ['ao', 'quan', 'hoodie', 'polo', 'jean', 'jacket', 'so mi', 'thoi trang nam', 'vest', 'nam', 'ao thun nam', 'shirt', 'men'],
-    querySuggestions: [
-      'áo thun nam cotton',
-      'áo hoodie nỉ unisex',
-      'áo polo nam cao cấp',
-      'quần jean nam slimfit'
-    ]
+    keywords: ['ao', 'quan', 'hoodie', 'polo', 'jean', 'jacket', 'so mi', 'thoi trang nam', 'vest', 'nam', 'ao thun nam', 'shirt', 'men', 'that lung', 'quan jean', 'quan tay']
   },
   {
+    catId: 17,
     categoryName: "Women's Fashion",
-    catIds: [17, 2],
-    keywords: ['vay', 'dam', 'croptop', 'chan vay', 'thoi trang nu', 'nu', 'ao kieu', 'set do nu', 'dress', 'women'],
-    querySuggestions: [
-      'váy đầm dạ hội dự tiệc',
-      'set đồ nữ thời trang',
-      'chân váy xếp ly dáng dài',
-      'áo kiểu nữ công sở'
-    ]
+    keywords: ['vay', 'dam', 'croptop', 'chan vay', 'thoi trang nu', 'nu', 'ao kieu', 'set do nu', 'dress', 'women', 'blazer nu']
   },
   {
+    catId: 25,
     categoryName: 'Beauty',
-    catIds: [25, 8],
-    keywords: ['son', 'kem', 'serum', 'my pham', 'trang diem', 'duong da', 'beauty', 'nuoc hoa', 'chong nang', 'tay trang', 'phan phu', 'cosmetics', 'lipstick'],
-    querySuggestions: [
-      'son môi cao cấp chính hãng',
-      'kem chống nắng bảo vệ da',
-      'serum dưỡng ẩm sáng da',
-      'nước hoa nam nữ chính hãng'
-    ]
+    keywords: ['son', 'kem', 'serum', 'my pham', 'trang diem', 'duong da', 'beauty', 'nuoc hoa', 'chong nang', 'tay trang', 'phan phu', 'cosmetics', 'lipstick']
   },
   {
+    catId: 18,
     categoryName: "Men's Shoes",
-    catIds: [18, 13],
-    keywords: ['giay nam', 'sneaker nam', 'giay da', 'giay the thao nam'],
-    querySuggestions: [
-      'giày sneaker thể thao nam',
-      'giày tây da bò công sở',
-      'giày chạy bộ êm chân'
-    ]
+    keywords: ['giay nam', 'sneaker nam', 'giay da', 'giay the thao nam', 'giay tay']
   },
   {
+    catId: 19,
     categoryName: "Women's Shoes",
-    catIds: [19, 12],
-    keywords: ['giay nu', 'cao got', 'sandal nu', 'sneaker nu', 'giay the thao nu'],
-    querySuggestions: [
-      'giày cao gót nữ',
-      'giày sneaker nữ thời trang',
-      'sandal nữ quai mảnh'
-    ]
+    keywords: ['giay nu', 'cao got', 'sandal nu', 'sneaker nu', 'giay the thao nu']
   },
   {
+    catId: 21,
     categoryName: 'Watches',
-    catIds: [21, 11],
-    keywords: ['dong ho', 'watch', 'rolex', 'casio', 'apple watch', 'dong ho deo tay', 'smartwatch'],
-    querySuggestions: [
-      'đồng hồ thông minh apple watch',
-      'đồng hồ nam casio chính hãng',
-      'đồng hồ cơ sang trọng'
-    ]
+    keywords: ['dong ho', 'watch', 'rolex', 'casio', 'apple watch', 'dong ho deo tay', 'smartwatch']
   },
   {
+    catId: 20,
     categoryName: "Women's Bags",
-    catIds: [20, 14],
-    keywords: ['tui', 'balo', 'vi', 'clutch', 'tui xach', 'tui deo cheo', 'vi cam tay', 'backpack', 'bag'],
-    querySuggestions: [
-      'túi xách nữ đeo chéo',
-      'balo du lịch chống nước',
-      'ví cầm tay nữ sang trọng'
-    ]
+    keywords: ['tui', 'balo', 'vi', 'clutch', 'tui xach', 'tui deo cheo', 'vi cam tay', 'backpack', 'bag']
   },
   {
+    catId: 27,
     categoryName: 'Mom & Baby',
-    catIds: [27, 4],
-    keywords: ['me', 'be', 'sua', 'bim', 'ta', 'noi em be', 'tre em', 'do choi tre em', 'xe day', 'baby'],
-    querySuggestions: [
-      'sữa bột phát triển trí não cho bé',
-      'tã bỉm sơ sinh cao cấp',
-      'xe đẩy gấp gọn em bé'
-    ]
+    keywords: ['me', 'be', 'sua', 'bim', 'ta', 'noi em be', 'tre em', 'do choi tre em', 'xe day', 'baby']
   },
   {
+    catId: 22,
     categoryName: 'Home & Living',
-    catIds: [22, 6],
-    keywords: ['nha cua', 'noi', 'chao', 'den', 'giuong', 'nem', 'trang tri', 'noi that', 'khan', 'home'],
-    querySuggestions: [
-      'chăn ga gối đệm cao cấp',
-      'đèn ngủ trang trí phòng',
-      'bộ nồi inox nhà bếp'
-    ]
+    keywords: ['nha cua', 'noi', 'chao', 'den', 'giuong', 'nem', 'trang tri', 'noi that', 'khan', 'home']
   },
   {
+    catId: 23,
     categoryName: 'Smart Home & Appliances',
-    catIds: [23, 15],
-    keywords: ['thong minh', 'hut bui', 'robot', 'noi chien', 'may loc', 'gia dung', 'appliances', 'noi com'],
-    querySuggestions: [
-      'robot hút bụi lau nhà thông minh',
-      'nồi chiên không dầu điện tử',
-      'máy lọc không khí gia đình'
-    ]
+    keywords: ['thong minh', 'hut bui', 'robot', 'noi chien', 'may loc', 'gia dung', 'appliances', 'noi com']
   },
   {
+    catId: 13,
     categoryName: 'Cameras',
-    catIds: [13, 9],
-    keywords: ['may anh', 'camera', 'lens', 'ong kinh', 'canon', 'fujifilm', 'nikon', 'gopro'],
-    querySuggestions: [
-      'máy ảnh mirrorless canon',
-      'ống kính chụp chân dung',
-      'camera hành trình chống nước'
-    ]
+    keywords: ['may anh', 'camera', 'lens', 'ong kinh', 'canon', 'fujifilm', 'nikon', 'gopro']
   },
   {
+    catId: 26,
     categoryName: 'Health',
-    catIds: [26, 10],
-    keywords: ['suc khoe', 'vitamin', 'omega', 'thuc pham chuc nang', 'canxi', 'khau trang', 'may do huyet ap', 'health'],
-    querySuggestions: [
-      'viên uống bổ sung vitamin tổng hợp',
-      'dầu cá omega 3 nhập khẩu',
-      'máy đo huyết áp bắp tay'
-    ]
+    keywords: ['suc khoe', 'vitamin', 'omega', 'thuc pham chuc nang', 'canxi', 'khau trang', 'may do huyet ap', 'health']
   },
   {
+    catId: 28,
     categoryName: 'Sports & Outdoors',
-    catIds: [28, 17],
-    keywords: ['the thao', 'tap gym', 'ta', 'bong da', 'chay bo', 'yoga', 'vot', 'cau long', 'tennis', 'sport'],
-    querySuggestions: [
-      'thảm tập yoga định tuyến',
-      'bộ tạ tay đa năng tại nhà',
-      'vợt cầu lông trợ lực'
-    ]
+    keywords: ['the thao', 'tap gym', 'ta', 'bong da', 'chay bo', 'yoga', 'vot', 'cau long', 'tennis', 'sport']
   },
   {
+    catId: 31,
     categoryName: 'Groceries',
-    catIds: [31, 18],
-    keywords: ['thuc pham', 'banh', 'keo', 'tra', 'ca phe', 'do an vat', 'groceries', 'mi goi', 'food'],
-    querySuggestions: [
-      'cà phê hạt rang mộc nguyên chất',
-      'trà xanh ô long túi lọc',
-      'bánh kẹo ăn vặt văn phòng'
-    ]
+    keywords: ['thuc pham', 'banh', 'keo', 'tra', 'ca phe', 'do an vat', 'groceries', 'mi goi', 'food']
   },
   {
+    catId: 29,
     categoryName: 'Automotive',
-    catIds: [29, 19],
-    keywords: ['xe', 'o to', 'xe may', 'mu bao hiem', 'nhot', 'phu tung xe', 'gat mua', 'auto'],
-    querySuggestions: [
-      'mũ bảo hiểm 3/4 chính hãng',
-      'nhớt xe máy tổng hợp cao cấp',
-      'bơm lốp ô tô mini tự ngắt'
-    ]
+    keywords: ['xe', 'o to', 'xe may', 'mu bao hiem', 'nhot', 'phu tung xe', 'gat mua', 'auto']
   },
   {
+    catId: 30,
     categoryName: 'Books & Stationery',
-    catIds: [30, 20],
-    keywords: ['sach', 'van phong pham', 'but', 'so', 'tieu thuyet', 'giao trinh', 'truyen', 'book'],
-    querySuggestions: [
-      'sách phát triển tư duy kinh doanh',
-      'tiểu thuyết văn học bán chạy',
-      'bộ bút viết và sổ tay cao cấp'
-    ]
+    keywords: ['sach', 'van phong pham', 'but', 'so', 'tieu thuyet', 'giao trinh', 'truyen', 'book']
   },
   {
+    catId: 24,
     categoryName: 'Pet Supplies',
-    catIds: [24, 22],
-    keywords: ['thu cung', 'meo', 'cho', 'pate', 'chuong', 'cat ve sinh', 'thuc an cho meo', 'pet'],
-    querySuggestions: [
-      'thức ăn hạt cao cấp cho mèo',
-      'pate dinh dưỡng cho chó mèo',
-      'cát vệ sinh khử mùi thú cưng'
-    ]
+    keywords: ['thu cung', 'meo', 'cho', 'pate', 'chuong', 'cat ve sinh', 'thuc an cho meo', 'pet']
   },
   {
+    catId: 32,
     categoryName: 'Gifts',
-    catIds: [32, 23],
-    keywords: ['qua tang', 'gift', 'gau bong', 'hop qua', '8/3', 'valentine', 'qua luu niem'],
-    querySuggestions: [
-      'hộp quà tặng sinh nhật ý nghĩa',
-      'gấu bông teddy cao cấp',
-      'quà tặng kỷ niệm độc đáo'
-    ]
+    keywords: ['qua tang', 'gift', 'gau bong', 'hop qua', '8/3', 'valentine', 'qua luu niem', 'mo hinh']
   },
   {
+    catId: 33,
     categoryName: 'Vouchers',
-    catIds: [33, 24],
-    keywords: ['voucher', 'ma giam gia', 'phieu mua hang', 'the cao'],
-    querySuggestions: [
-      'phiếu quà tặng mua sắm 500k',
-      'mã giảm giá freeship toàn quốc',
-      'voucher ăn uống giải trí'
-    ]
+    keywords: ['voucher', 'ma giam gia', 'phieu mua hang', 'the cao']
   }
 ];
 
-// Hệ sinh thái ngành hàng bổ trợ (Companion Ecosystem Mapping)
+// Hệ sinh thái ngành hàng bổ trợ liên quan (Companion Ecosystem Mapping)
 export const COMPANION_CATEGORIES = {
-  10: [14, 12, 21, 11, 15, 23], // Smartphones -> Audio, Laptops, Watches, Electronics, Gaming, Smart Home
-  3:  [14, 12, 21, 11, 15, 23],
-  14: [10, 12, 15, 21],         // Audio -> Smartphones, Laptops, Gaming, Watches
-  12: [10, 14, 15, 11, 23],     // Laptops -> Smartphones, Audio, Gaming, Electronics
-  11: [10, 12, 14, 15],         // Electronics -> Smartphones, Laptops, Audio
-  15: [12, 14, 10, 11],         // Gaming -> Laptops, Audio, Smartphones
-  16: [18, 21, 20, 28],         // Men's Fashion -> Men's Shoes, Watches, Bags, Sports
-  17: [19, 20, 25, 21, 32],     // Women's Fashion -> Women's Shoes, Bags, Beauty, Watches, Gifts
-  25: [26, 17, 32, 20],         // Beauty -> Health, Women's Fashion, Gifts
-  21: [10, 16, 17, 12]          // Watches -> Smartphones, Fashion, Laptops
+  10: [14, 12, 21, 11, 15], // Điện thoại -> Âm thanh, Laptop, Đồng hồ, Điện tử, Gaming
+  14: [10, 12, 15, 21],     // Âm thanh -> Điện thoại, Laptop, Gaming, Đồng hồ
+  12: [10, 14, 15, 11],     // Laptop -> Điện thoại, Âm thanh, Gaming, Điện tử
+  11: [10, 12, 14, 15],     // Điện tử -> Điện thoại, Laptop, Âm thanh
+  15: [12, 14, 10, 11],     // Gaming -> Laptop, Âm thanh, Điện thoại
+  16: [18, 21, 20, 28],     // Thời trang nam -> Giày nam, Đồng hồ, Túi ví, Thể thao
+  17: [19, 20, 25, 21, 32], // Thời trang nữ -> Giày nữ, Túi xách, Mỹ phẩm, Đồng hồ, Quà tặng
+  25: [26, 17, 32, 20],     // Mỹ phẩm -> Sức khỏe, Thời trang nữ, Quà tặng
+  21: [10, 16, 17, 12]      // Đồng hồ -> Điện thoại, Thời trang, Laptop
 };
 
 /**
- * Kiểm tra sản phẩm có khớp với từ khóa tìm kiếm (ĐẢM BẢO CHÍNH XÁC 100%, KHÔNG LỌT NGÀNH NGOÀI LỀ)
+ * Hàm so khớp sản phẩm tìm kiếm:
+ * - CHÍNH XÁC 100%, KHÔNG BAO GIỜ BỊ LẪN NGÀNH KHÁC (Áo ra áo, Điện thoại ra điện thoại, Quần ra quần)
  */
 export function matchProductSearch(product, rawQuery) {
   if (!rawQuery || !rawQuery.trim()) return true;
@@ -292,24 +317,75 @@ export function matchProductSearch(product, rawQuery) {
   const pName = normalizeText(product.name);
   const pBrand = normalizeText(product.brand_name);
   const pCat = normalizeText(product.category_name);
+  const pWords = pName.split(/\s+/).concat(pBrand.split(/\s+/));
 
-  // 1. Khớp theo tên sản phẩm hoặc tên thương hiệu
+  // 1. Phân loại theo ngành hàng & từ khóa chuyên biệt (Tránh lẫn lộn 100%)
+  // ĐIỆN THOẠI & PHỤ KIỆN
+  const isPhoneQuery = ['phone', 'dien thoai', 'dt', 'smartphone', 'iphone', 'samsung', 'pixel', 'op lung', 'cu sac'].includes(qNorm);
+  if (isPhoneQuery) {
+    return product.category_id === 10 || pCat.includes('smartphone') || pCat.includes('dien thoai');
+  }
+
+  // ÁO (CHỈ LẤY ÁO, KHÔNG LẤY QUẦN, KHÔNG LẤY ĐẦM, KHÔNG LẤY ĐIỆN THOẠI)
+  if (qNorm === 'ao' || qNorm === 'ao thun' || qNorm === 'ao so mi' || qNorm === 'ao polo' || qNorm === 'ao hoodie' || qNorm === 'ao khoac' || qNorm === 'shirt') {
+    return (product.category_id === 16 || product.category_id === 17) &&
+      pWords.some(w => ['ao', 'shirt', 'polo', 'hoodie', 'khoac', 'blazer', 'len'].includes(w));
+  }
+
+  // QUẦN (CHỈ LẤY QUẦN, KHÔNG LẤY ÁO)
+  if (qNorm === 'quan' || qNorm === 'quan jean' || qNorm === 'quan tay' || qNorm === 'jean' || qNorm === 'pants') {
+    return (product.category_id === 16 || product.category_id === 17) &&
+      pWords.some(w => ['quan', 'jean', 'jeans', 'short'].includes(w));
+  }
+
+  // VÁY & ĐẦM (CHỈ LẤY VÁY/ĐẦM)
+  if (qNorm === 'vay' || qNorm === 'dam' || qNorm === 'dress' || qNorm === 'chan vay') {
+    return product.category_id === 17 &&
+      pWords.some(w => ['vay', 'dam', 'dress', 'maxi'].includes(w));
+  }
+
+  // GIÀY DÉP
+  if (qNorm === 'giay' || qNorm === 'sneaker' || qNorm === 'sandal' || qNorm === 'shoes') {
+    return product.category_id === 18 || product.category_id === 19;
+  }
+
+  // ÂM THANH
+  if (qNorm === 'tai nghe' || qNorm === 'loa' || qNorm === 'headphone' || qNorm === 'airpod' || qNorm === 'audio') {
+    return product.category_id === 14;
+  }
+
+  // MÁY TÍNH & LAPTOP
+  if (qNorm === 'laptop' || qNorm === 'may tinh' || qNorm === 'macbook' || qNorm === 'pc' || qNorm === 'computer') {
+    return product.category_id === 12;
+  }
+
+  // ĐỒNG HỒ
+  if (qNorm === 'dong ho' || qNorm === 'watch' || qNorm === 'smartwatch') {
+    return product.category_id === 21;
+  }
+
+  // SON MÔI (KHÔNG BAO GIỜ KHỚP VỚI THƯƠNG HIỆU SONY)
+  if (qNorm === 'son' || qNorm === 'son moi' || qNorm === 'lipstick') {
+    return product.category_id === 25 && pWords.some(w => w === 'son' || w === 'lipstick');
+  }
+
+  // MỸ PHẨM CHUNG
+  if (qNorm === 'my pham' || qNorm === 'kem' || qNorm === 'serum' || qNorm === 'nuoc hoa') {
+    return product.category_id === 25;
+  }
+
+  // 2. So khớp từ chuẩn xác theo từ đơn hoặc cụm từ
   if (pName.includes(qNorm) || pBrand.includes(qNorm)) {
+    // Tránh trường hợp "ao" nằm trong "xiaomi"
+    if (qNorm === 'ao' && !pWords.includes('ao')) return false;
+    // Tránh trường hợp "son" nằm trong "sony"
+    if (qNorm === 'son' && pBrand === 'sony') return false;
     return true;
   }
 
-  // 2. Khớp theo từ điển danh mục (ví dụ gõ "phone" hoặc "điện thoại" -> khớp Category 10 & 3)
-  for (const item of KEYWORD_CATEGORY_MAP) {
-    const isKeywordMatched = item.keywords.some(k => qNorm.includes(k) || k.includes(qNorm));
-    if (isKeywordMatched) {
-      if (item.catIds.includes(product.category_id) || normalizeText(product.category_name) === normalizeText(item.categoryName)) {
-        return true;
-      }
-    }
-  }
-
-  // 3. Khớp tên danh mục chính xác
-  if (pCat.includes(qNorm)) {
+  // So khớp từ chính xác
+  if (pWords.some(w => w === qNorm || (qNorm.length >= 4 && w.startsWith(qNorm)))) {
+    if (qNorm === 'son' && pWords.includes('sony')) return false;
     return true;
   }
 
@@ -318,51 +394,50 @@ export function matchProductSearch(product, rawQuery) {
 
 /**
  * Gợi ý tìm kiếm thông minh đa tầng cho Dropdown Thanh Search (Navbar)
- * Trả về CẢ:
- * 1. queries: Các câu từ khóa gợi ý phổ biến (e.g. "điện thoại thông minh", "điện thoại samsung"...)
- * 2. products: Danh sách các thẻ sản phẩm cụ thể khớp tìm kiếm
+ * KHÔNG BAO GIỜ GỢI Ý ĐIỆN THOẠI KHI NGƯỜI DÙNG GÕ "ÁO"!
  */
 export function getSmartSearchSuggestions(rawQuery, customCatalog = [], limit = 6) {
   if (!rawQuery || !rawQuery.trim()) return { queries: [], products: [] };
   const qNorm = normalizeText(rawQuery);
   const catalog = (customCatalog && customCatalog.length > 0) ? customCatalog : FALLBACK_PRODUCTS;
 
-  // 1. Tìm các câu từ khóa gợi ý (Query Autocomplete)
-  let queries = [];
-  for (const item of KEYWORD_CATEGORY_MAP) {
-    if (item.keywords.some(k => qNorm.includes(k) || k.includes(qNorm))) {
-      queries = [...queries, ...item.querySuggestions];
-    }
-  }
-  // Lọc các query khớp tốt nhất
-  const filteredQueries = Array.from(new Set(queries)).slice(0, 5);
+  // Danh sách từ khóa mở rộng (hỗ trợ từ đồng nghĩa tiếng Anh <-> tiếng Việt)
+  const queryKeys = [qNorm, ...(QUERY_SYNONYMS[qNorm] || [])];
 
-  // 2. Tìm các sản phẩm cụ thể
-  const directMatches = [];
-  const categoryMatches = [];
+  const matchedSet = new Set();
+  const queryMatches = [];
 
-  catalog.forEach(product => {
-    if (matchProductSearch(product, rawQuery)) {
-      const pName = normalizeText(product.name);
-      if (pName.includes(qNorm)) {
-        directMatches.push(product);
-      } else {
-        categoryMatches.push(product);
+  // 1. Tìm các câu từ khóa gợi ý (Query Autocomplete) CHÍNH XÁC theo tiền tố từ
+  for (const item of ALL_SEARCH_SUGGESTIONS) {
+    const itemNorm = normalizeText(item);
+    const words = itemNorm.split(/\s+/);
+
+    for (const key of queryKeys) {
+      // a. Toàn bộ câu bắt đầu bằng từ khóa (ví dụ "áo" -> "áo thun nam", "quần" -> "quần jean")
+      const matchStart = itemNorm.startsWith(key);
+      // b. Một từ trong câu KHỚP CHÍNH XÁC từ khóa (ví dụ "iphone" -> "điện thoại iphone chính hãng")
+      const matchExactWord = words.some(w => w === key);
+      // c. Người dùng đang gõ dở một từ dài >= 4 ký tự (ví dụ "sams" -> "samsung", "macb" -> "macbook")
+      const matchPrefixWord = (key.length >= 4 && words.some(w => w.startsWith(key) && !['quan', 'dong', 'chong', 'thong', 'bong'].includes(key)));
+
+      if (matchStart || matchExactWord || matchPrefixWord) {
+        if (!matchedSet.has(item)) {
+          matchedSet.add(item);
+          queryMatches.push(item);
+        }
+        break;
       }
     }
-  });
+    if (queryMatches.length >= 5) break;
+  }
 
-  directMatches.sort((a, b) => (b.sold_count || 0) - (a.sold_count || 0));
-  categoryMatches.sort((a, b) => (b.sold_count || 0) - (a.sold_count || 0));
-
-  const map = new Map();
-  [...directMatches, ...categoryMatches].forEach(p => {
-    if (!map.has(p.id)) map.set(p.id, p);
-  });
+  // 2. Tìm các sản phẩm cụ thể khớp đúng tiêu chí
+  const matchedProducts = catalog.filter(product => matchProductSearch(product, rawQuery));
+  matchedProducts.sort((a, b) => (b.sold_count || 0) - (a.sold_count || 0));
 
   return {
-    queries: filteredQueries,
-    products: Array.from(map.values()).slice(0, limit)
+    queries: queryMatches,
+    products: matchedProducts.slice(0, limit)
   };
 }
 
@@ -373,7 +448,6 @@ export function trackProductInteraction(product, interactionType = 'view') {
   if (!product || !product.id) return;
 
   try {
-    // 1. Lưu vào danh sách Sản phẩm vừa xem gần đây (Recently Viewed)
     const storedViews = JSON.parse(localStorage.getItem(RECENT_VIEWS_KEY) || '[]');
     const filtered = storedViews.filter(p => p.id !== product.id);
     const updatedViews = [
@@ -393,7 +467,7 @@ export function trackProductInteraction(product, interactionType = 'view') {
     ].slice(0, 10);
     localStorage.setItem(RECENT_VIEWS_KEY, JSON.stringify(updatedViews));
 
-    // 2. Tính toán điểm trọng số sở thích danh mục (Category Affinity Score)
+    // Tính toán điểm trọng số sở thích danh mục
     const weightDelta = interactionType === 'purchase' ? 12 : (interactionType === 'cart' ? 8 : 4);
     const storedWeights = JSON.parse(localStorage.getItem(CATEGORY_WEIGHTS_KEY) || '{}');
     const catId = product.category_id;
@@ -402,7 +476,6 @@ export function trackProductInteraction(product, interactionType = 'view') {
       localStorage.setItem(CATEGORY_WEIGHTS_KEY, JSON.stringify(storedWeights));
     }
 
-    // 3. Gửi đồng bộ lên Backend API
     apiFetch('/products/track-interaction', {
       method: 'POST',
       body: JSON.stringify({
@@ -426,22 +499,21 @@ export function trackSearchQuery(rawQuery) {
 
   try {
     const matchedCatIds = [];
-    for (const item of KEYWORD_CATEGORY_MAP) {
-      if (item.keywords.some(k => qNorm.includes(k) || k.includes(qNorm))) {
-        matchedCatIds.push(...item.catIds);
+    for (const item of CATEGORY_SYNONYMS) {
+      const isMatched = item.keywords.some(k => k === qNorm || (qNorm.length >= 3 && k.startsWith(qNorm)));
+      if (isMatched) {
+        matchedCatIds.push(item.catId);
       }
     }
 
-    // Tăng điểm trọng số cực cao cho danh mục tìm kiếm (+18 điểm)
     if (matchedCatIds.length > 0) {
       const storedWeights = JSON.parse(localStorage.getItem(CATEGORY_WEIGHTS_KEY) || '{}');
       matchedCatIds.forEach(catId => {
-        storedWeights[catId] = (storedWeights[catId] || 0) + 18;
+        storedWeights[catId] = (storedWeights[catId] || 0) + 20; // Trọng số cực cao khi tìm kiếm
       });
       localStorage.setItem(CATEGORY_WEIGHTS_KEY, JSON.stringify(storedWeights));
     }
 
-    // Lưu từ khóa tìm kiếm gần đây
     const storedSearches = JSON.parse(localStorage.getItem(RECENT_SEARCHES_KEY) || '[]');
     const filteredSearches = storedSearches.filter(s => s.query.toLowerCase() !== query.toLowerCase());
     const updatedSearches = [
@@ -455,7 +527,6 @@ export function trackSearchQuery(rawQuery) {
     ].slice(0, 5);
     localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updatedSearches));
 
-    // Đồng bộ lên API nếu có category
     if (matchedCatIds.length > 0) {
       apiFetch('/products/track-interaction', {
         method: 'POST',
@@ -470,29 +541,26 @@ export function trackSearchQuery(rawQuery) {
   }
 }
 
-/**
- * Ghi nhận khi người dùng vào xem danh mục cụ thể (Category View Intent)
- */
 export function trackCategoryInteraction(categoryNameOrId) {
   if (!categoryNameOrId) return;
   try {
     const storedWeights = JSON.parse(localStorage.getItem(CATEGORY_WEIGHTS_KEY) || '{}');
-    let targetCatIds = [];
+    let targetCatId = null;
 
     if (!isNaN(parseInt(categoryNameOrId))) {
-      targetCatIds.push(parseInt(categoryNameOrId));
+      targetCatId = parseInt(categoryNameOrId);
     } else {
       const norm = normalizeText(categoryNameOrId);
-      const matched = KEYWORD_CATEGORY_MAP.find(item =>
-        normalizeText(item.categoryName) === norm || item.keywords.some(k => norm.includes(k))
+      const matched = CATEGORY_SYNONYMS.find(item =>
+        normalizeText(item.categoryName) === norm || item.keywords.some(k => k === norm)
       );
-      if (matched) targetCatIds.push(...matched.catIds);
+      if (matched) targetCatId = matched.catId;
     }
 
-    targetCatIds.forEach(cId => {
-      storedWeights[cId] = (storedWeights[cId] || 0) + 6;
-    });
-    localStorage.setItem(CATEGORY_WEIGHTS_KEY, JSON.stringify(storedWeights));
+    if (targetCatId) {
+      storedWeights[targetCatId] = (storedWeights[targetCatId] || 0) + 6;
+      localStorage.setItem(CATEGORY_WEIGHTS_KEY, JSON.stringify(storedWeights));
+    }
   } catch (error) {
     console.warn('[trackCategoryInteraction error]:', error);
   }
@@ -511,9 +579,8 @@ export function getTopCategoryInterests() {
     const storedWeights = JSON.parse(localStorage.getItem(CATEGORY_WEIGHTS_KEY) || '{}');
     const sorted = Object.entries(storedWeights)
       .sort((a, b) => b[1] - a[1])
-      .map(entry => parseInt(entry[0]))
-      .filter(Boolean);
-    return sorted;
+      .map(([catId]) => parseInt(catId));
+    return sorted.slice(0, 3);
   } catch {
     return [];
   }
@@ -530,13 +597,11 @@ export function getRecentSearches() {
 /**
  * GIẢI THUẬT ĐAN XEN CÁ NHÂN HÓA SHOPEE / TIKTOK SHOP (Interleaved Recommendation Stream)
  * 
- * ĐÁP ỨNG TRỌN VẸN YÊU CẦU:
- * 1. Khi người dùng vừa tìm kiếm/xem sản phẩm ("nghe lén"): Các sản phẩm này PHẢI ĐẬP VÀO MẶT USER
- *    ngay tại các hàng đầu tiên (Row 1 & Row 2), và xuất hiện liên tục xuyên suốt danh sách!
- * 2. Tự động xáo trộn ngẫu nhiên (Randomized) giữa các sản phẩm cùng ngành trên mỗi lần F5
- *    hoặc quay về trang chủ (lần này iPhone lên trước, lần sau Samsung hay tai nghe lên trước).
- * 3. Đưa đầy đủ 108 sản phẩm vào dòng hiển thị, không bị thiếu sản phẩm.
- * 4. Không gắn bất kỳ tag vàng/đỏ nào (giao diện sạch sẽ 100%).
+ * - Khi người dùng vừa tìm kiếm / xem sản phẩm ("nghe lén"):
+ *   12 SẢN PHẨM ĐẦU TIÊN (HÀNG 1 & HÀNG 2) 100% ĐẬP VÀO MẶT USER BẰNG SẢN PHẨM LIÊN QUAN!
+ * - Xáo trộn ngẫu nhiên (Fisher-Yates) giữa các sản phẩm cùng ngành trên mỗi lần F5 / về Home.
+ * - Từ hàng 3 trở đi: Đan xen liên tục (2 món liên quan : 1 món thịnh hành khác) trên toàn bộ 108 sản phẩm.
+ * - Sạch sẽ 100%, không có bất kỳ tag màu mè nào.
  */
 export function generateBlendedDiscoverFeed(rawProducts = []) {
   if (!rawProducts || rawProducts.length === 0) return [];
@@ -546,14 +611,13 @@ export function generateBlendedDiscoverFeed(rawProducts = []) {
   const recentViews = getRecentlyViewedProducts();
   const recentCatIds = new Set(recentViews.map(p => p.category_id).filter(Boolean));
 
-  // Top danh mục quan tâm
   const topCatIds = getTopCategoryInterests();
   const searchCatIds = new Set(recentSearches.flatMap(s => s.matchedCatIds || []));
 
-  // Danh mục mục tiêu chính ("bị nghe lén")
+  // Danh mục mục tiêu chính đã bị "nghe lén"
   const primaryCatIds = new Set([...topCatIds, ...searchCatIds, ...recentCatIds]);
 
-  // Danh mục hệ sinh thái bổ trợ
+  // Hệ sinh thái bổ trợ tương thích
   const expandedCatIds = new Set(primaryCatIds);
   primaryCatIds.forEach(catId => {
     const companions = COMPANION_CATEGORIES[catId] || [];
@@ -562,7 +626,7 @@ export function generateBlendedDiscoverFeed(rawProducts = []) {
 
   const hasUserIntent = primaryCatIds.size > 0 || recentSearches.length > 0 || recentViews.length > 0;
 
-  // Hàm xáo trộn mảng Fisher-Yates
+  // Hàm Fisher-Yates xáo trộn mảng ngẫu nhiên
   const shuffleArray = (array) => {
     const arr = [...array];
     for (let i = arr.length - 1; i > 0; i--) {
@@ -572,15 +636,15 @@ export function generateBlendedDiscoverFeed(rawProducts = []) {
     return arr;
   };
 
-  // NẾU LÀ KHÁCH MỚI (CHƯA CÓ LỊCH SỬ): Xáo trộn ngẫu nhiên toàn bộ 108 sản phẩm
+  // NẾU LÀ KHÁCH MỚI (CHƯA CÓ LỊCH SỬ): Xáo trộn ngẫu nhiên toàn bộ 108 sản phẩm trên mỗi lần F5 / về Home
   if (!hasUserIntent) {
     return shuffleArray(rawProducts);
   }
 
   // NẾU ĐÃ CÓ LỊCH SỬ TÌM KIẾM / XEM HÀNG ("BỊ NGHE LÉN"):
-  const poolRetargetedPrimary = [];   // Đúng ngành hàng tìm kiếm / vừa xem (Điện thoại, phụ kiện)
-  const poolRetargetedCompanion = []; // Hệ sinh thái tương thích (Tai nghe, Laptop, Smartwatch)
-  const poolTrendingOutside = [];     // Các ngành hàng ngoài lề khác toàn sàn (Thời trang, Gia dụng...)
+  const poolRetargetedPrimary = [];   // Đúng ngành hàng tìm kiếm / vừa xem (Điện thoại, phụ kiện hoặc Quần áo)
+  const poolRetargetedCompanion = []; // Hệ sinh thái tương thích bổ trợ
+  const poolTrendingOutside = [];     // Các ngành hàng ngoài lề khác toàn sàn
 
   rawProducts.forEach(product => {
     const pNameNorm = normalizeText(product.name);
@@ -605,42 +669,35 @@ export function generateBlendedDiscoverFeed(rawProducts = []) {
     const rnd = Math.random() * 50;
 
     if (isExactSearchMatch || isPrimaryCat) {
-      poolRetargetedPrimary.push({ ...product, _score: 150 + rnd });
+      poolRetargetedPrimary.push({ ...product, _score: 200 + rnd });
     } else if (isCompanionCat) {
-      poolRetargetedCompanion.push({ ...product, _score: 80 + rnd });
+      poolRetargetedCompanion.push({ ...product, _score: 100 + rnd });
     } else {
       poolTrendingOutside.push({ ...product, _score: (product.sold_count || 0) + (rnd * 2) });
     }
   });
 
-  // Xáo trộn ngẫu nhiên bên trong từng pool
+  // Xáo trộn ngẫu nhiên bên trong từng nhóm
   poolRetargetedPrimary.sort((a, b) => b._score - a._score);
   poolRetargetedCompanion.sort((a, b) => b._score - a._score);
   poolTrendingOutside.sort((a, b) => b._score - a._score);
 
-  // Đan xen theo tiêu chuẩn:
-  // - 6 ĐẾN 12 SẢN PHẨM ĐẦU TIÊN (HÀNG 1 & HÀNG 2): 100% ĐẬP VÀO MẶT USER BẰNG SẢN PHẨM LIÊN QUAN!
-  // - CÁC HÀNG TIẾP THEO: Đan xen liên tục (2 món liên quan : 1 món thịnh hành khác)
-  const blendedFeed = [];
-
-  // Gom toàn bộ nhóm sản phẩm liên quan ("nghe lén")
   const allRetargeted = [...poolRetargetedPrimary, ...poolRetargetedCompanion];
-
+  const blendedFeed = [];
   let rIdx = 0;
   let oIdx = 0;
 
-  // 1. Hai hàng đầu tiên (10-12 sản phẩm đầu): Ưu tiên tuyệt đối toàn bộ sản phẩm nghe lén
+  // 1. HAI HÀNG ĐẦU TIÊN (10-12 sản phẩm đầu): 100% ĐẬP VÀO MẶT USER BẰNG SẢN PHẨM NGHE LÉN!
   while (rIdx < Math.min(12, allRetargeted.length)) {
     blendedFeed.push(allRetargeted[rIdx++]);
   }
 
-  // 2. Từ hàng thứ 3 trở đi: Đan xen liên tục (2 sản phẩm nghe lén : 1 sản phẩm ngoài lề)
+  // 2. TỪ HÀNG THỨ 3 TRỞ ĐI: Đan xen liên tục (2 món nghe lén : 1 món ngoài lề)
   while (rIdx < allRetargeted.length || oIdx < poolTrendingOutside.length) {
     if (rIdx < allRetargeted.length) blendedFeed.push(allRetargeted[rIdx++]);
     if (rIdx < allRetargeted.length) blendedFeed.push(allRetargeted[rIdx++]);
     if (oIdx < poolTrendingOutside.length) blendedFeed.push(poolTrendingOutside[oIdx++]);
 
-    // Nếu nhóm retargeted đã hết, đẩy tiếp toàn bộ các sản phẩm còn lại của sàn
     if (rIdx >= allRetargeted.length && oIdx < poolTrendingOutside.length) {
       blendedFeed.push(poolTrendingOutside[oIdx++]);
     }
