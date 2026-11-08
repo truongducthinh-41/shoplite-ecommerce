@@ -490,6 +490,50 @@ export function trackProductInteraction(product, interactionType = 'view') {
 }
 
 /**
+ * Tự động suy luận Category IDs từ từ khóa tìm kiếm (kể cả tiếng Việt, tiếng Anh, viết tắt)
+ */
+export function detectCategoryIdsFromQuery(rawQuery) {
+  if (!rawQuery || !rawQuery.trim()) return [];
+  const qNorm = normalizeText(rawQuery);
+  const words = qNorm.split(/\s+/);
+
+  const matchedCatSet = new Set();
+
+  // 1. Dò theo sản phẩm thực tế trong kho (Catalog Product Matching)
+  FALLBACK_PRODUCTS.forEach(p => {
+    if (matchProductSearch(p, rawQuery)) {
+      matchedCatSet.add(p.category_id);
+    }
+  });
+
+  // 2. Dò theo từ khóa ngành hàng (Category Synonyms)
+  for (const item of CATEGORY_SYNONYMS) {
+    const isMatched = item.keywords.some(k => {
+      if (qNorm === k) return true;
+      if (qNorm.includes(k) && (k.length >= 3 || words.includes(k))) return true;
+      if (words.includes(k)) return true;
+      if (qNorm.length >= 4 && k.startsWith(qNorm)) return true;
+      return false;
+    });
+    if (isMatched) {
+      matchedCatSet.add(item.catId);
+    }
+  }
+
+  // 3. Dò theo từ điển từ đồng nghĩa QUERY_SYNONYMS
+  const synonyms = QUERY_SYNONYMS[qNorm] || [];
+  for (const syn of synonyms) {
+    for (const item of CATEGORY_SYNONYMS) {
+      if (item.keywords.some(k => k === syn || syn.includes(k) || k.includes(syn))) {
+        matchedCatSet.add(item.catId);
+      }
+    }
+  }
+
+  return Array.from(matchedCatSet);
+}
+
+/**
  * Ghi nhận hành vi TÌM KIẾM của người dùng (Search Intent Tracking - "Nghe lén" từ khóa)
  */
 export function trackSearchQuery(rawQuery) {
@@ -498,18 +542,12 @@ export function trackSearchQuery(rawQuery) {
   const qNorm = normalizeText(query);
 
   try {
-    const matchedCatIds = [];
-    for (const item of CATEGORY_SYNONYMS) {
-      const isMatched = item.keywords.some(k => k === qNorm || (qNorm.length >= 3 && k.startsWith(qNorm)));
-      if (isMatched) {
-        matchedCatIds.push(item.catId);
-      }
-    }
+    const matchedCatIds = detectCategoryIdsFromQuery(query);
 
     if (matchedCatIds.length > 0) {
       const storedWeights = JSON.parse(localStorage.getItem(CATEGORY_WEIGHTS_KEY) || '{}');
       matchedCatIds.forEach(catId => {
-        storedWeights[catId] = (storedWeights[catId] || 0) + 20; // Trọng số cực cao khi tìm kiếm
+        storedWeights[catId] = (storedWeights[catId] || 0) + 50; // Trọng số cực cao khi tìm kiếm
       });
       localStorage.setItem(CATEGORY_WEIGHTS_KEY, JSON.stringify(storedWeights));
     }
@@ -612,12 +650,20 @@ export function generateBlendedDiscoverFeed(rawProducts = []) {
   const recentCatIds = new Set(recentViews.map(p => p.category_id).filter(Boolean));
 
   const topCatIds = getTopCategoryInterests();
-  const searchCatIds = new Set(recentSearches.flatMap(s => s.matchedCatIds || []));
 
-  // Danh mục mục tiêu chính đã bị "nghe lén"
+  // Dò tìm danh mục từ các lần search gần đây (kể cả với dữ liệu cũ trong localStorage)
+  const searchCatIds = new Set();
+  recentSearches.slice(0, 3).forEach(s => {
+    const catIds = (s.matchedCatIds && s.matchedCatIds.length > 0)
+      ? s.matchedCatIds
+      : detectCategoryIdsFromQuery(s.query || s.normalized);
+    catIds.forEach(id => searchCatIds.add(id));
+  });
+
+  // Danh mục mục tiêu chính đã bị "nghe lén" (Tìm kiếm + Xem chi tiết + Điểm tương tác)
   const primaryCatIds = new Set([...topCatIds, ...searchCatIds, ...recentCatIds]);
 
-  // Hệ sinh thái bổ trợ tương thích
+  // Hệ sinh thái bổ trợ tương thích (Companion Categories)
   const expandedCatIds = new Set(primaryCatIds);
   primaryCatIds.forEach(catId => {
     const companions = COMPANION_CATEGORIES[catId] || [];
@@ -652,6 +698,10 @@ export function generateBlendedDiscoverFeed(rawProducts = []) {
 
     let isExactSearchMatch = false;
     for (const search of recentSearches.slice(0, 3)) {
+      if (search.query && matchProductSearch(product, search.query)) {
+        isExactSearchMatch = true;
+        break;
+      }
       if (search.normalized && (pNameNorm.includes(search.normalized) || pCatNorm.includes(search.normalized))) {
         isExactSearchMatch = true;
         break;
@@ -663,15 +713,15 @@ export function generateBlendedDiscoverFeed(rawProducts = []) {
     }
 
     const isPrimaryCat = primaryCatIds.has(product.category_id);
-    const isCompanionCat = expandedCatIds.has(product.category_id);
+    const isCompanionCat = expandedCatIds.has(product.category_id) && !isPrimaryCat;
 
     // Random Jitter để mỗi lần F5 thứ tự các món lại đổi mới sinh động
     const rnd = Math.random() * 50;
 
     if (isExactSearchMatch || isPrimaryCat) {
-      poolRetargetedPrimary.push({ ...product, _score: 200 + rnd });
+      poolRetargetedPrimary.push({ ...product, _score: 300 + rnd });
     } else if (isCompanionCat) {
-      poolRetargetedCompanion.push({ ...product, _score: 100 + rnd });
+      poolRetargetedCompanion.push({ ...product, _score: 150 + rnd });
     } else {
       poolTrendingOutside.push({ ...product, _score: (product.sold_count || 0) + (rnd * 2) });
     }
@@ -687,7 +737,7 @@ export function generateBlendedDiscoverFeed(rawProducts = []) {
   let rIdx = 0;
   let oIdx = 0;
 
-  // 1. HAI HÀNG ĐẦU TIÊN (10-12 sản phẩm đầu): 100% ĐẬP VÀO MẶT USER BẰNG SẢN PHẨM NGHE LÉN!
+  // 1. HAI HÀNG ĐẦU TIÊN (12 sản phẩm đầu): 100% ĐẬP VÀO MẶT USER BẰNG SẢN PHẨM NGHE LÉN / HỆ SINH THÁI!
   while (rIdx < Math.min(12, allRetargeted.length)) {
     blendedFeed.push(allRetargeted[rIdx++]);
   }

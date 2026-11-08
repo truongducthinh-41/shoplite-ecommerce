@@ -7,7 +7,7 @@ import VertexHero from '../components/VertexHero';
 import { calculatePricing } from '../utils/pricing';
 import { FALLBACK_PRODUCTS } from '../data/categoryProducts';
 import { getSafeProductImage, handleImageError } from '../utils/productImages';
-import { getRecentlyViewedProducts, generateBlendedDiscoverFeed, trackSearchQuery, matchProductSearch } from '../utils/userTracker';
+import { getRecentlyViewedProducts, generateBlendedDiscoverFeed, trackSearchQuery, matchProductSearch, trackProductInteraction } from '../utils/userTracker';
 
 export default function HomePage() {
   const [products, setProducts] = useState([]);
@@ -257,7 +257,7 @@ export default function HomePage() {
                 {/* Top Badge */}
                 <span className="absolute top-3 left-3 z-10 bg-amber-500 text-white text-[10px] sm:text-xs uppercase tracking-wider font-bold px-2.5 py-1 rounded-full shadow-sm">TOP</span>
 
-                <Link to={`/product/${product.id}`} className="block w-full relative aspect-square bg-white/5 overflow-hidden">
+                <Link to={`/product/${product.id}`} onClick={() => trackProductInteraction(product, 'view')} className="block w-full relative aspect-square bg-white/5 overflow-hidden">
                   <img 
                     src={getSafeProductImage(product)} 
                     alt={product.name} 
@@ -267,7 +267,7 @@ export default function HomePage() {
                 </Link>
                 
                 <div className="px-4 pb-4 pt-3 flex flex-col flex-grow">
-                  <Link to={`/product/${product.id}`}>
+                  <Link to={`/product/${product.id}`} onClick={() => trackProductInteraction(product, 'view')}>
                     <h3 className="font-semibold text-white hover:text-indigo-400 transition-colors line-clamp-2 text-sm min-h-[40px]">{product.name}</h3>
                   </Link>
                   <div className="mt-auto flex items-center justify-between pt-4">
@@ -368,7 +368,7 @@ export default function HomePage() {
               const { salePrice, originalPrice, discountPercent, hasDiscount } = calculatePricing(product);
               return (
               <div ref={isLast ? lastProductElementRef : null} key={product.id} className="bg-[#111] rounded-xl border border-white/10 overflow-hidden hover:border-indigo-500/50 hover:shadow-[0_0_15px_rgba(99,102,241,0.15)] transition-all group flex flex-col h-full relative">
-                <Link to={`/product/${product.id}`} className="block w-full relative aspect-square bg-white/5 overflow-hidden">
+                <Link to={`/product/${product.id}`} onClick={() => trackProductInteraction(product, 'view')} className="block w-full relative aspect-square bg-white/5 overflow-hidden">
                   <img 
                     src={getSafeProductImage(product)} 
                     alt={product.name} 
@@ -383,7 +383,7 @@ export default function HomePage() {
                 
                 <div className="p-3 flex flex-col flex-grow">
                   <div className="flex justify-between items-start mb-1">
-                    <Link to={`/product/${product.id}`}>
+                    <Link to={`/product/${product.id}`} onClick={() => trackProductInteraction(product, 'view')}>
                       <h3 className="font-medium text-slate-200 hover:text-indigo-400 transition-colors line-clamp-2 text-xs leading-tight min-h-[34px]">{product.name}</h3>
                     </Link>
                   </div>
