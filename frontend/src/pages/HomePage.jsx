@@ -7,7 +7,7 @@ import VertexHero from '../components/VertexHero';
 import { calculatePricing } from '../utils/pricing';
 import { FALLBACK_PRODUCTS } from '../data/categoryProducts';
 import { getSafeProductImage, handleImageError } from '../utils/productImages';
-import { getRecentlyViewedProducts, generateBlendedDiscoverFeed, trackSearchQuery } from '../utils/userTracker';
+import { getRecentlyViewedProducts, generateBlendedDiscoverFeed, trackSearchQuery, matchProductSearch } from '../utils/userTracker';
 
 export default function HomePage() {
   const [products, setProducts] = useState([]);
@@ -24,6 +24,7 @@ export default function HomePage() {
   const navigate = useNavigate();
   
   const scrollContainerRef = useRef(null);
+  const searchResultsRef = useRef(null);
   const observer = useRef();
   const { addToCart } = useCart();
   const LIMIT = 100; // Increased limit for Gợi ý hôm nay
@@ -49,6 +50,16 @@ export default function HomePage() {
     if (node) observer.current.observe(node);
   }, [loading, loadingMore, hasMore]);
 
+  // Tự động cuộn trang mượt mà xuống khu vực kết quả tìm kiếm khi search
+  useEffect(() => {
+    if (searchQuery && searchResultsRef.current) {
+      const timer = setTimeout(() => {
+        searchResultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 200);
+      return () => clearTimeout(timer);
+    }
+  }, [searchQuery]);
+
   // Fetch Initial Data
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -59,15 +70,45 @@ export default function HomePage() {
           apiFetch('/products/bestsellers').catch(() => [])
         ]);
 
-        // If remote database only has the 14 unseeded legacy products, use the full 84 products dataset
-        const rawProducts = (productsData && productsData.length >= 50)
-          ? productsData
-          : FALLBACK_PRODUCTS;
+        let displayProducts = [];
 
-        const sanitizedProducts = rawProducts.map(p => ({
-          ...p,
-          image_url: getSafeProductImage(p)
-        }));
+        // TRƯỜNG HỢP 1: NGƯỜI DÙNG ĐANG TÌM KIẾM
+        if (searchQuery) {
+          // Bóc tách sản phẩm khớp đúng từ khóa tìm kiếm (hỗ trợ cả từ đồng nghĩa)
+          const matchedDbProducts = (productsData || []).filter(p => matchProductSearch(p, searchQuery));
+          const matchedFallback = FALLBACK_PRODUCTS.filter(p => matchProductSearch(p, searchQuery));
+
+          // Gộp lại để có danh sách tìm kiếm phong phú NHƯNG CHỈ ĐÚNG DANH MỤC / SẢN PHẨM KHỚP
+          const searchMap = new Map();
+          matchedDbProducts.forEach(p => searchMap.set(p.id, { ...p, image_url: getSafeProductImage(p) }));
+          matchedFallback.forEach(p => {
+            if (!searchMap.has(p.id)) {
+              searchMap.set(p.id, { ...p, image_url: getSafeProductImage(p) });
+            }
+          });
+
+          displayProducts = Array.from(searchMap.values());
+          // Ghi nhận hành vi tìm kiếm phục vụ Giải pháp 3
+          trackSearchQuery(searchQuery);
+        } else {
+          // TRƯỜNG HỢP 2: TRANG CHỦ CHÍNH (GIẢI PHÁP 3: RETARGETING & ĐAN XEN LIÊN TỤC)
+          const rawProducts = (productsData && productsData.length >= 50)
+            ? productsData
+            : FALLBACK_PRODUCTS;
+
+          const sanitizedProducts = rawProducts.map(p => ({
+            ...p,
+            image_url: getSafeProductImage(p)
+          }));
+
+          // Áp dụng Động cơ Gợi ý Cá nhân hóa Đan xen (Shopee / TikTok Interleaved Algorithm)
+          // Các sản phẩm người dùng vừa tìm kiếm / xem nhiều ("nghe lén") sẽ được đan xen dày đặc và liên tục vào feed
+          if (category === 'All' && sort === 'Popularity') {
+            displayProducts = generateBlendedDiscoverFeed(sanitizedProducts);
+          } else {
+            displayProducts = sanitizedProducts;
+          }
+        }
 
         const rawBestSellers = (bestSellersData && bestSellersData.length > 0)
           ? bestSellersData
@@ -78,25 +119,12 @@ export default function HomePage() {
           image_url: getSafeProductImage(p)
         }));
 
-        // Nếu ở trang chủ mặc định (không tìm kiếm cụ thể),
-        // Áp dụng thuật toán Đan xen Cá nhân hóa Shopee/TikTok (Interleaved Discover Feed)
-        // Các sản phẩm người dùng vừa tìm kiếm / xem nhiều ("nghe lén") sẽ được tự động len lỏi vào feed với tỷ lệ cao
-        let displayProducts = sanitizedProducts;
-        if (!searchQuery && category === 'All' && sort === 'Popularity') {
-          displayProducts = generateBlendedDiscoverFeed(sanitizedProducts);
-        }
-
         setProducts(displayProducts);
         setBestSellers(sanitizedBestSellers);
 
         // Lấy danh sách sản phẩm vừa xem
         const recent = getRecentlyViewedProducts();
         setRecentlyViewed(recent);
-
-        // Nếu có searchQuery trong URL, ghi nhận hành vi tìm kiếm
-        if (searchQuery) {
-          trackSearchQuery(searchQuery);
-        }
 
         setPage(0);
         setHasMore(productsData && productsData.length === LIMIT);
@@ -297,7 +325,7 @@ export default function HomePage() {
       )}
 
       {/* Gợi Ý Hôm Nay / Search Results (Dòng sản phẩm đan xen thuật toán cá nhân hóa Shopee/TikTok) */}
-      <div className="mb-12">
+      <div ref={searchResultsRef} className="mb-12 scroll-mt-20">
         <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-6">
           <div className="flex items-center gap-3">
             <div className="w-1.5 h-6 bg-gradient-to-b from-indigo-500 via-purple-500 to-rose-500 rounded-full"></div>
@@ -305,7 +333,19 @@ export default function HomePage() {
               {searchQuery ? `Kết quả tìm kiếm cho "${searchQuery}"` : 'Gợi Ý Hôm Nay'}
             </h2>
           </div>
-          {!searchQuery && (
+          {searchQuery ? (
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-indigo-400 font-semibold bg-indigo-500/10 px-2.5 py-1 rounded-full border border-indigo-500/20">
+                {products.length} sản phẩm phù hợp
+              </span>
+              <button
+                onClick={() => navigate('/')}
+                className="text-xs text-slate-400 hover:text-white underline transition-colors"
+              >
+                Về Trang Chủ
+              </button>
+            </div>
+          ) : (
             <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
               Được cá nhân hóa theo xu hướng & sở thích của bạn
