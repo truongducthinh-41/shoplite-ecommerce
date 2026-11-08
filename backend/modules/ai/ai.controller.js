@@ -29,7 +29,8 @@ const STOP_WORDS = new Set([
   'co', 'ban', 'khong', 'gi', 'nao', 'nay', 'shop', 'san', 'toi', 'minh',
   'em', 'anh', 'chi', 'cho', 'voi', 'duoc', 'hay', 'la', 'o', 'va', 'de',
   'cua', 'trong', 'nhu', 'the', 'hoi', 'tim', 'muon', 'can', 'xin', 'nhung',
-  'mot', 'cac', 'nhe', 'nha', 'a', 'ha', 'oi', 'giup', 'tu', 'van', 'bao', 'nhieu', 'tien'
+  'mot', 'cac', 'nhe', 'nha', 'a', 'ha', 'oi', 'giup', 'tu', 'van', 'bao', 'nhieu', 'tien',
+  'roi', 'da', 'dang', 'se', 'rat', 'qua', 'chua', 'het', 'lam', 'di', 'lai'
 ]);
 
 // BẢN ĐỒ TỪ ĐỒNG NGHĨA KHO SẢN PHẨM (SYNONYMS EXPANSION)
@@ -49,7 +50,7 @@ const SYNONYMS = [
   { trigger: ['son', 'son moi', 'lipstick', 'son kem'], keywords: ['son', 'black rouge', 'mac', 'lipstick'], categoryIds: [25] },
   { trigger: ['serum', 'duong da', 'mo tham', 'trang da'], keywords: ['serum', 'loreal', 'glycolic'], categoryIds: [25] },
   { trigger: ['kem chong nang', 'chong nang', 'anessa'], keywords: ['kem chong nang', 'anessa'], categoryIds: [25] },
-  { trigger: ['dau ca', 'omega', 'huyet ap', 'omron'], keywords: ['dau ca', 'omega 3', 'kirkland', 'may do huyet ap', 'omron'], categoryIds: [26] },
+  { trigger: ['thuoc', 'benh', 'om', 'dau', 'sot', 'cam', 'y te', 'suc khoe', 'dau ca', 'omega', 'huyet ap', 'omron', 'diet khuan'], keywords: ['dau ca', 'omega 3', 'kirkland', 'may do huyet ap', 'omron', 'diet khuan'], categoryIds: [26] },
   { trigger: ['ao polo', 'ao so mi', 'ao khoac nam', 'blazer nam', 'quan jean nam', 'thoi trang nam'], keywords: ['polo', 'aristino', 'so mi', 'canifa', 'blazer', 'levis', 'the north face'], categoryIds: [16] },
   { trigger: ['dam', 'vay', 'chan vay', 'thoi trang nu'], keywords: ['dam', 'vay', 'chan vay', 'chanel', 'zara', 'mango'], categoryIds: [17] },
   { trigger: ['giay', 'sneaker', 'giay the thao', 'giay tay'], keywords: ['sneaker', 'nike', 'air force', 'air jordan', 'ultraboost', 'oxford'], categoryIds: [18, 19] },
@@ -172,6 +173,21 @@ function analyzeUserQuery(rawMessage) {
     };
   }
 
+  // 8.5. Hỏi về thuốc, bệnh tật, đau ốm, sốt, cảm cúm, sức khỏe
+  if (norm.includes('thuoc') || norm.includes('benh') || norm.includes('bi om') || norm.includes('cam cum') || norm.includes('dau dau') || norm.includes('sot')) {
+    const healthProducts = FALLBACK_PRODUCTS.filter(p => p.category_id === 26 && !cleanText(p.name).includes('tay trang'));
+    return {
+      type: 'medical_advice',
+      answer: 'Aura AI rất tiếc khi biết bạn đang không khỏe! ❤️\n\n⚠️ **Lưu ý Y Tế:** Sàn AuraStore là nền tảng thương mại điện tử mua sắm nên **không kinh doanh thuốc điều trị theo toa / thuốc tây**. Nếu bạn đang có triệu chứng bệnh, hãy nghỉ ngơi và liên hệ ngay các nhà thuốc hoặc cơ sở y tế gần nhất để được bác sĩ kê đơn chính xác nhé!\n\nTuy nhiên, để theo dõi sức khỏe và phòng ngừa tại nhà, Aura AI gợi ý cho bạn các **thiết bị y tế & sản phẩm bổ trợ sức khỏe chính hãng** đang có sẵn tại gian hàng AuraStore dưới đây:',
+      products: healthProducts,
+      suggestedQuestions: [
+        'Máy đo huyết áp bắp tay tự động',
+        'Viên uống dầu cá Omega 3 có tác dụng gì?',
+        'Thời gian giao hàng hỏa tốc trong bao lâu?'
+      ]
+    };
+  }
+
   // 9. Câu hỏi so sánh đặc biệt: Đắt nhất sàn
   if (norm.includes('dat nhat') || norm.includes('gia cao nhat') || norm.includes('vip nhat') || norm.includes('sang nhat') || norm.includes('xa xi')) {
     return { type: 'special_filter', mode: 'most_expensive' };
@@ -262,6 +278,22 @@ const chatWithAI = async (req, res) => {
       });
     }
 
+    // 2.5. Trả lời tư vấn y tế & sức khỏe có trách nhiệm
+    if (analysis.type === 'medical_advice') {
+      return res.json({
+        reply: analysis.answer,
+        products: (analysis.products || []).slice(0, 4).map(p => ({
+          ...p,
+          recommend_reason: 'Thiết bị & thực phẩm bảo vệ sức khỏe chính hãng'
+        })),
+        suggestedQuestions: analysis.suggestedQuestions || [
+          'Máy đo huyết áp tự động chuẩn y tế',
+          'Viên uống dầu cá Omega 3 chính hãng',
+          'Thời gian giao hàng hỏa tốc trong bao lâu?'
+        ]
+      });
+    }
+
     // 3. Xử lý các câu hỏi thống kê đặc biệt (Đắt nhất, Rẻ nhất, Bán chạy nhất, Rating cao nhất)
     if (analysis.type === 'special_filter') {
       let catalog = [...FALLBACK_PRODUCTS];
@@ -337,6 +369,13 @@ const chatWithAI = async (req, res) => {
         score += 100;
       }
 
+      // Tuyệt đối không gợi ý Áo/Quần nếu câu hỏi không có bất kỳ từ khóa thời trang nào!
+      const clothingKeywords = ['ao', 'quan', 'polo', 'so mi', 'blazer', 'jean', 'dam', 'vay', 'thoi trang', 'khoac', 'that lung', 'mac'];
+      const hasClothingIntent = clothingKeywords.some(k => normQ.includes(k));
+      if (!hasClothingIntent && (product.category_id === 16 || product.category_id === 17)) {
+        score -= 100; // Trừ điểm nặng để không bao giờ gợi ý quần áo khi khách hỏi thuốc, thiết bị y tế hay công nghệ
+      }
+
       // 3. Khớp các từ khóa mở rộng (Synonyms)
       for (const kw of keywords) {
         if (pNameClean.includes(kw)) score += 30;
@@ -344,15 +383,18 @@ const chatWithAI = async (req, res) => {
         if (pDescClean.includes(kw)) score += 10;
       }
 
-      // 4. Khớp các từ có nghĩa từ câu hỏi (đã lọc stop words)
+      // 4. Khớp các từ có nghĩa từ câu hỏi (đã lọc stop words) - Dùng Whole-word match
+      const pNameWords = pNameClean.split(/\s+/);
+      const pDescWords = pDescClean.split(/\s+/);
+
       for (const w of meaningful) {
-        if (pNameClean.split(/\s+/).includes(w)) score += 55;
-        else if (pNameClean.includes(w)) score += 20;
+        if (pNameWords.includes(w)) score += 55;
+        else if (w.length >= 4 && pNameClean.includes(w)) score += 20;
 
         if (pBrandClean === w) score += 40;
-        else if (pBrandClean.includes(w)) score += 20;
+        else if (w.length >= 4 && pBrandClean.includes(w)) score += 20;
 
-        if (pDescClean.includes(w)) score += 10;
+        if (pDescWords.includes(w)) score += 15;
       }
 
       // 5. Ngân sách người dùng yêu cầu
