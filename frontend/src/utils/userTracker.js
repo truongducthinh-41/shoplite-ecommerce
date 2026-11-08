@@ -618,7 +618,10 @@ export function trackCategoryInteraction(categoryNameOrId) {
 
 export function getRecentlyViewedProducts() {
   try {
-    return JSON.parse(localStorage.getItem(RECENT_VIEWS_KEY) || '[]');
+    const list = JSON.parse(localStorage.getItem(RECENT_VIEWS_KEY) || '[]');
+    const now = Date.now();
+    // Chỉ giữ các tương tác xem trong vòng 6 phút gần nhất (Active Session TTL)
+    return list.filter(p => p.viewed_at && (now - p.viewed_at < 6 * 60 * 1000));
   } catch {
     return [];
   }
@@ -638,7 +641,10 @@ export function getTopCategoryInterests() {
 
 export function getRecentSearches() {
   try {
-    return JSON.parse(localStorage.getItem(RECENT_SEARCHES_KEY) || '[]');
+    const list = JSON.parse(localStorage.getItem(RECENT_SEARCHES_KEY) || '[]');
+    const now = Date.now();
+    // Chỉ giữ các tìm kiếm trong vòng 6 phút gần nhất (Active Session TTL)
+    return list.filter(s => s.timestamp && (now - s.timestamp < 6 * 60 * 1000));
   } catch {
     return [];
   }
@@ -662,15 +668,22 @@ if (typeof window !== 'undefined') {
   window.resetAuraDemo = resetTrackingHistory;
 }
 
+// Hàm Fisher-Yates xáo trộn mảng ngẫu nhiên hoàn toàn
+export const shuffleArray = (array) => {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+};
+
 /**
  * GIẢI THUẬT ĐAN XEN CÁ NHÂN HÓA SHOPEE / TIKTOK SHOP (Interleaved Recommendation Stream)
  * 
- * - AI TỰ ĐỘNG TẬP TRUNG VÀO Ý ĐỊNH GẦN NHẤT (LATEST INTENT) CỦA NGƯỜI DÙNG:
- *   Dù người dùng có nghịch nhiều, click xem nhiều sản phẩm khác nhau đi nữa,
- *   thì sản phẩm / từ khóa VỪA MỚI TÌM HOẶC VỪA MỚI XEM GẦN NHẤT sẽ luôn được ưu tiên tuyệt đối!
- * - 12 SẢN PHẨM ĐẦU TIÊN (HÀNG 1 & HÀNG 2) 100% ĐẬP VÀO MẶT USER BẰNG SẢN PHẨM GẦN NHẤT & HỆ SINH THÁI!
- * - Xáo trộn ngẫu nhiên (Fisher-Yates) giữa các sản phẩm cùng ngành trên mỗi lần F5 / về Home.
- * - Từ hàng 3 trở đi: Đan xen liên tục (2 món liên quan : 1 món thịnh hành khác) trên toàn bộ 108 sản phẩm.
+ * - NẾU CHƯA TÌM GÌ (KHÁCH MỚI HOẶC F5): Xáo trộn ngẫu nhiên (True Random) 100% toàn bộ 108 sản phẩm trên mỗi lần F5!
+ * - KHI VỪA TÌM KIẾM (TRONG 6 PHÚT): AI tự động đưa sản phẩm liên quan lên hàng đầu, kết hợp xáo trộn liên tục
+ * - Xáo trộn ngẫu nhiên (Fisher-Yates) giữa các sản phẩm để mỗi lần F5 luôn đổi mới sinh động.
  */
 export function generateBlendedDiscoverFeed(rawProducts = []) {
   if (!rawProducts || rawProducts.length === 0) return [];
@@ -716,22 +729,13 @@ export function generateBlendedDiscoverFeed(rawProducts = []) {
     }
   }
 
-  // Hàm Fisher-Yates xáo trộn mảng ngẫu nhiên
-  const shuffleArray = (array) => {
-    const arr = [...array];
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
-  };
-
-  // NẾU LÀ KHÁCH MỚI (CHƯA CÓ LỊCH SỬ NÀO): Xáo trộn ngẫu nhiên toàn bộ 108 sản phẩm trên mỗi lần F5 / về Home
+  // NẾU CHƯA TÌM GÌ HOẶC Ý ĐỊNH ĐÃ HẾT HẠN (QUÁ 6 PHÚT):
+  // XÁO TRỘN NGẪU NHIÊN 100% TOÀN BỘ 108 SẢN PHẨM TRÊN MỖI LẦN F5 / VỀ HOME!
   if ((!targetCatIds || targetCatIds.length === 0) && !targetQuery) {
     return shuffleArray(rawProducts);
   }
 
-  // 2. TẬP TRUNG TOÀN LỰC VÀO SẢN PHẨM / NGÀNH HÀNG GẦN NHẤT VỪA TÌM HOẶC VỪA XEM:
+  // 2. NẾU CÓ Ý ĐỊNH TÌM KIẾM MỚI TRONG 6 PHÚT GẦN NHẤT:
   const primaryCatSet = new Set(targetCatIds || []);
   const companionCatSet = new Set();
   primaryCatSet.forEach(catId => {
@@ -743,43 +747,39 @@ export function generateBlendedDiscoverFeed(rawProducts = []) {
   const poolOutside = [];
 
   rawProducts.forEach(product => {
-    const rnd = Math.random() * 50;
     const isPrimaryCat = primaryCatSet.has(product.category_id);
     const isDirectMatch = targetQuery && matchProductSearch(product, targetQuery);
 
     if (isDirectMatch || isPrimaryCat) {
-      poolPrimary.push({ ...product, _score: 500 + rnd });
+      poolPrimary.push(product);
     } else if (companionCatSet.has(product.category_id)) {
-      poolCompanion.push({ ...product, _score: 250 + rnd });
+      poolCompanion.push(product);
     } else {
-      poolOutside.push({ ...product, _score: (product.sold_count || 0) + (rnd * 2) });
+      poolOutside.push(product);
     }
   });
 
-  // Xáo trộn ngẫu nhiên bên trong từng nhóm để mỗi lần F5 thứ tự các món lại đổi mới sinh động
-  poolPrimary.sort((a, b) => b._score - a._score);
-  poolCompanion.sort((a, b) => b._score - a._score);
-  poolOutside.sort((a, b) => b._score - a._score);
+  // Xáo trộn ngẫu nhiên (Fisher-Yates) 100% bên trong từng pool để mỗi lần F5 vị trí luôn đổi mới
+  const shuffledPrimary = shuffleArray(poolPrimary);
+  const shuffledCompanion = shuffleArray(poolCompanion);
+  const shuffledOutside = shuffleArray(poolOutside);
 
-  const allRetargeted = [...poolPrimary, ...poolCompanion];
+  const retargetedTop = [...shuffledPrimary, ...shuffledCompanion];
   const blendedFeed = [];
   let rIdx = 0;
   let oIdx = 0;
 
-  // 1. HAI HÀNG ĐẦU TIÊN (12 sản phẩm đầu): 100% ĐẬP VÀO MẶT USER BẰNG SẢN PHẨM GẦN NHẤT VÀ HỆ SINH THÁI!
-  while (rIdx < Math.min(12, allRetargeted.length)) {
-    blendedFeed.push(allRetargeted[rIdx++]);
+  // 1. Khoảng 8 món đầu: Các sản phẩm retargeted được đảo vị trí ngẫu nhiên mỗi lần F5
+  while (rIdx < Math.min(8, retargetedTop.length)) {
+    blendedFeed.push(retargetedTop[rIdx++]);
   }
 
-  // 2. TỪ HÀNG THỨ 3 TRỞ ĐI: Đan xen liên tục theo nhịp 2 món liên quan : 1 món thịnh hành ngoài lề
-  while (rIdx < allRetargeted.length || oIdx < poolOutside.length) {
-    if (rIdx < allRetargeted.length) blendedFeed.push(allRetargeted[rIdx++]);
-    if (rIdx < allRetargeted.length) blendedFeed.push(allRetargeted[rIdx++]);
-    if (oIdx < poolOutside.length) blendedFeed.push(poolOutside[oIdx++]);
-
-    if (rIdx >= allRetargeted.length && oIdx < poolOutside.length) {
-      blendedFeed.push(poolOutside[oIdx++]);
-    }
+  // 2. Các hàng tiếp theo: Đan xen liên tục theo nhịp 2 món liên quan : 2 món ngoài lề ngẫu nhiên
+  while (rIdx < retargetedTop.length || oIdx < shuffledOutside.length) {
+    if (rIdx < retargetedTop.length) blendedFeed.push(retargetedTop[rIdx++]);
+    if (oIdx < shuffledOutside.length) blendedFeed.push(shuffledOutside[oIdx++]);
+    if (oIdx < shuffledOutside.length) blendedFeed.push(shuffledOutside[oIdx++]);
+    if (rIdx < retargetedTop.length) blendedFeed.push(retargetedTop[rIdx++]);
   }
 
   return blendedFeed;
