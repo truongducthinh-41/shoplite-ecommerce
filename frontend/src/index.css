@@ -9,6 +9,28 @@ body {
   100% { transform: translateX(-50%); }
 }
 
+@keyframes aura-wiggle {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  20% { transform: rotate(-8deg) scale(1.08); }
+  40% { transform: rotate(8deg) scale(1.08); }
+  60% { transform: rotate(-4deg) scale(1.04); }
+  80% { transform: rotate(4deg) scale(1.04); }
+}
+
+@keyframes signal-beacon {
+  0% { transform: scale(0.9); opacity: 0.8; }
+  50% { transform: scale(1.4); opacity: 0.2; }
+  100% { transform: scale(1.85); opacity: 0; }
+}
+
+.animate-aura-wiggle {
+  animation: aura-wiggle 3.5s ease-in-out infinite;
+}
+
+.animate-signal-beacon {
+  animation: signal-beacon 2s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+}
+
 .animate-marquee {
   display: flex;
   width: max-content;

@@ -92,20 +92,31 @@ export default function AuraAIChatbot() {
     <>
       {/* 1. Nút Floating kích hoạt Chatbot AI ở góc dưới bên phải */}
       {!isOpen && (
-        <button
-          onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-50 group flex items-center gap-3 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 text-white p-3.5 sm:px-5 sm:py-3.5 rounded-full shadow-[0_0_25px_rgba(99,102,241,0.5)] hover:shadow-[0_0_35px_rgba(168,85,247,0.7)] hover:scale-105 active:scale-95 transition-all duration-300 border border-white/20"
-          aria-label="Open AI Shopping Assistant"
-        >
-          <div className="relative">
-            <Sparkles className="w-6 h-6 animate-pulse text-amber-300" />
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-indigo-900 animate-ping"></span>
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-indigo-900"></span>
-          </div>
-          <span className="hidden sm:inline-block font-bold text-sm tracking-wide">
-            Hỏi Aura AI
-          </span>
-        </button>
+        <div className="fixed bottom-6 right-6 z-50">
+          {/* Hiệu ứng sóng radar phát tín hiệu lan tỏa */}
+          <span className="absolute -inset-1 rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-40 blur-[3px] animate-signal-beacon pointer-events-none"></span>
+
+          <button
+            onClick={() => setIsOpen(true)}
+            className="group relative flex items-center h-11 sm:h-12 px-3 group-hover:px-4 rounded-full bg-gradient-to-r from-indigo-600/40 via-purple-600/35 to-pink-500/40 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-500 backdrop-blur-md hover:backdrop-blur-none text-white border border-white/20 hover:border-white/50 shadow-[0_4px_20px_rgba(0,0,0,0.35)] hover:shadow-[0_0_30px_rgba(168,85,247,0.7)] hover:scale-105 active:scale-95 transition-all duration-300 ease-out cursor-pointer select-none"
+            aria-label="Aura AI"
+          >
+            {/* Icon Robot thông minh với hiệu ứng rung nhẹ (wiggle) và chấm phát tín hiệu */}
+            <div className="relative flex items-center justify-center shrink-0">
+              <Bot className="w-5 h-5 sm:w-6 sm:h-6 text-white animate-aura-wiggle group-hover:animate-none group-hover:rotate-12 transition-transform duration-300 drop-shadow" />
+              {/* Chấm xanh phát tín hiệu online */}
+              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-[#0c0d14] animate-ping"></span>
+              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-[#0c0d14] shadow-sm"></span>
+            </div>
+
+            {/* Dòng chữ 'Aura AI' thu gọn mặc định, mở dài mượt mà và hết trong suốt khi hover */}
+            <div className="max-w-0 opacity-0 group-hover:max-w-[120px] group-hover:opacity-100 overflow-hidden transition-all duration-300 ease-out whitespace-nowrap">
+              <span className="pl-2 font-bold text-xs sm:text-sm tracking-wide text-white drop-shadow">
+                Aura AI
+              </span>
+            </div>
+          </button>
+        </div>
       )}
 
       {/* 2. Cửa sổ Chatbot Popup hiện đại */}
