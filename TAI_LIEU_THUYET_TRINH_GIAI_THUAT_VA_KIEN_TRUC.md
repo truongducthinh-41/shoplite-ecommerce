@@ -276,51 +276,36 @@ flowchart TD
 
 ---
 
-### 2.10. Giải thuật Theo dõi Hành vi Đa nhân tố & Gợi ý Cá nhân hóa (Behavioral Tracking & Dynamic Feed)
+### 2.10. Giải thuật Đan xen Gợi ý Cá nhân hóa & Bám đuổi Hành vi (Interleaved Retargeting & Dynamic Discover Feed - Chuẩn Shopee & TikTok Shop)
 
 #### 🎯 Mục đích:
-Giải quyết bài toán cá nhân hóa trải nghiệm người dùng theo thời gian thực (Real-time Personalization). Tương tự như cơ chế của các nền tảng thương mại điện tử hàng đầu (Shopee, TikTok Shop): khi người dùng tương tác xem các ngành hàng (thời trang, công nghệ, gia dụng...), hệ thống tự động ghi nhận và tái cấu trúc trang chủ để ưu tiên hiển thị mục **"✨ Gợi Ý Dành Riêng Cho Bạn (AI Personalized Feed)"** dựa trên đúng gu sở thích và nhu cầu tiềm ẩn của từng cá nhân.
+Giải quyết bài toán cá nhân hóa trải nghiệm người dùng theo thời gian thực (Real-time Algorithmic Personalization) theo cách tiếp cận chuyên nghiệp của các "ông lớn" thương mại điện tử (Shopee, TikTok Shop, Instagram, Facebook):
+- **Không tạo các khối thông báo gợi ý lộ liễu** (gây phản cảm hoặc làm người dùng cảm thấy bị theo dõi quá mức).
+- Thay vào đó, thuật toán **tích hợp ngầm vào dòng sản phẩm "GỢI Ý HÔM NAY"** (Daily Discover Feed).
+- Khi người dùng tìm kiếm từ khóa (ví dụ: *"tai nghe"*, *"áo thun"*, *"iphone"*...) hoặc bấm xem chi tiết một sản phẩm, hệ thống lập tức bắt trọn ý định ("nghe lén" từ khóa và danh mục quan tâm) và **tự động đan xen (interleave) các sản phẩm liên quan len lỏi vào đầu trang chủ với tần suất cao**, kèm các huy hiệu tự nhiên như *"Tài trợ" (Sponsored)*, *"Gợi ý tìm kiếm"*, *"Tương tự vừa xem"*.
 
 #### ⚙️ Bản chất giải thuật & Mô hình toán học:
-1. **Mô hình Trọng số Tương tác Đa sự kiện (Multi-Factor Interaction Weighting):**
-   Mỗi hành động của người dùng biểu hiện mức độ gắn kết (Intent Affinity) khác nhau, được mô hình hóa bằng hàm tính điểm sở thích:
-   $$\text{AffinityScore}(u, c) = \sum_{e \in \text{Events}(u, c)} W(e) \cdot \lambda^{\Delta t_e}$$
+1. **Mô hình Trọng số Ý định Đa điểm chạm (Multi-Touch Intent Scoring):**
+   Mỗi hành động của người dùng biểu hiện mức độ quan tâm khác nhau:
+   $$\text{IntentScore}(u, p) = S_{\text{search}}(u, p) + S_{\text{cat}}(u, p) + S_{\text{rel}}(u, p) + S_{\text{pop}}(p) - P_{\text{recency}}(p)$$
    Trong đó:
-   - $W(\text{'view'}) = 1.0$ (Xem chi tiết sản phẩm)
-   - $W(\text{'search'}) = 2.0$ (Chủ động tìm kiếm từ khóa ngành hàng)
-   - $W(\text{'cart'}) = 3.0$ (Thêm sản phẩm vào giỏ hàng)
-   - $W(\text{'purchase'}) = 5.0$ (Thực hiện giao dịch thanh toán thành công)
-   - $\lambda^{\Delta t_e}$: Hệ số suy giảm theo thời gian (Time-decay factor), ưu tiên các hành vi gần nhất trong phiên duyệt web.
+   - $S_{\text{search}}(u, p) = +80$: Nếu tên hoặc danh mục của $p$ khớp với từ khóa người dùng vừa tìm kiếm trong phiên duyệt web (tín hiệu retargeting tức thời).
+   - $S_{\text{cat}}(u, p) = W(c) \times 5$: Tích lũy điểm sở thích theo danh mục ($W = 8$ cho mua hàng, $W = 6$ cho tìm kiếm, $W = 5$ cho giỏ hàng, $W = 2$ cho lượt xem).
+   - $S_{\text{rel}}(u, p) = +40$: Sản phẩm cùng ngành hàng bổ trợ với sản phẩm người dùng vừa xem.
+   - $S_{\text{pop}}(p) = \frac{\text{sold\_count}}{100} + (\text{rating} - 4) \times 10$: Điểm thịnh hành cơ bản toàn sàn.
+   - $P_{\text{recency}}(p) = -25$: Giảm nhẹ điểm nếu chính sản phẩm đó vừa mới click xem xong (nhằm ưu tiên hiển thị các mẫu mã tương tự khác, tránh lặp lại đơn điệu).
 
-2. **Cơ chế Lưu trữ Lai 2 Tầng (Hybrid Dual-Layer Storage):**
-   - **Tầng Client-side (Local Persistence):** Quản lý bởi module [`userTracker.js`](file:///c:/Users/Lenovo/.gemini/antigravity/scratch/shoplite-ecommerce/frontend/src/utils/userTracker.js) lưu trong `localStorage`. Cho phép hệ thống lập tức tính toán gu người dùng ngay cả khi họ là khách vãng lai (Guest Session chưa đăng nhập), hiển thị ngay danh mục *"🕒 Sản Phẩm Bạn Vừa Xem"* và *"Gợi ý cá nhân hóa"*.
-   - **Tầng Server-side (Database Engine):** Khi người dùng đăng nhập tài khoản, các sự kiện tương tác được đồng bộ lên bảng `UserInteractions` qua API `POST /api/catalog/track-interaction`. Bảng này được đánh Composite Index `idx_user_interactions_composite (user_id, category_id, event_type)` giúp câu truy vấn tính điểm affinity đạt tốc độ $O(\log N)$.
+2. **Giải thuật Đan xen Nhịp độ Cadence (Cadence Interleaving Algorithm):**
+   Hệ thống chia toàn bộ kho sản phẩm thành 2 bể dữ liệu:
+   - **Pool A (Retargeted Pool):** Tập hợp các sản phẩm khớp đúng gu sở thích và từ khóa "nghe lén" của người dùng.
+   - **Pool B (Trending/Exploration Pool):** Tập hợp các sản phẩm bán chạy nhất từ các ngành hàng khác để giữ tính đa dạng, tránh hiện tượng bong bóng bộ lọc (Filter Bubble).
+   - **Quy luật đan xen theo nhịp (Cadence 60/40):**
+     $$\text{Feed}[i] = \begin{cases} \text{Pool A} & \text{khi } i \pmod 3 \neq 2 \land \text{Pool A còn hàng} \\ \text{Pool B} & \text{khi } i \pmod 3 = 2 \lor \text{Pool A hết hàng} \end{cases}$$
+   - Nhờ đó, người dùng lướt feed sẽ thấy các sản phẩm họ vừa quan tâm xuất hiện dày đặc và tự nhiên ở các vị trí đắc địa, xen kẽ là các sản phẩm hot khác, giống hệt trải nghiệm lướt Shopee / TikTok Shop.
 
-3. **Thuật toán Khai phá Sở thích & Truy vấn Sản phẩm Mục tiêu:**
-   ```sql
-   WITH UserTopAffinities AS (
-       SELECT category_id, 
-              SUM(CASE 
-                  WHEN event_type = 'purchase' THEN 5
-                  WHEN event_type = 'cart' THEN 3
-                  WHEN event_type = 'search' THEN 2
-                  ELSE 1 END) AS affinity_score
-       FROM UserInteractions
-       WHERE user_id = $1
-       GROUP BY category_id
-       ORDER BY affinity_score DESC
-       LIMIT 3
-   )
-   SELECT p.id, p.name, p.price, p.image_url, p.rating_avg, p.sold_count,
-          s.name AS shop_name, c.name AS category_name
-   FROM Products p
-   JOIN UserTopAffinities uta ON p.category_id = uta.category_id
-   JOIN Shops s ON p.shop_id = s.id
-   JOIN Categories c ON p.category_id = c.id
-   WHERE p.status = 'active'
-   ORDER BY uta.affinity_score DESC, p.sold_count DESC, p.rating_avg DESC
-   LIMIT 8;
-   ```
+3. **Cơ chế Lưu trữ Lai 2 Tầng (Hybrid Dual-Layer Storage):**
+   - **Tầng Client-side (Local Persistence):** Module [`userTracker.js`](file:///c:/Users/Lenovo/.gemini/antigravity/scratch/shoplite-ecommerce/frontend/src/utils/userTracker.js) lưu vết `aurastore_category_weights`, `aurastore_recent_searches` và `aurastore_recent_views` trong `localStorage`. Giúp phản hồi ngay lập tức $0\text{ms}$ cả với khách vãng lai (Guest).
+   - **Tầng Server-side (Database Engine):** Đồng bộ lên bảng `UserInteractions` (PostgreSQL/SQL Server) qua API `POST /api/catalog/track-interaction` khi người dùng đăng nhập. Bảng này được đánh Composite Index `idx_user_interactions_composite (user_id, category_id, event_type)`.
 
 ---
 

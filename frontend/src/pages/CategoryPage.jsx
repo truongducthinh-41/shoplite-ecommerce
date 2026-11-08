@@ -7,6 +7,7 @@ import FilterSidebar from '../components/FilterSidebar';
 import { CATEGORY_BRANDS } from './BrandsPage';
 import { calculatePricing } from '../utils/pricing';
 import { FALLBACK_PRODUCTS } from '../data/categoryProducts';
+import { trackCategoryInteraction } from '../utils/userTracker';
 
 // Helper to normalize strings (remove accents, quotes, spaces) for matching
 const normalizeStr = (s) => 
@@ -100,6 +101,12 @@ export default function CategoryPage() {
   const observer = useRef();
   const { addToCart } = useCart();
   const LIMIT = 100;
+
+  useEffect(() => {
+    if (categoryName && categoryName !== 'All') {
+      trackCategoryInteraction(categoryName);
+    }
+  }, [categoryName]);
 
   // Filter fallback products locally with strict category boundaries
   const getFilteredFallbackProducts = useCallback(() => {

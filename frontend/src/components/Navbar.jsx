@@ -4,6 +4,7 @@ import { ShoppingCart, User, Search, LogOut, ChevronDown } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { apiFetch } from '../services/api';
+import { trackSearchQuery, trackProductInteraction } from '../utils/userTracker';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -60,6 +61,7 @@ export default function Navbar() {
     e.preventDefault();
     setShowSuggestions(false);
     if (searchQuery.trim()) {
+      trackSearchQuery(searchQuery.trim());
       navigate(`/?search=${encodeURIComponent(searchQuery.trim())}`);
     } else {
       navigate(`/`);
@@ -116,6 +118,8 @@ export default function Navbar() {
                           onClick={() => {
                             setSearchQuery(item.name);
                             setShowSuggestions(false);
+                            trackSearchQuery(item.name);
+                            trackProductInteraction(item, 'view');
                             navigate(`/?search=${encodeURIComponent(item.name)}`);
                           }}
                           className="w-full text-left px-4 py-3 hover:bg-white/10 transition-colors flex items-center gap-3 border-b border-white/5 last:border-0 group"
