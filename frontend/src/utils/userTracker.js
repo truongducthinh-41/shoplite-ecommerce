@@ -303,11 +303,11 @@ export function getRecentSearches() {
 /**
  * GIẢI THUẬT ĐAN XEN CÁ NHÂN HÓA SHOPEE / TIKTOK SHOP (Interleaved Recommendation Stream)
  * 
- * Khi người dùng về lại trang chủ:
- * - Hệ thống gom tất cả sản phẩm thuộc danh mục đã tìm kiếm ("nghe lén"), danh mục đã xem
- *   và các danh mục hệ sinh thái bổ trợ (Companion Categories).
- * - Gợi ý NHIỀU VÀ LIÊN TỤC xuyên suốt dòng sản phẩm "GỢI Ý HÔM NAY", xen kẽ với các sản phẩm
- *   thịnh hành ngoài lề khác đúng chuẩn Retargeting Cadence.
+ * - Random hóa / Xáo trộn động: Mỗi lần người dùng F5 hoặc quay về trang chủ, danh sách sản phẩm
+ *   sẽ được xáo trộn ngẫu nhiên một cách thông minh (Weighted Stochastic Shuffle) để tạo sự tươi mới.
+ * - Khi có lịch sử tương tác / tìm kiếm ("nghe lén"): Các sản phẩm liên quan sẽ xuất hiện dày đặc
+ *   và liên tục ở các vị trí ưu tiên, xen kẽ với toàn bộ sản phẩm đa dạng khác của sàn.
+ * - Không gắn các tag màu sắc gây rối mắt (Giao diện sạch sẽ 100%).
  */
 export function generateBlendedDiscoverFeed(rawProducts = []) {
   if (!rawProducts || rawProducts.length === 0) return [];
@@ -322,10 +322,10 @@ export function generateBlendedDiscoverFeed(rawProducts = []) {
   const topCatIds = getTopCategoryInterests();
   const searchCatIds = new Set(recentSearches.flatMap(s => s.matchedCatIds || []));
 
-  // Tập hợp tất cả các danh mục mục tiêu (bao gồm cả danh mục tìm kiếm + vừa xem)
+  // Tập hợp tất cả các danh mục mục tiêu
   const primaryCatIds = new Set([...topCatIds, ...searchCatIds, ...recentCatIds]);
 
-  // Mở rộng ra các danh mục bổ trợ (Companion Categories) để có nhiều sản phẩm gợi ý liên tục
+  // Mở rộng ra các danh mục bổ trợ (Companion Categories) để có nhiều sản phẩm liên quan
   const expandedCatIds = new Set(primaryCatIds);
   primaryCatIds.forEach(catId => {
     const companions = COMPANION_CATEGORIES[catId] || [];
@@ -334,111 +334,88 @@ export function generateBlendedDiscoverFeed(rawProducts = []) {
 
   const hasUserIntent = primaryCatIds.size > 0 || recentSearches.length > 0 || recentViews.length > 0;
 
-  // Nếu người dùng hoàn toàn mới (Cold-Start): Trả về sản phẩm bán chạy cân bằng đa ngành
+  // Hàm Fisher-Yates xáo trộn ngẫu nhiên
+  const shuffleArray = (array) => {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  };
+
+  // NẾU NGƯỜI DÙNG CHƯA CÓ LỊCH SỬ:
+  // Random ngẫu nhiên toàn bộ sản phẩm trên mỗi lần F5 / về Home, giúp trang luôn tươi mới
   if (!hasUserIntent) {
-    return [...rawProducts]
-      .sort((a, b) => (b.sold_count || 0) - (a.sold_count || 0))
-      .map((p, idx) => ({
-        ...p,
-        feed_badge: (p.sold_count > 1500 && idx % 4 === 0) ? 'Bán chạy' : null
-      }));
+    return shuffleArray(rawProducts);
   }
 
-  // 1. Phân loại và tính điểm cho từng sản phẩm trong kho
-  const scoredProducts = rawProducts.map(product => {
-    let affinityScore = 0;
-    let isRetargeted = false;
-    let badge = null;
+  // NẾU ĐÃ CÓ LỊCH SỬ ("NGHE LÉN" ĐA NHÂN TỐ):
+  // 1. Phân loại sản phẩm:
+  // - Pool A (Retargeted): Các sản phẩm khớp với từ khóa tìm kiếm, danh mục đã xem hoặc hệ sinh thái bổ trợ
+  // - Pool B (Trending / Outside): Toàn bộ các sản phẩm thuộc các ngành hàng khác
+  const poolRetargeted = [];
+  const poolTrending = [];
 
+  rawProducts.forEach(product => {
     const pNameNorm = normalizeText(product.name);
     const pCatNorm = normalizeText(product.category_name);
 
-    // Nhân tố 1: Khớp từ khóa tìm kiếm gần đây ("Nghe lén" trực tiếp)
+    let isTargeted = false;
+    let baseWeight = 0;
+
+    // Khớp từ khóa tìm kiếm gần đây
     for (const search of recentSearches.slice(0, 3)) {
       if (search.normalized && (pNameNorm.includes(search.normalized) || pCatNorm.includes(search.normalized))) {
-        affinityScore += 120;
-        isRetargeted = true;
-        badge = 'Gợi ý tìm kiếm';
+        isTargeted = true;
+        baseWeight += 120;
         break;
       }
       if (search.matchedCatIds && search.matchedCatIds.includes(product.category_id)) {
-        affinityScore += 100;
-        isRetargeted = true;
-        badge = 'Tài trợ';
+        isTargeted = true;
+        baseWeight += 100;
         break;
       }
     }
 
-    // Nhân tố 2: Điểm số trọng số tích lũy danh mục chính
+    // Khớp danh mục chính đã xem
     if (primaryCatIds.has(product.category_id)) {
-      const catWeight = categoryWeights[product.category_id] || 1;
-      affinityScore += Math.min(catWeight * 8, 90);
-      isRetargeted = true;
-      if (!badge) {
-        badge = recentCatIds.has(product.category_id) ? 'Tương tự vừa xem' : 'Gợi ý cho bạn';
-      }
+      isTargeted = true;
+      baseWeight += 70;
+    } else if (expandedCatIds.has(product.category_id)) {
+      isTargeted = true;
+      baseWeight += 40;
     }
 
-    // Nhân tố 3: Thuộc danh mục hệ sinh thái bổ trợ (Companion Ecosystem)
-    if (!primaryCatIds.has(product.category_id) && expandedCatIds.has(product.category_id)) {
-      affinityScore += 50;
-      isRetargeted = true;
-      if (!badge) badge = 'Phù hợp với bạn';
+    // Yếu tố ngẫu nhiên (Random Jitter) để mỗi lần F5 hoặc về trang chủ, thứ tự các món lại đổi mới
+    const randomScore = baseWeight + (Math.random() * 50);
+
+    if (isTargeted) {
+      poolRetargeted.push({ ...product, _rndScore: randomScore });
+    } else {
+      poolTrending.push({ ...product, _rndScore: Math.random() * 100 });
     }
-
-    // Nhân tố 4: Điểm bán chạy cơ bản trên sàn
-    const soldBonus = Math.min((product.sold_count || 0) / 100, 20);
-    const ratingBonus = ((product.rating_avg || 4.5) - 4) * 10;
-    affinityScore += soldBonus + ratingBonus;
-
-    // Giảm nhẹ điểm nếu chính sản phẩm đó vừa mới click xem xong (để ưu tiên các mẫu khác cùng loại hiển thị trước)
-    if (recentViewIds.has(product.id)) {
-      affinityScore -= 20;
-    }
-
-    return {
-      ...product,
-      _affinityScore: affinityScore,
-      _isRetargeted: isRetargeted,
-      feed_badge: badge
-    };
   });
 
-  // 2. Chia thành 2 nhóm:
-  // - Pool Retargeted: Các sản phẩm được nhắm mục tiêu (nhiều sản phẩm từ danh mục chính + bổ trợ)
-  // - Pool Trending: Các sản phẩm ngoài lề khác toàn sàn
-  const poolRetargeted = scoredProducts
-    .filter(p => p._isRetargeted)
-    .sort((a, b) => b._affinityScore - a._affinityScore);
+  // Sắp xếp theo điểm ngẫu nhiên có trọng số
+  poolRetargeted.sort((a, b) => b._rndScore - a._rndScore);
+  poolTrending.sort((a, b) => b._rndScore - a._rndScore);
 
-  const poolTrending = scoredProducts
-    .filter(p => !p._isRetargeted)
-    .sort((a, b) => (b.sold_count || 0) - (a.sold_count || 0));
-
-  // 3. Đan xen liên tục (Continuous Interleaving Cadence):
-  // Nhịp: [Retargeted, Retargeted, Trending, Retargeted, Retargeted, Trending...]
-  // Đảm bảo các sản phẩm liên quan xuất hiện NHIỀU VÀ LIÊN TỤC xuyên suốt danh sách
+  // 2. Đan xen liên tục theo nhịp (Cadence 2 Retargeted : 1 Trending):
+  // Đảm bảo đưa toàn bộ sản phẩm (cả Pool A lẫn Pool B) vào feed, tạo danh sách cực kỳ đầy đặn
   const blendedFeed = [];
-  let rIdx = 0;
-  let tIdx = 0;
-  const totalItems = scoredProducts.length;
+  let r = 0;
+  let t = 0;
 
-  for (let i = 0; i < totalItems; i++) {
-    // Tỷ lệ 2 retargeted : 1 trending
-    const isRetargetedSlot = (i % 3 !== 2);
+  while (r < poolRetargeted.length || t < poolTrending.length) {
+    if (r < poolRetargeted.length) blendedFeed.push(poolRetargeted[r++]);
+    if (r < poolRetargeted.length) blendedFeed.push(poolRetargeted[r++]);
+    if (t < poolTrending.length) blendedFeed.push(poolTrending[t++]);
 
-    if (isRetargetedSlot && rIdx < poolRetargeted.length) {
-      blendedFeed.push(poolRetargeted[rIdx++]);
-    } else if (tIdx < poolTrending.length) {
-      blendedFeed.push(poolTrending[tIdx++]);
-    } else if (rIdx < poolRetargeted.length) {
-      blendedFeed.push(poolRetargeted[rIdx++]);
+    // Nếu một trong 2 pool đã cạn, đẩy tiếp phần còn lại
+    if (r >= poolRetargeted.length && t < poolTrending.length) {
+      blendedFeed.push(poolTrending[t++]);
     }
-  }
-
-  // Nếu poolRetargeted còn thừa thì đẩy tiếp vào cuối
-  while (rIdx < poolRetargeted.length) {
-    blendedFeed.push(poolRetargeted[rIdx++]);
   }
 
   return blendedFeed;

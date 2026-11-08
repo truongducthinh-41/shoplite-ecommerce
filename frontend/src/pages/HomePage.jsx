@@ -91,18 +91,21 @@ export default function HomePage() {
           // Ghi nhận hành vi tìm kiếm phục vụ Giải pháp 3
           trackSearchQuery(searchQuery);
         } else {
-          // TRƯỜNG HỢP 2: TRANG CHỦ CHÍNH (GIẢI PHÁP 3: RETARGETING & ĐAN XEN LIÊN TỤC)
-          const rawProducts = (productsData && productsData.length >= 50)
-            ? productsData
-            : FALLBACK_PRODUCTS;
+          // TRƯỜNG HỢP 2: TRANG CHỦ CHÍNH (GIẢI PHÁP 3: RETARGETING & ĐAN XEN RANDOM)
+          // Hợp nhất dữ liệu để luôn đảm bảo đầy đủ tối thiểu 108 sản phẩm trên trang chủ
+          const catalogMap = new Map();
+          FALLBACK_PRODUCTS.forEach(p => catalogMap.set(p.id, p));
+          if (Array.isArray(productsData) && productsData.length > 0) {
+            productsData.forEach(p => catalogMap.set(p.id, p));
+          }
 
-          const sanitizedProducts = rawProducts.map(p => ({
+          const sanitizedProducts = Array.from(catalogMap.values()).map(p => ({
             ...p,
             image_url: getSafeProductImage(p)
           }));
 
-          // Áp dụng Động cơ Gợi ý Cá nhân hóa Đan xen (Shopee / TikTok Interleaved Algorithm)
-          // Các sản phẩm người dùng vừa tìm kiếm / xem nhiều ("nghe lén") sẽ được đan xen dày đặc và liên tục vào feed
+          // Áp dụng Động cơ Gợi ý Cá nhân hóa Đan xen & Randomize trên mỗi lần F5 / về Home
+          // Đảm bảo số lượng sản phẩm cực kỳ phong phú và liên tục đổi mới
           if (category === 'All' && sort === 'Popularity') {
             displayProducts = generateBlendedDiscoverFeed(sanitizedProducts);
           } else {
@@ -333,7 +336,7 @@ export default function HomePage() {
               {searchQuery ? `Kết quả tìm kiếm cho "${searchQuery}"` : 'Gợi Ý Hôm Nay'}
             </h2>
           </div>
-          {searchQuery ? (
+          {searchQuery && (
             <div className="flex items-center gap-3">
               <span className="text-xs text-indigo-400 font-semibold bg-indigo-500/10 px-2.5 py-1 rounded-full border border-indigo-500/20">
                 {products.length} sản phẩm phù hợp
@@ -344,11 +347,6 @@ export default function HomePage() {
               >
                 Về Trang Chủ
               </button>
-            </div>
-          ) : (
-            <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              Được cá nhân hóa theo xu hướng & sở thích của bạn
             </div>
           )}
         </div>
@@ -374,23 +372,6 @@ export default function HomePage() {
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     onError={handleImageError}
                   />
-
-                  {/* Huy hiệu thuật toán đan xen (Tài trợ, Gợi ý, Tương tự vừa xem) chuẩn Shopee/TikTok */}
-                  {product.feed_badge && (
-                    <span className={`absolute top-2 left-2 z-10 text-[9px] font-bold px-2 py-0.5 rounded-md backdrop-blur-md shadow-md border ${
-                      product.feed_badge === 'Tài trợ'
-                        ? 'bg-black/75 text-amber-300 border-amber-500/40'
-                        : product.feed_badge === 'Gợi ý tìm kiếm'
-                        ? 'bg-rose-950/85 text-rose-300 border-rose-500/40'
-                        : product.feed_badge === 'Tương tự vừa xem'
-                        ? 'bg-indigo-950/85 text-indigo-300 border-indigo-500/40'
-                        : product.feed_badge === 'Gợi ý'
-                        ? 'bg-purple-950/85 text-purple-300 border-purple-500/40'
-                        : 'bg-emerald-950/85 text-emerald-300 border-emerald-500/40'
-                    }`}>
-                      {product.feed_badge}
-                    </span>
-                  )}
 
                   {product.stock === 0 && (
                     <span className="absolute top-2 right-2 bg-red-500/80 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-md">Out of stock</span>
