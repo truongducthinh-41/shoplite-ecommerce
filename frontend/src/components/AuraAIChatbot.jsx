@@ -26,10 +26,15 @@ export default function AuraAIChatbot() {
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [loading, setLoading] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(1); // Mặc định 1 tin nhắn chào mừng từ Aura AI
+  const [unreadCount, setUnreadCount] = useState(0); // Ban đầu chưa có tin mới -> Không hiện noti đỏ
   const messagesEndRef = useRef(null);
   const chatWindowRef = useRef(null);
+  const isOpenRef = useRef(isOpen);
   const { addToCart } = useCart();
+
+  useEffect(() => {
+    isOpenRef.current = isOpen;
+  }, [isOpen]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -68,14 +73,17 @@ export default function AuraAIChatbot() {
     setLoading(true);
 
     try {
-      // 2. Gửi yêu cầu đến Backend AI API
-      const response = await apiFetch('/ai/chat', {
+      // 2. Gửi yêu cầu đến Backend AI API đồng thời tạo độ trễ tự nhiên 2.3 giây
+      const delayPromise = new Promise(resolve => setTimeout(resolve, 2300));
+      const fetchPromise = apiFetch('/ai/chat', {
         method: 'POST',
         body: JSON.stringify({
           message: messageContent,
           conversationHistory: messages.slice(-4)
         })
       });
+
+      const [response] = await Promise.all([fetchPromise, delayPromise]);
 
       // 3. Nhận phản hồi và thêm vào giao diện
       const aiReply = {
@@ -86,8 +94,14 @@ export default function AuraAIChatbot() {
         suggestedQuestions: response.suggestedQuestions || []
       };
       setMessages(prev => [...prev, aiReply]);
+
+      // Nếu tại thời điểm AI phản hồi, cửa sổ chat đang đóng -> Bật chấm đỏ thông báo noti!
+      if (!isOpenRef.current) {
+        setUnreadCount(prev => prev + 1);
+      }
     } catch (error) {
       console.error('[AuraAIChatbot error]:', error);
+      await new Promise(resolve => setTimeout(resolve, 1500));
       // Fallback nếu mất mạng hoặc lỗi server
       const fallbackReply = {
         id: Date.now() + 1,
@@ -97,6 +111,9 @@ export default function AuraAIChatbot() {
         suggestedQuestions: ['Điện thoại bán chạy', 'Laptop sinh viên', 'Giày thể thao']
       };
       setMessages(prev => [...prev, fallbackReply]);
+      if (!isOpenRef.current) {
+        setUnreadCount(prev => prev + 1);
+      }
     } finally {
       setLoading(false);
     }
@@ -282,9 +299,14 @@ export default function AuraAIChatbot() {
 
             {/* Loading Indicator */}
             {loading && (
-              <div className="flex items-center gap-2 text-indigo-400 text-xs bg-white/5 p-3 rounded-2xl w-fit">
-                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                <span>Aura AI đang phân tích dữ liệu kho hàng...</span>
+              <div className="flex items-center gap-2.5 text-indigo-300 text-xs bg-indigo-950/40 border border-indigo-500/20 px-3.5 py-2.5 rounded-2xl w-fit animate-pulse">
+                <Bot className="w-4 h-4 text-indigo-400 animate-spin" />
+                <span>Aura AI đang soạn câu trả lời...</span>
+                <span className="flex gap-1 ml-1">
+                  <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                  <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                  <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce"></span>
+                </span>
               </div>
             )}
             <div ref={messagesEndRef} />
