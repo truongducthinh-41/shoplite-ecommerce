@@ -7,6 +7,7 @@ import { ShoppingCart, Star, StarHalf, ArrowLeft, Truck, Shield, RotateCcw, Spar
 import { calculatePricing } from '../utils/pricing';
 import { FALLBACK_PRODUCTS } from '../data/categoryProducts';
 import { trackProductInteraction } from '../utils/userTracker';
+import { getSafeProductImage, handleImageError } from '../utils/productImages';
 
 export default function ProductDetailPage() {
   const { id } = useParams();
@@ -181,13 +182,12 @@ export default function ProductDetailPage() {
                   }}
                 >
                   <img 
-                    src={product.images[activeImageIndex]} 
+                    src={product.images[activeImageIndex] || getSafeProductImage(product)} 
                     alt={product.name} 
                     className="w-full h-full object-contain drop-shadow-xl transition-transform duration-200 pointer-events-none" 
-                    onError={(e) => { 
-                      e.target.onerror = null; 
-                      e.target.src = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=800'; 
-                    }}
+                    referrerPolicy="no-referrer"
+                    data-category-id={product.category_id}
+                    onError={handleImageError}
                   />
                 </div>
                 <div className="flex gap-3 overflow-x-auto pb-2 w-full max-w-md justify-start md:justify-center scrollbar-hide">
@@ -197,7 +197,7 @@ export default function ProductDetailPage() {
                       onClick={() => setActiveImageIndex(idx)}
                       className={`flex-shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-xl bg-white/5 overflow-hidden border-2 transition-all ${activeImageIndex === idx ? 'border-indigo-500 scale-105 shadow-md' : 'border-transparent opacity-60 hover:opacity-100'}`}
                     >
-                      <img src={img} alt={`${product.name} thumbnail ${idx}`} className="w-full h-full object-cover" />
+                      <img src={img} alt={`${product.name} thumbnail ${idx}`} referrerPolicy="no-referrer" className="w-full h-full object-cover" />
                     </button>
                   ))}
                 </div>
@@ -226,13 +226,12 @@ export default function ProductDetailPage() {
                 }}
               >
                 <img 
-                  src={product.image_url} 
+                  src={getSafeProductImage(product)} 
                   alt={product.name} 
                   className="w-full h-full object-contain drop-shadow-xl transition-transform duration-200 pointer-events-none" 
-                  onError={(e) => { 
-                    e.target.onerror = null; 
-                    e.target.src = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=800'; 
-                  }}
+                  referrerPolicy="no-referrer"
+                  data-category-id={product.category_id}
+                  onError={handleImageError}
                 />
               </div>
             ) : (
@@ -438,7 +437,15 @@ export default function ProductDetailPage() {
                   >
                     <div className="aspect-square w-full bg-black/40 rounded-xl mb-3 overflow-hidden relative">
                       {rec.image_url ? (
-                        <img src={rec.image_url} alt={rec.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                        <img 
+                          src={getSafeProductImage(rec)} 
+                          alt={rec.name} 
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                          referrerPolicy="no-referrer"
+                          loading="lazy"
+                          data-category-id={rec.category_id}
+                          onError={handleImageError}
+                        />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-slate-600 group-hover:scale-110 transition-transform duration-300">
                           <span className="font-bold text-xs">No Image</span>

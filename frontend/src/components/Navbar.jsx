@@ -144,6 +144,9 @@ export default function Navbar() {
                                     src={getSafeProductImage(item)} 
                                     alt={item.name} 
                                     className="w-9 h-9 object-cover rounded-lg bg-black/40 shrink-0 border border-white/10"
+                                    referrerPolicy="no-referrer"
+                                    loading="lazy"
+                                    data-category-id={item.category_id}
                                     onError={handleImageError}
                                   />
                                   <div className="overflow-hidden">

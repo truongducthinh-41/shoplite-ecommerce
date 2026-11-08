@@ -8,6 +8,7 @@ import { CATEGORY_BRANDS } from './BrandsPage';
 import { calculatePricing } from '../utils/pricing';
 import { FALLBACK_PRODUCTS } from '../data/categoryProducts';
 import { trackCategoryInteraction } from '../utils/userTracker';
+import { getSafeProductImage, handleImageError } from '../utils/productImages';
 
 // Helper to normalize strings (remove accents, quotes, spaces) for matching
 const normalizeStr = (s) => 
@@ -408,13 +409,13 @@ export default function CategoryPage() {
                 <Link to={`/product/${product.id}`} className="block w-full relative aspect-square bg-white/5 overflow-hidden">
                   {product.image_url ? (
                     <img 
-                      src={product.image_url} 
+                      src={getSafeProductImage(product)} 
                       alt={product.name} 
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      onError={(e) => { 
-                        e.target.onerror = null; 
-                        e.target.src = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=800'; 
-                      }}
+                      referrerPolicy="no-referrer"
+                      loading="lazy"
+                      data-category-id={product.category_id}
+                      onError={handleImageError}
                     />
                   ) : (
                      <div className="w-full h-full bg-white/5 flex items-center justify-center text-slate-500 group-hover:scale-105 transition-transform duration-300">
