@@ -150,12 +150,15 @@ export default function HomePage() {
         const offset = page * LIMIT;
         const newProducts = await apiFetch(`/products?limit=${LIMIT}&offset=${offset}&category=${encodeURIComponent(category)}&sort=${encodeURIComponent(sort)}&search=${encodeURIComponent(searchQuery)}`).catch(() => []);
         if (newProducts && newProducts.length > 0) {
-          const sanitizedNew = newProducts.map(p => ({
+          let sanitizedNew = newProducts.map(p => ({
             ...p,
             image_url: getSafeProductImage(p)
           }));
+          if (searchQuery) {
+            sanitizedNew = sanitizedNew.filter(p => matchProductSearch(p, searchQuery));
+          }
           setProducts(prev => [...prev, ...sanitizedNew]);
-          setHasMore(newProducts.length === LIMIT);
+          setHasMore(newProducts.length === LIMIT && sanitizedNew.length > 0);
         } else {
           setHasMore(false);
         }
@@ -238,8 +241,8 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Best Sellers / Tìm Kiếm Hàng Đầu (Tìm Kiếm Hàng Đầu) */}
-      {bestSellers.length > 0 && (
+      {/* Best Sellers / Tìm Kiếm Hàng Đầu (Ẩn khi người dùng đang tìm kiếm) */}
+      {!searchQuery && bestSellers.length > 0 && (
         <div className="mb-12">
           <div className="flex items-center gap-2 mb-6 text-amber-500">
             <Flame className="w-6 h-6 fill-current" />
