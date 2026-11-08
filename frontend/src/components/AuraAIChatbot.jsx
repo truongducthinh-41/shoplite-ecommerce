@@ -19,7 +19,7 @@ export default function AuraAIChatbot() {
     {
       id: 1,
       sender: 'ai',
-      text: 'Chào bạn! Mình là **Aura AI** - Trợ lý Mua sắm Thông minh của sàn AuraStore. Bạn đang cần tìm sản phẩm gì, ngân sách bao nhiêu hay cần tư vấn quà tặng? Hãy nhắn cho mình nhé! ✨',
+      text: 'Chào bạn! Mình là **Aura AI** - Trợ lý Mua sắm Bá Khí nhất của sàn AuraStore. Bạn đang cần tư vấn gì? Hãy nhắn cho mình nhé! ✨',
       products: [],
       suggestedQuestions: QUICK_PROMPTS
     }
@@ -119,23 +119,23 @@ export default function AuraAIChatbot() {
         </div>
       )}
 
-      {/* 2. Cửa sổ Chatbot Popup hiện đại */}
+      {/* 2. Cửa sổ Chatbot Popup hiện đại, nhỏ gọn & trong suốt thanh lịch */}
       {isOpen && (
-        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 w-[94vw] sm:w-[430px] h-[600px] max-h-[88vh] bg-[#0c0d14]/95 backdrop-blur-2xl border border-indigo-500/30 rounded-3xl shadow-[0_15px_50px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-300">
+        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 w-[92vw] sm:w-[380px] h-[530px] max-h-[82vh] bg-[#0a0b12]/80 backdrop-blur-xl border border-indigo-500/30 rounded-3xl shadow-[0_15px_50px_rgba(0,0,0,0.85)] flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-300">
           
           {/* Header */}
-          <div className="bg-gradient-to-r from-indigo-900/80 via-purple-900/60 to-slate-900/80 p-4 border-b border-white/10 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="relative p-2.5 bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-2xl shadow-md">
+          <div className="bg-gradient-to-r from-indigo-900/70 via-purple-900/50 to-slate-900/70 p-3.5 sm:p-4 border-b border-white/10 flex items-center justify-between">
+            <div className="flex items-center gap-2.5 sm:gap-3">
+              <div className="relative p-2 bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-xl shadow-md">
                 <Bot className="w-5 h-5 text-white" />
-                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-[#0c0d14]"></span>
+                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-[#0a0b12]"></span>
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <h3 className="font-bold text-white text-sm">Aura AI Shopping Assistant</h3>
-                  <span className="text-[10px] bg-indigo-500/20 text-indigo-300 font-semibold px-1.5 py-0.5 rounded border border-indigo-500/30">AI</span>
+                  <h3 className="font-bold text-white text-xs sm:text-sm">Aura AI - Trợ lý Mua sắm Bá Khí nhất</h3>
+                  <span className="text-[9px] bg-indigo-500/30 text-indigo-300 font-semibold px-1 py-0.5 rounded border border-indigo-500/40">VIP</span>
                 </div>
-                <p className="text-[11px] text-emerald-400 flex items-center gap-1">
+                <p className="text-[10px] sm:text-[11px] text-emerald-400 flex items-center gap-1">
                   <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span>
                   Trực tuyến • Tư vấn mua sắm 24/7
                 </p>

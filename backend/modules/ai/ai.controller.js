@@ -3,30 +3,86 @@ let FALLBACK_PRODUCTS = [];
 try {
   FALLBACK_PRODUCTS = require('../../../frontend/src/data/categoryProducts.js').FALLBACK_PRODUCTS || [];
 } catch (e) {
-  // Silent catch
+  try {
+    FALLBACK_PRODUCTS = require('../../data/categoryProducts.js').FALLBACK_PRODUCTS || [];
+  } catch (err) {
+    // Silent catch
+  }
 }
 
-// Danh sách kiến thức về nền tảng AuraStore
+// Hàm chuẩn hóa chuỗi tiếng Việt & tiếng Anh chuyên sâu
+function cleanText(text) {
+  return (text || '')
+    .toString()
+    .toLowerCase()
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'd')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^\w\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// Danh sách từ dừng tiếng Việt (Stop words) để tránh khớp sai vào các từ vụn vặt
+const STOP_WORDS = new Set([
+  'co', 'ban', 'khong', 'gi', 'nao', 'nay', 'shop', 'san', 'toi', 'minh',
+  'em', 'anh', 'chi', 'cho', 'voi', 'duoc', 'hay', 'la', 'o', 'va', 'de',
+  'cua', 'trong', 'nhu', 'the', 'hoi', 'tim', 'muon', 'can', 'xin', 'nhung',
+  'mot', 'cac', 'nhe', 'nha', 'a', 'ha', 'oi', 'giup', 'tu', 'van', 'bao', 'nhieu', 'tien'
+]);
+
+// BẢN ĐỒ TỪ ĐỒNG NGHĨA KHO SẢN PHẨM (SYNONYMS EXPANSION)
+const SYNONYMS = [
+  { trigger: ['tivi', 'ti vi', 'tv', 'smart tv', 'oled'], keywords: ['tivi', 'tv', 'oled', 'lg oled', 'c3'], categoryIds: [11] },
+  { trigger: ['may chieu', 'chieu phim', 'freestyle', 'projector'], keywords: ['may chieu', 'freestyle'], categoryIds: [11] },
+  { trigger: ['dien thoai', 'phone', 'smartphone', 'dt'], keywords: ['dien thoai', 'iphone', 'samsung', 'pixel', 'redmi', 'titanium'], categoryIds: [10] },
+  { trigger: ['laptop', 'may tinh', 'pc', 'macbook'], keywords: ['laptop', 'macbook', 'dell', 'xps', 'thinkpad'], categoryIds: [12] },
+  { trigger: ['tai nghe', 'airpod', 'airpods', 'headphone'], keywords: ['tai nghe', 'airpods', 'wh 1000xm5', 'sony'], categoryIds: [14] },
+  { trigger: ['loa', 'speaker', 'soundbar', 'marshall'], keywords: ['loa', 'marshall', 'emberton', 'soundbar', 'sony'], categoryIds: [14] },
+  { trigger: ['dong ho', 'watch', 'smartwatch'], keywords: ['dong ho', 'apple watch', 'rolex', 'casio', 'edifice'], categoryIds: [21] },
+  { trigger: ['hut bui', 'robot', 'roborock'], keywords: ['robot hut bui', 'roborock'], categoryIds: [23] },
+  { trigger: ['noi chien', 'noi chien khong dau'], keywords: ['noi chien', 'philips'], categoryIds: [23] },
+  { trigger: ['loc khong khi', 'may loc'], keywords: ['may loc khong khi', 'xiaomi'], categoryIds: [23] },
+  { trigger: ['pate', 'meo', 'thu cung', 'cho meo', 'cat ve sinh'], keywords: ['pate', 'royal canin', 'cat ve sinh', 'cature'], categoryIds: [24] },
+  { trigger: ['sua', 'bim', 'ta', 'meiji', 'moony', 'xe day', 'em be', 'tre em'], keywords: ['sua bot', 'meiji', 'ta quan', 'moony', 'xe day'], categoryIds: [27] },
+  { trigger: ['son', 'son moi', 'lipstick', 'son kem'], keywords: ['son', 'black rouge', 'mac', 'lipstick'], categoryIds: [25] },
+  { trigger: ['serum', 'duong da', 'mo tham', 'trang da'], keywords: ['serum', 'loreal', 'glycolic'], categoryIds: [25] },
+  { trigger: ['kem chong nang', 'chong nang', 'anessa'], keywords: ['kem chong nang', 'anessa'], categoryIds: [25] },
+  { trigger: ['dau ca', 'omega', 'huyet ap', 'omron'], keywords: ['dau ca', 'omega 3', 'kirkland', 'may do huyet ap', 'omron'], categoryIds: [26] },
+  { trigger: ['ao polo', 'ao so mi', 'ao khoac nam', 'blazer nam', 'quan jean nam', 'thoi trang nam'], keywords: ['polo', 'aristino', 'so mi', 'canifa', 'blazer', 'levis', 'the north face'], categoryIds: [16] },
+  { trigger: ['dam', 'vay', 'chan vay', 'thoi trang nu'], keywords: ['dam', 'vay', 'chan vay', 'chanel', 'zara', 'mango'], categoryIds: [17] },
+  { trigger: ['giay', 'sneaker', 'giay the thao', 'giay tay'], keywords: ['sneaker', 'nike', 'air force', 'air jordan', 'ultraboost', 'oxford'], categoryIds: [18, 19] },
+  { trigger: ['tui xach', 'balo', 'vi', 'clutch'], keywords: ['tui xach', 'gucci', 'charles keith', 'marmont', 'balo'], categoryIds: [20] },
+  { trigger: ['sach', 'dac nhan tam', 'but ky', 'parker'], keywords: ['sach', 'dac nhan tam', 'but ky', 'parker'], categoryIds: [30] },
+  { trigger: ['hat nem', 'ca phe', 'thuc pham', 'an vat', 'knorr', 'trung nguyen'], keywords: ['hat nem', 'knorr', 'ca phe', 'trung nguyen'], categoryIds: [31] },
+  { trigger: ['lego', 'gau bong', 'qua tang', 'qua', 'tang', 'do choi', 'sinh nhat'], keywords: ['lego', 'porsche', 'gau bong', 'qua tang', 'sinh nhat'], categoryIds: [32] },
+  { trigger: ['camera hanh trinh', 'mu bao hiem', 'o to', 'xe may', '70mai'], keywords: ['camera hanh trinh', '70mai', 'mu bao hiem', 'royal'], categoryIds: [29] },
+  { trigger: ['yoga', 'ta tay', 'the thao', 'tap gym'], keywords: ['tham tap yoga', 'lululemon', 'ta tay'], categoryIds: [28] }
+];
+
+// BỘ KIẾN THỨC NỀN TẢNG TOÀN DIỆN VỀ SÀN AURASTORE
 const PLATFORM_KNOWLEDGE = {
   name: 'AuraStore (ShopLite AI)',
-  shipping: 'AuraStore hỗ trợ giao hàng hỏa tốc trong 2 giờ tại nội thành TP.HCM & Hà Nội, và 1-3 ngày trên toàn quốc. Đơn hàng từ $50 được miễn phí vận chuyển 100%.',
-  warranty: 'Tất cả sản phẩm chính hãng Shopee Mall trên AuraStore được bảo hành chính hãng từ 12 đến 24 tháng theo đúng tiêu chuẩn nhà sản xuất.',
-  returnPolicy: 'Chính sách đổi trả miễn phí trong vòng 7 ngày nếu có lỗi từ nhà sản xuất hoặc sản phẩm không đúng mô tả.',
-  payment: 'Hỗ trợ đa dạng phương thức thanh toán an toàn: Thẻ tín dụng/ghi nợ (Visa, Mastercard), Ví ShopeePay, Chuyển khoản ngân hàng (QR Code) và Thanh toán khi nhận hàng (COD).'
+  about: 'AuraStore là sàn thương mại điện tử thế hệ mới đa ngành hàng cao cấp, được thiết kế theo phong cách Dark Glassmorphism hiện đại. Hiện sàn quy tụ hơn **100+ sản phẩm chính hãng** phân phối thuộc **24 ngành hàng** (Điện thoại, Tivi & Màn hình, Laptop, Máy ảnh, Âm thanh, Gaming, Thời trang Nam/Nữ, Mỹ phẩm, Sức khỏe, Thú cưng, Sách, Thực phẩm, Mẹ & Bé, Đồ gia dụng thông minh...) từ hơn 44 thương hiệu quốc tế uy tín.',
+  creator: 'Dự án sàn AuraStore và trợ lý **Aura AI** được nghiên cứu, thiết kế và phát triển bởi đội ngũ sinh viên/kỹ sư phần mềm của đồ án. Hệ thống được xây dựng trên kiến trúc Full-Stack chuẩn mực: React 18, Tailwind CSS, Node.js, Express, PostgreSQL kết hợp Động cơ Gợi ý Cá nhân hóa & Trợ lý Mua sắm Ngữ cảnh (Context-aware AI Shopping Assistant).',
+  shipping: '• **Giao hỏa tốc 2 giờ:** Áp dụng cho đơn hàng nội thành Hà Nội & TP.HCM.\n• **Giao tiêu chuẩn:** 1 - 3 ngày làm việc trên toàn quốc.\n• **Chính sách Freeship:** Miễn phí vận chuyển 100% cho mọi đơn hàng có giá trị từ **$50** trở lên.',
+  warranty: 'Tất cả sản phẩm bán trên sàn AuraStore đều là hàng chính hãng 100% chuẩn Shopee Mall / LazMall, được kích hoạt **Bảo hành điện tử từ 12 đến 24 tháng** theo đúng tiêu chuẩn nhà sản xuất tại các trung tâm bảo hành ủy quyền trên toàn quốc.',
+  returnPolicy: 'Chính sách **Đổi trả dễ dàng trong vòng 30 ngày** (miễn phí 100% phí hoàn hàng) nếu phát sinh lỗi kỹ thuật từ nhà sản xuất hoặc sản phẩm giao không đúng với mô tả trên sàn.',
+  payment: 'Hỗ trợ đa dạng và tuyệt đối an toàn với các phương thức thanh toán hàng đầu:\n1. Thẻ tín dụng/ghi nợ quốc tế (Visa, Mastercard, JCB)\n2. Chuyển khoản ngân hàng qua mã VietQR thông minh\n3. Ví điện tử tiện lợi (ShopeePay, MoMo)\n4. Thanh toán khi nhận hàng (COD kiểm tra hàng trước khi trả tiền).',
+  vouchers: 'Hôm nay sàn AuraStore đang áp dụng các chương trình ưu đãi cực hot:\n• **AURA20:** Giảm ngay 20% cho đơn hàng đầu tiên của khách hàng mới.\n• **FREESHIP50:** Miễn phí vận chuyển toàn quốc cho đơn từ $50.\n• **VIPMEMBER:** Tặng voucher $10 cho đơn hàng từ $100 khi tích lũy điểm thành viên.'
 };
 
-// Hàm trích xuất ngân sách từ câu hỏi (vd: "dưới 1 triệu", "dưới $500", "khoảng 20 triệu")
+// Hàm trích xuất ngân sách thông minh (Hỗ trợ tiền Việt, Đô la, k, tr...)
 function extractBudget(message) {
   const cleanMsg = message.toLowerCase();
-  
-  // Regex tìm số đô la: $500, 500$
+
   const dollarMatch = cleanMsg.match(/\$?\s*(\d+)\s*\$?|\$?(\d+)\s*usd/);
   if (dollarMatch && cleanMsg.includes('$')) {
     const amount = parseInt(dollarMatch[1] || dollarMatch[2]);
     if (amount) return { maxPrice: amount };
   }
 
-  // Regex tìm triệu đồng: 1 triệu, 1.5tr, 20tr (tính tỷ giá ước tính $1 = 25.000 VNĐ)
   const millionMatch = cleanMsg.match(/(\d+(?:[.,]\d+)?)\s*(?:triệu|trieu|tr)/);
   if (millionMatch) {
     const millionVND = parseFloat(millionMatch[1].replace(',', '.'));
@@ -34,7 +90,6 @@ function extractBudget(message) {
     return { maxPrice: usd };
   }
 
-  // Regex tìm nghìn đồng: 500k, 500 nghìn, 500k
   const thousandMatch = cleanMsg.match(/(\d+)\s*(?:k|nghìn|nghin|ngàn)/);
   if (thousandMatch) {
     const k = parseInt(thousandMatch[1]);
@@ -45,86 +100,126 @@ function extractBudget(message) {
   return null;
 }
 
-// Hàm phân tích ý định (Intent Recognition) & Từ khóa sản phẩm
-function analyzeIntent(message) {
-  const text = message.toLowerCase();
+// Hàm phân tích câu hỏi toàn diện
+function analyzeUserQuery(rawMessage) {
+  const norm = cleanText(rawMessage);
 
   // 1. Chào hỏi
-  if (/^(chào|hello|hi|xin chào|hey|alo)\b/i.test(text) && text.length < 25) {
+  if (/^(chao|hello|hi|xin chao|hey|alo)\b/i.test(norm) && norm.length < 25) {
     return { type: 'greeting' };
   }
 
-  // 2. Hỏi về chính sách, bảo hành, vận chuyển, đổi trả
-  if (text.includes('vận chuyển') || text.includes('giao hàng') || text.includes('ship') || text.includes('bao lâu')) {
-    return { type: 'policy', answer: PLATFORM_KNOWLEDGE.shipping };
-  }
-  if (text.includes('bảo hành') || text.includes('đổi trả') || text.includes('trả hàng') || text.includes('lỗi')) {
-    return { type: 'policy', answer: `${PLATFORM_KNOWLEDGE.warranty} ${PLATFORM_KNOWLEDGE.returnPolicy}` };
-  }
-  if (text.includes('thanh toán') || text.includes('trả tiền') || text.includes('cod') || text.includes('visa')) {
-    return { type: 'policy', answer: PLATFORM_KNOWLEDGE.payment };
+  // 2. Hỏi về tác giả, đồ án, ai làm ra sàn
+  if (norm.includes('ai lam') || norm.includes('ai sang lap') || norm.includes('tac gia') || norm.includes('do an') || norm.includes('giang vien') || norm.includes('thay giao') || norm.includes('nguoi phat trien')) {
+    return {
+      type: 'direct_answer',
+      answer: PLATFORM_KNOWLEDGE.creator,
+      suggestedQuestions: ['Sàn AuraStore là gì?', 'Sản phẩm nào đắt nhất sàn?', 'Chính sách bảo hành và đổi trả 30 ngày']
+    };
   }
 
-  // 3. Tư vấn theo ngành hàng & nhu cầu cụ thể
+  // 3. Hỏi về sàn AuraStore nói chung (quy mô, có những gì)
+  if (norm.includes('aurastore la gi') || norm.includes('san la gi') || norm.includes('gioi thieu') || norm.includes('shop ban gi') || norm.includes('san ban gi') || norm.includes('co nhung san pham gi') || norm.includes('co bao nhieu san pham') || norm.includes('quy mo')) {
+    return {
+      type: 'direct_answer',
+      answer: PLATFORM_KNOWLEDGE.about,
+      suggestedQuestions: ['Sản phẩm bán chạy nhất sàn', 'Top sản phẩm cao cấp nhất', 'Chính sách giao hàng và freeship']
+    };
+  }
+
+  // 4. Các câu hỏi chính sách vận chuyển / giao hàng
+  if (norm.includes('van chuyen') || norm.includes('giao hang') || norm.includes('ship') || norm.includes('bao lau') || norm.includes('hoa toc') || norm.includes('freeship')) {
+    return {
+      type: 'direct_answer',
+      answer: `🚚 **Chính Sách Vận Chuyển Của AuraStore:**\n\n${PLATFORM_KNOWLEDGE.shipping}`,
+      suggestedQuestions: ['Chính sách bảo hành ra sao?', 'Các phương thức thanh toán', 'Có mã giảm giá nào hôm nay?']
+    };
+  }
+
+  // 5. Chính sách bảo hành
+  if (norm.includes('bao hanh') || norm.includes('chinh hang') || norm.includes('hang mall') || norm.includes('hu hong') || norm.includes('bi hong')) {
+    return {
+      type: 'direct_answer',
+      answer: `🛡️ **Cam Kết Chính Hãng & Bảo Hành:**\n\n${PLATFORM_KNOWLEDGE.warranty}`,
+      suggestedQuestions: ['Chính sách đổi trả trong bao lâu?', 'Thời gian giao hàng bao lâu?', 'Tìm điện thoại chính hãng']
+    };
+  }
+
+  // 6. Chính sách đổi trả
+  if (norm.includes('doi tra') || norm.includes('tra hang') || norm.includes('hoan tien') || norm.includes('doi san pham')) {
+    return {
+      type: 'direct_answer',
+      answer: `🔄 **Chính Sách Đổi Trả 30 Ngày:**\n\n${PLATFORM_KNOWLEDGE.returnPolicy}`,
+      suggestedQuestions: ['Chính sách giao hàng freeship', 'Hướng dẫn thanh toán', 'Gợi ý quà tặng sinh nhật']
+    };
+  }
+
+  // 7. Phương thức thanh toán
+  if (norm.includes('thanh toan') || norm.includes('tra tien') || norm.includes('cod') || norm.includes('visa') || norm.includes('qr') || norm.includes('chuyen khoan')) {
+    return {
+      type: 'direct_answer',
+      answer: `💳 **Phương Thức Thanh Toán Linh Hoạt:**\n\n${PLATFORM_KNOWLEDGE.payment}`,
+      suggestedQuestions: ['Chính sách đổi trả 30 ngày', 'Mã giảm giá hôm nay', 'Top sản phẩm bán chạy']
+    };
+  }
+
+  // 8. Khuyến mãi / Voucher
+  if (norm.includes('voucher') || norm.includes('giam gia') || norm.includes('khuyen mai') || norm.includes('ma giam') || norm.includes('uu dai') || norm.includes('sale')) {
+    return {
+      type: 'direct_answer',
+      answer: `🎟️ **Mã Giảm Giá & Ưu Đãi Độc Quyền:**\n\n${PLATFORM_KNOWLEDGE.vouchers}`,
+      suggestedQuestions: ['Tư vấn laptop sinh viên', 'Điện thoại bán chạy nhất', 'Chính sách vận chuyển']
+    };
+  }
+
+  // 9. Câu hỏi so sánh đặc biệt: Đắt nhất sàn
+  if (norm.includes('dat nhat') || norm.includes('gia cao nhat') || norm.includes('vip nhat') || norm.includes('sang nhat') || norm.includes('xa xi')) {
+    return { type: 'special_filter', mode: 'most_expensive' };
+  }
+
+  // 10. Rẻ nhất sàn
+  if (norm.includes('re nhat') || norm.includes('gia thap nhat') || norm.includes('it tien nhat') || norm.includes('gia re nhat')) {
+    return { type: 'special_filter', mode: 'cheapest' };
+  }
+
+  // 11. Bán chạy nhất / Hot nhất
+  if (norm.includes('ban chay') || norm.includes('hot nhat') || norm.includes('mua nhieu nhat') || norm.includes('top seller') || norm.includes('xu huong') || norm.includes('trend')) {
+    return { type: 'special_filter', mode: 'best_sellers' };
+  }
+
+  // 12. Đánh giá tốt nhất / 5 sao
+  if (norm.includes('danh gia cao') || norm.includes('tot nhat') || norm.includes('5 sao') || norm.includes('uy tin nhat')) {
+    return { type: 'special_filter', mode: 'top_rated' };
+  }
+
+  // 13. Mở rộng từ đồng nghĩa & Danh mục
+  let expandedKeywords = [];
   let matchedCategories = [];
-  let keywords = [];
 
-  if (text.includes('điện thoại') || text.includes('smartphone') || text.includes('iphone') || text.includes('samsung') || text.includes('pixel')) {
-    matchedCategories.push(10); // Smartphones & Accessories
-    keywords.push('điện thoại', 'iphone', 's24', 'pixel');
-  }
-  if (text.includes('laptop') || text.includes('máy tính') || text.includes('macbook') || text.includes('chuột') || text.includes('bàn phím')) {
-    matchedCategories.push(12); // Laptops & Computers
-    keywords.push('laptop', 'macbook', 'xps', 'chuột', 'keychron');
-  }
-  if (text.includes('tai nghe') || text.includes('loa') || text.includes('airpods') || text.includes('âm thanh') || text.includes('marshall') || text.includes('sony')) {
-    matchedCategories.push(14); // Audio
-    keywords.push('tai nghe', 'airpods', 'loa', 'marshall');
-  }
-  if (text.includes('chơi game') || text.includes('ps5') || text.includes('nintendo') || text.includes('switch') || text.includes('tay cầm') || text.includes('gaming')) {
-    matchedCategories.push(15); // Gaming
-    keywords.push('game', 'ps5', 'switch', 'tay cầm');
-  }
-  if (text.includes('nam') || text.includes('áo polo') || text.includes('sơ mi') || text.includes('quần jean') || text.includes('áo khoác nam')) {
-    matchedCategories.push(16); // Men's Fashion
-    keywords.push('sơ mi', 'polo', 'jeans', 'blazer');
-  }
-  if (text.includes('nữ') || text.includes('đầm') || text.includes('váy') || text.includes('áo kiểu') || text.includes('áo len')) {
-    matchedCategories.push(17); // Women's Fashion
-    keywords.push('đầm', 'váy', 'blouse', 'len');
-  }
-  if (text.includes('giày') || text.includes('sneaker') || text.includes('nike') || text.includes('chạy bộ') || text.includes('adidas')) {
-    matchedCategories.push(18, 19); // Shoes
-    keywords.push('giày', 'air force', 'ultraboost', 'pegasus');
-  }
-  if (text.includes('túi') || text.includes('balo') || text.includes('ví') || text.includes('clutch')) {
-    matchedCategories.push(20); // Bags
-    keywords.push('túi', 'balo', 'ví');
-  }
-  if (text.includes('đồng hồ') || text.includes('g-shock') || text.includes('casio')) {
-    matchedCategories.push(21); // Watches
-    keywords.push('đồng hồ', 'casio', 'g-shock');
-  }
-  if (text.includes('mỹ phẩm') || text.includes('son') || text.includes('serum') || text.includes('kem chống nắng') || text.includes('làm đẹp')) {
-    matchedCategories.push(25); // Beauty
-    keywords.push('son', 'serum', 'l\'oréal', 'maybelline');
-  }
-  if (text.includes('mẹ') || text.includes('bé') || text.includes('sữa') || text.includes('tã') || text.includes('xe đẩy') || text.includes('bình sữa')) {
-    matchedCategories.push(27); // Mom & Baby
-    keywords.push('sữa', 'bình sữa', 'xe đẩy');
-  }
-  if (text.includes('quà') || text.includes('tặng') || text.includes('lego') || text.includes('sinh nhật')) {
-    matchedCategories.push(32); // Gifts
-    keywords.push('lego', 'robot', 'quà');
+  for (const s of SYNONYMS) {
+    if (s.trigger.some(trig => norm.includes(trig))) {
+      expandedKeywords.push(...s.keywords);
+      matchedCategories.push(...s.categoryIds);
+    }
   }
 
-  const budget = extractBudget(message);
+  // Lọc từ khóa có nghĩa từ câu hỏi (loại bỏ stop words)
+  const meaningfulWords = norm
+    .split(/\s+/)
+    .filter(w => w.length >= 2 && !STOP_WORDS.has(w));
+
+  expandedKeywords.push(...meaningfulWords);
+
+  const budget = extractBudget(rawMessage);
 
   return {
-    type: 'shopping_query',
-    categories: matchedCategories,
-    keywords,
-    budget
+    type: 'product_search',
+    categories: [...new Set(matchedCategories)],
+    keywords: [...new Set(expandedKeywords)],
+    meaningfulWords,
+    budget,
+    rawQuery: rawMessage,
+    normQuery: norm
   };
 }
 
@@ -138,148 +233,196 @@ const chatWithAI = async (req, res) => {
   }
 
   try {
-    const analysis = analyzeIntent(trimmed);
+    const analysis = analyzeUserQuery(trimmed);
 
     // 1. Trả lời chào hỏi
     if (analysis.type === 'greeting') {
       return res.json({
-        reply: 'Chào bạn! Mình là **Aura AI** - Trợ lý Mua sắm Thông minh của sàn AuraStore. Mình có thể giúp bạn tìm kiếm sản phẩm theo nhu cầu, so sánh giá cả, gợi ý quà tặng hoặc giải đáp chính sách bảo hành. Bạn đang cần tìm sản phẩm gì hôm nay?',
+        reply: 'Chào bạn! Mình là **Aura AI** - Trợ lý Mua sắm Bá Khí nhất của sàn AuraStore. Bạn đang cần tư vấn gì? Hãy nhắn cho mình nhé! ✨',
         products: [],
         suggestedQuestions: [
-          'Tư vấn laptop sinh viên mỏng nhẹ',
-          'Tìm giày chạy bộ Nike êm chân',
-          'Gợi ý quà tặng sinh nhật dưới $50',
-          'Chính sách giao hàng và đổi trả thế nào?'
+          'Sản phẩm nào đắt nhất sàn?',
+          'Sản phẩm nào bán chạy nhất sàn?',
+          'Có bán Tivi hoặc Máy chiếu không?',
+          'Chính sách bảo hành và đổi trả 30 ngày'
         ]
       });
     }
 
-    // 2. Trả lời chính sách sàn
-    if (analysis.type === 'policy') {
+    // 2. Trả lời các câu hỏi kiến thức trực tiếp về sàn / tác giả / chính sách
+    if (analysis.type === 'direct_answer') {
       return res.json({
         reply: analysis.answer,
         products: [],
-        suggestedQuestions: [
-          'Các phương thức thanh toán hỗ trợ?',
-          'Tư vấn điện thoại bán chạy nhất sàn',
-          'Có ưu đãi voucher nào hôm nay không?'
+        suggestedQuestions: analysis.suggestedQuestions || [
+          'Top sản phẩm bán chạy nhất sàn',
+          'Sản phẩm cao cấp nhất trên sàn',
+          'Tư vấn đồ công nghệ & thời trang'
         ]
       });
     }
 
-    // 3. Tư vấn mua sắm & Tìm kiếm sản phẩm thông minh trong CSDL
-    let query = `
-      SELECT 
-        p.id, p.name, p.price, p.original_price, p.sold_count, p.rating_avg,
-        p.image_url, p.category_id, p.brand_id, p.shop_id,
-        s.name as shop_name, s.is_official as shop_is_official,
-        c.name as category_name,
-        b.name as brand_name
-      FROM Products p
-      JOIN Shops s ON p.shop_id = s.id
-      JOIN Categories c ON p.category_id = c.id
-      LEFT JOIN Brands b ON p.brand_id = b.id
-      WHERE p.status = 'active'
-    `;
-    const params = [];
+    // 3. Xử lý các câu hỏi thống kê đặc biệt (Đắt nhất, Rẻ nhất, Bán chạy nhất, Rating cao nhất)
+    if (analysis.type === 'special_filter') {
+      let catalog = [...FALLBACK_PRODUCTS];
+      let replyTitle = '';
+      let products = [];
 
-    // Lọc theo danh mục nếu khớp
-    if (analysis.categories && analysis.categories.length > 0) {
-      params.push(analysis.categories);
-      query += ` AND p.category_id = ANY($${params.length}::int[])`;
-    }
+      if (analysis.mode === 'most_expensive') {
+        products = catalog.sort((a, b) => b.price - a.price).slice(0, 4);
+        replyTitle = '👑 Đây là **Top 4 sản phẩm cao cấp & đắt giá nhất** trên sàn AuraStore hiện nay:';
+      } else if (analysis.mode === 'cheapest') {
+        products = catalog.sort((a, b) => a.price - b.price).slice(0, 4);
+        replyTitle = '🏷️ Đây là **Top 4 sản phẩm có mức giá tiết kiệm & dễ tiếp cận nhất** trên sàn AuraStore:';
+      } else if (analysis.mode === 'best_sellers') {
+        products = catalog.sort((a, b) => (b.sold_count || 0) - (a.sold_count || 0)).slice(0, 4);
+        replyTitle = '🔥 Đây là **Top 4 sản phẩm bán chạy nhất & được khách hàng săn đón nhiều nhất** trên sàn:';
+      } else if (analysis.mode === 'top_rated') {
+        products = catalog.sort((a, b) => (b.rating_avg || 0) - (a.rating_avg || 0)).slice(0, 4);
+        replyTitle = '⭐ Đây là **Top 4 sản phẩm đạt đánh giá sao cao nhất (chuẩn 5 sao)** từ người mua thực tế:';
+      }
 
-    // Lọc theo ngân sách nếu người dùng có yêu cầu
-    if (analysis.budget && analysis.budget.maxPrice) {
-      params.push(analysis.budget.maxPrice * 1.15); // cho phép biên độ dôi dư 15%
-      query += ` AND p.price <= $${params.length}`;
-    }
+      const text = `${replyTitle}\n\n` +
+        products.map((p, i) => `**${i + 1}. ${p.name}**\n` +
+          `• Giá: **$${p.price}** ${p.original_price > p.price ? `*(Gốc: $${p.original_price})*` : ''}\n` +
+          `• ⭐ ${p.rating_avg}/5 (${p.sold_count} đã bán) • Gian hàng: *${p.shop_name}*`
+        ).join('\n\n') +
+        `\n\nBạn có thể nhấn vào từng thẻ sản phẩm bên dưới để xem chi tiết đầy đủ nhé!`;
 
-    // Tìm kiếm theo từ khóa nếu có
-    if (analysis.keywords && analysis.keywords.length > 0) {
-      const keywordClauses = analysis.keywords.map(kw => {
-        params.push(`%${kw}%`);
-        return `(p.name ILIKE $${params.length} OR p.description ILIKE $${params.length})`;
+      return res.json({
+        reply: text,
+        products: products.map(p => ({
+          ...p,
+          recommend_reason: analysis.mode === 'most_expensive' ? 'Phân khúc Luxury cao cấp nhất sàn' : (analysis.mode === 'best_sellers' ? 'Bán chạy số 1 toàn sàn' : 'Đánh giá 5 sao tuyệt đối')
+        })),
+        suggestedQuestions: [
+          'Chính sách giao hàng và đổi trả 30 ngày',
+          'Có mã giảm giá nào áp dụng được không?',
+          'Tư vấn thêm sản phẩm công nghệ'
+        ]
       });
-      query += ` AND (${keywordClauses.join(' OR ')})`;
     }
 
-    query += ` ORDER BY p.sold_count DESC, p.rating_avg DESC LIMIT 4`;
+    // 4. Tìm kiếm sản phẩm thông minh dựa trên Điểm số ngữ nghĩa (Relevance Scoring)
+    const normQ = analysis.normQuery;
+    const meaningful = analysis.meaningfulWords;
+    const keywords = analysis.keywords;
+    const targetCats = analysis.categories;
 
-    let matchedProducts = [];
-    try {
-      const dbResult = await pool.query(query, params);
-      matchedProducts = dbResult.rows;
-    } catch (dbErr) {
-      console.warn('[AI DB query warning]:', dbErr.message);
-    }
+    let scoredList = FALLBACK_PRODUCTS.map(product => {
+      let score = 0;
+      const pNameClean = cleanText(product.name);
+      const pDescClean = cleanText(product.description || '');
+      const pBrandClean = cleanText(product.brand_name || '');
+      const pCatClean = cleanText(product.category_name || '');
 
-    // Nếu không tìm thấy qua DB hoặc DB offline, tìm kiếm thông minh trong FALLBACK_PRODUCTS
-    if (matchedProducts.length === 0 && FALLBACK_PRODUCTS.length > 0) {
-      let filtered = [...FALLBACK_PRODUCTS];
+      // 1. Trùng chính xác toàn bộ cụm tìm kiếm (nếu khách gõ tên sản phẩm)
+      if (pNameClean.includes(normQ)) score += 150;
+      if (pBrandClean && normQ.includes(pBrandClean)) score += 80;
+      if (pDescClean.includes(normQ)) score += 50;
 
-      if (analysis.categories && analysis.categories.length > 0) {
-        filtered = filtered.filter(p => analysis.categories.includes(p.category_id));
+      // 2. Khớp theo ngành hàng đã được nhận diện
+      if (targetCats.includes(product.category_id)) {
+        score += 70;
       }
 
+      // Ưu tiên đặc biệt chuẩn ngành hàng chính (Ví dụ: Giày là phải ra Giày 18/19, Áo ra Áo 16/17)
+      if ((normQ.includes('giay') || normQ.includes('sneaker')) && (product.category_id === 18 || product.category_id === 19)) {
+        score += 100;
+      }
+      if ((normQ.includes('ao') || normQ.includes('quan')) && (product.category_id === 16 || product.category_id === 17)) {
+        score += 100;
+      }
+      if ((normQ.includes('dien thoai') || normQ.includes('phone') || normQ.includes('smartphone')) && product.category_id === 10) {
+        score += 100;
+      }
+
+      // 3. Khớp các từ khóa mở rộng (Synonyms)
+      for (const kw of keywords) {
+        if (pNameClean.includes(kw)) score += 30;
+        if (pBrandClean.includes(kw)) score += 25;
+        if (pDescClean.includes(kw)) score += 10;
+      }
+
+      // 4. Khớp các từ có nghĩa từ câu hỏi (đã lọc stop words)
+      for (const w of meaningful) {
+        if (pNameClean.split(/\s+/).includes(w)) score += 55;
+        else if (pNameClean.includes(w)) score += 20;
+
+        if (pBrandClean === w) score += 40;
+        else if (pBrandClean.includes(w)) score += 20;
+
+        if (pDescClean.includes(w)) score += 10;
+      }
+
+      // 5. Ngân sách người dùng yêu cầu
       if (analysis.budget && analysis.budget.maxPrice) {
-        filtered = filtered.filter(p => p.price <= analysis.budget.maxPrice * 1.15);
-      }
-
-      if (analysis.keywords && analysis.keywords.length > 0) {
-        filtered = filtered.filter(p => {
-          const fullText = `${p.name} ${p.description || ''}`.toLowerCase();
-          return analysis.keywords.some(kw => fullText.includes(kw));
-        });
-      }
-
-      if (filtered.length > 0) {
-        matchedProducts = filtered.sort((a, b) => (b.sold_count || 0) - (a.sold_count || 0)).slice(0, 4);
-      } else {
-        // Nếu bộ lọc quá chặt, lấy theo category
-        if (analysis.categories && analysis.categories.length > 0) {
-          matchedProducts = FALLBACK_PRODUCTS
-            .filter(p => analysis.categories.includes(p.category_id))
-            .slice(0, 4);
+        if (product.price <= analysis.budget.maxPrice * 1.15) {
+          score += 30;
         } else {
-          matchedProducts = FALLBACK_PRODUCTS.slice(0, 4);
+          score -= 60; // Trừ điểm nặng nếu sản phẩm vượt ngân sách
         }
       }
+
+      return { product, score };
+    });
+
+    scoredList = scoredList.filter(item => item.score >= 20);
+    scoredList.sort((a, b) => b.score - a.score);
+
+    let matchedProducts = [];
+    if (scoredList.length > 0) {
+      matchedProducts = scoredList.slice(0, 4).map(item => item.product);
+    } else if (targetCats.length > 0) {
+      matchedProducts = FALLBACK_PRODUCTS
+        .filter(p => targetCats.includes(p.category_id))
+        .sort((a, b) => (b.sold_count || 0) - (a.sold_count || 0))
+        .slice(0, 4);
+    } else {
+      matchedProducts = FALLBACK_PRODUCTS.slice(0, 4);
     }
 
-    // Soạn thảo câu trả lời thông minh dựa trên ngữ cảnh
+    // Soạn thảo câu trả lời thông minh, bá khí & tự nhiên
     let replyText = '';
-    const budgetText = analysis.budget ? `trong phân khúc ngân sách phù hợp` : '';
+    const topItem = matchedProducts[0];
+    const budgetNote = analysis.budget ? `trong tầm giá yêu cầu (dưới $${analysis.budget.maxPrice})` : '';
 
-    if (matchedProducts.length > 0) {
-      replyText = `Dựa trên nhu cầu của bạn, Aura AI đã phân tích cơ sở dữ liệu sàn AuraStore và tuyển chọn được **${matchedProducts.length} sản phẩm** chính hãng nổi bật nhất ${budgetText}:\n\n` +
-        matchedProducts.map((p, idx) => `**${idx + 1}. ${p.name}**\n` +
-          `• Giá ưu đãi: **$${p.price}** ${p.original_price > p.price ? `*(Giá gốc: $${p.original_price})*` : ''}\n` +
-          `• Đánh giá: ⭐ ${p.rating_avg}/5 (${p.sold_count} đã bán) - Gian hàng: *${p.shop_name}*`
-        ).join('\n\n') +
-        `\n\nBạn có thể bấm trực tiếp vào thẻ sản phẩm bên dưới để xem chi tiết và cho vào giỏ hàng nhé!`;
+    if (scoredList.length > 0 && scoredList[0].score >= 50) {
+      // Khớp cực kỳ chính xác sản phẩm khách tìm
+      replyText = `Aura AI đã tra cứu trực tiếp trong kho sàn AuraStore và tìm thấy sản phẩm chuẩn xác cho bạn:\n\n` +
+        `**${topItem.name}**\n` +
+        `• **Giá ưu đãi:** **$${topItem.price}** ${topItem.original_price > topItem.price ? `*(Giá gốc: $${topItem.original_price} - Tiết kiệm $${topItem.original_price - topItem.price})*` : ''}\n` +
+        `• **Đánh giá:** ⭐ **${topItem.rating_avg}/5** (${topItem.sold_count} lượt bán thành công)\n` +
+        `• **Gian hàng:** *${topItem.shop_name}* (Cam kết chính hãng Mall 100%)\n` +
+        `• **Mô tả & Tính năng:** ${topItem.description}\n\n` +
+        (matchedProducts.length > 1 ? `Ngoài ra, sàn còn có thêm các lựa chọn tương tự cùng ngành hàng bên dưới:` : `Bạn có thể bấm ngay vào thẻ sản phẩm để cho vào giỏ hàng nhé!`);
     } else {
-      replyText = `Aura AI đã ghi nhận nhu cầu của bạn! Hiện tại sàn có rất nhiều sản phẩm thuộc các ngành công nghệ, thời trang, đồ gia dụng và làm đẹp. Bạn có thể cho mình biết cụ thể hơn về khoảng giá hoặc thương hiệu bạn mong muốn để mình tư vấn chính xác nhất nhé!`;
+      replyText = `Aura AI đã phân tích toàn bộ kho sản phẩm của sàn AuraStore ${budgetNote} và tuyển chọn **${matchedProducts.length} sản phẩm chính hãng** phù hợp nhất cho bạn:\n\n` +
+        matchedProducts.map((p, idx) => `**${idx + 1}. ${p.name}**\n` +
+          `• Giá: **$${p.price}** | ⭐ ${p.rating_avg}/5 (${p.sold_count} đã bán) • *${p.shop_name}*`
+        ).join('\n\n') +
+        `\n\nBạn có thể click trực tiếp vào thẻ sản phẩm bên dưới để xem hình ảnh chi tiết và cho vào giỏ hàng nhé! ✨`;
     }
 
     return res.json({
       reply: replyText,
       products: matchedProducts.map(p => ({
         ...p,
-        recommend_reason: p.sold_count > 300 ? 'Sản phẩm bán chạy nhất phân khúc' : 'Đánh giá cao 5 sao từ người mua'
+        recommend_reason: p.sold_count > 300 ? 'Sản phẩm bán chạy nhất phân khúc' : 'Đánh giá 5 sao từ người mua thực tế'
       })),
       suggestedQuestions: [
         'So sánh giá với các sản phẩm tương tự',
-        'Có quà tặng hoặc voucher đi kèm không?',
-        'Thời gian giao hàng đến nơi là bao lâu?'
+        'Sản phẩm này có được freeship không?',
+        'Chính sách bảo hành và đổi trả 30 ngày'
       ]
     });
+
   } catch (error) {
     console.error('[ChatWithAI Error]:', error);
     return res.status(500).json({
-      reply: 'Xin lỗi bạn, trợ lý Aura AI đang bận xử lý dữ liệu. Bạn hãy thử lại câu hỏi nhé!',
+      reply: 'Aura AI đang cập nhật lại dữ liệu kho hàng. Bạn hãy thử lại câu hỏi trong giây lát nhé!',
       products: [],
-      suggestedQuestions: ['Gợi ý sản phẩm bán chạy', 'Chính sách bảo hành']
+      suggestedQuestions: ['Sản phẩm bán chạy nhất sàn', 'Chính sách bảo hành và đổi trả']
     });
   }
 };
