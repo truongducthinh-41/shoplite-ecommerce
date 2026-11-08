@@ -52,13 +52,19 @@ Chào mừng bạn đến với tài liệu tổng hợp của dự án ShopLite
 > 11. **Clean Codebase Architecture:** Redundant legacy scripts and static HTML prototypes have been completely removed. Active code is strictly organized in `backend/` (layered `config`, `middleware`, `modules`), `database/` (SQL schemas, seeds, T-SQL equivalent), and `frontend/` (React/Vite).
 > 12. **24 Standardized Categories & Multi-Brand Filtering (`CategoryPage.jsx`):**
 >     - Strict category taxonomy (Nam ra nam, Nữ ra nữ, Điện tử, Mẹ & bé, Đồ chơi,...). Không lẫn lộn đầm váy vào thời trang nam hay sai danh mục.
->     - 84 Sản phẩm mẫu flagship chuẩn xác trong cả `database/seed.sql` và `frontend/src/data/categoryProducts.js`, đảm bảo mỗi danh mục đều có sản phẩm trực quan để test lọc giá, lọc thương hiệu.
+>     - 108 Sản phẩm mẫu flagship chuẩn xác trong cả `database/seed.sql` và `frontend/src/data/categoryProducts.js`, đảm bảo mỗi danh mục đều có sản phẩm trực quan để test lọc giá, lọc thương hiệu.
 >     - Bộ lọc tương tác đa thương hiệu (Brand checkbox) và bộ lọc khoảng giá (Min - Max) hỗ trợ tìm kiếm chính xác.
 > 13. **Top Brands Marquee (`CategoryPage.jsx`):**
 >     - Băng chuyền thương hiệu chính hãng mượt mà với logo SVG chính hãng, đã tinh chỉnh lược bỏ nhãn thừa "Official Shopee Mall" để giữ phong cách Dark Glassmorphism tối giản và chuyên nghiệp.
 > 14. **Triệt để xử lý hình ảnh sản phẩm (Zero Broken Image Architecture):**
 >     - Hệ thống xử lý ảnh thông minh `frontend/src/utils/productImages.js` với hàm `getSafeProductImage(product)` tự động nhận diện và thay thế các URL ảnh bị lỗi 404 (Samsung S24 Ultra, Apple Magic Mouse, Quần Jeans Uniqlo,...) bằng ảnh sắc nét, chất lượng cao.
 >     - Bộ xử lý `handleImageError` triệt tiêu hoàn toàn các ô chữ nhật "No Image" màu đen, đồng bộ trên toàn bộ `HomePage.jsx` (3D Vertex Hero, Top Searches, Daily Discoveries), `CategoryPage.jsx` và `ProductDetailPage.jsx`.
+> 15. **Hệ thống Gợi ý Cá nhân hóa theo dõi hành vi (On-site Behavioral Personalization):**
+>     - Bảng `UserInteractions` ghi nhận hành vi xem (`view`), thêm giỏ (`cart`), mua hàng (`purchase`) kèm trọng số tương tác.
+>     - Section *"Gợi Ý Dành Riêng Cho Bạn (AI Personalized Feed)"* trên Homepage tự động thay đổi theo sở thích người dùng và khối *"Sản Phẩm Bạn Vừa Xem (Recently Viewed)"*.
+> 16. **Trợ lý Mua sắm Thông minh Chatbot AI (`AuraAIChatbot.jsx`):**
+>     - Widget Chatbot AI góc phải màn hình, am hiểu toàn bộ 108 sản phẩm thuộc 24 danh mục của sàn AuraStore.
+>     - Khả năng hiểu ngôn ngữ tự nhiên, phân tích ý định (Intent), lọc theo ngân sách và trả về thẻ sản phẩm trực tiếp trong khung chat.
 > 
 > **Test Accounts (Password for all: `password123`):**
 > - Admin: `admin@shoplite.com`

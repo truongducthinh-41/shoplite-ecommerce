@@ -11,7 +11,9 @@ const {
   updateProduct,
   deleteProduct,
   getBestSellers,
-  getProductRecommendations
+  getProductRecommendations,
+  trackInteraction,
+  getPersonalizedFeed
 } = require('./catalog.controller');
 const { verifyToken, isSellerOrAdmin } = require('../../middleware/authMiddleware');
 
@@ -26,6 +28,8 @@ router.get('/brands/:brandId/products', getProductsByBrandTVF);
 
 // Public product routes
 router.get('/bestsellers', getBestSellers);
+router.get('/personalized-feed', getPersonalizedFeed);
+router.post('/track-interaction', trackInteraction);
 router.get('/', getProducts);
 router.get('/:id', getProductById);
 router.get('/:id/recommendations', getProductRecommendations);

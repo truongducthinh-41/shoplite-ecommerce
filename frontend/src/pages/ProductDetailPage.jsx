@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { ShoppingCart, Star, StarHalf, ArrowLeft, Truck, Shield, RotateCcw, Sparkles, MessageSquare } from 'lucide-react';
 import { calculatePricing } from '../utils/pricing';
 import { FALLBACK_PRODUCTS } from '../data/categoryProducts';
+import { trackProductInteraction } from '../utils/userTracker';
 
 export default function ProductDetailPage() {
   const { id } = useParams();
@@ -68,6 +69,9 @@ export default function ProductDetailPage() {
         }
 
         setProduct(activeProduct);
+        if (activeProduct) {
+          trackProductInteraction(activeProduct, 'view');
+        }
         setActiveImageIndex(0);
         setRecommendations({ type: recData?.type || 'Related', items: activeRecs });
         setReviews(activeReviews);
@@ -92,6 +96,7 @@ export default function ProductDetailPage() {
 
   const handleAddToCart = () => {
     addToCart(product, quantity);
+    trackProductInteraction(product, 'cart');
   };
 
   const submitReview = async (e) => {

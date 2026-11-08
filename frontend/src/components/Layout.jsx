@@ -1,5 +1,6 @@
 import Navbar from './Navbar';
 import { Outlet } from 'react-router-dom';
+import AuraAIChatbot from './AuraAIChatbot';
 
 const hotSearches = [
   'Áo thun nam cao cấp',
@@ -137,6 +138,7 @@ export default function Layout() {
         </div>
 
       </footer>
+      <AuraAIChatbot />
     </div>
   );
 }

@@ -1,0 +1,285 @@
+import { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import { MessageSquare, X, Send, Sparkles, Bot, ArrowRight, ShoppingCart, RefreshCw } from 'lucide-react';
+import { apiFetch } from '../services/api';
+import { useCart } from '../context/CartContext';
+import { getSafeProductImage, handleImageError } from '../utils/productImages';
+
+const QUICK_PROMPTS = [
+  'Tư vấn laptop sinh viên mỏng nhẹ',
+  'Tìm giày chạy bộ Nike êm chân',
+  'Gợi ý quà tặng sinh nhật dưới $50',
+  'Điện thoại chụp ảnh đẹp nhất sàn',
+  'Chính sách bảo hành và đổi trả'
+];
+
+export default function AuraAIChatbot() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState([
+    {
+      id: 1,
+      sender: 'ai',
+      text: 'Chào bạn! Mình là **Aura AI** - Trợ lý Mua sắm Thông minh của sàn AuraStore. Bạn đang cần tìm sản phẩm gì, ngân sách bao nhiêu hay cần tư vấn quà tặng? Hãy nhắn cho mình nhé! ✨',
+      products: [],
+      suggestedQuestions: QUICK_PROMPTS
+    }
+  ]);
+  const [inputMessage, setInputMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const messagesEndRef = useRef(null);
+  const { addToCart } = useCart();
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      scrollToBottom();
+    }
+  }, [messages, isOpen]);
+
+  const handleSendMessage = async (textToSend) => {
+    const messageContent = (textToSend || inputMessage).trim();
+    if (!messageContent || loading) return;
+
+    // 1. Thêm tin nhắn của User vào giao diện
+    const userMessage = {
+      id: Date.now(),
+      sender: 'user',
+      text: messageContent
+    };
+    setMessages(prev => [...prev, userMessage]);
+    setInputMessage('');
+    setLoading(true);
+
+    try {
+      // 2. Gửi yêu cầu đến Backend AI API
+      const response = await apiFetch('/ai/chat', {
+        method: 'POST',
+        body: JSON.stringify({
+          message: messageContent,
+          conversationHistory: messages.slice(-4)
+        })
+      });
+
+      // 3. Nhận phản hồi và thêm vào giao diện
+      const aiReply = {
+        id: Date.now() + 1,
+        sender: 'ai',
+        text: response.reply || 'Dưới đây là một số sản phẩm phù hợp với nhu cầu của bạn:',
+        products: response.products || [],
+        suggestedQuestions: response.suggestedQuestions || []
+      };
+      setMessages(prev => [...prev, aiReply]);
+    } catch (error) {
+      console.error('[AuraAIChatbot error]:', error);
+      // Fallback nếu mất mạng hoặc lỗi server
+      const fallbackReply = {
+        id: Date.now() + 1,
+        sender: 'ai',
+        text: 'Aura AI đang gặp chút gián đoạn kết nối. Bạn có thể tham khảo trực tiếp các danh mục nổi bật hoặc các sản phẩm bán chạy nhất tại trang chủ nhé!',
+        products: [],
+        suggestedQuestions: ['Điện thoại bán chạy', 'Laptop sinh viên', 'Giày thể thao']
+      };
+      setMessages(prev => [...prev, fallbackReply]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <>
+      {/* 1. Nút Floating kích hoạt Chatbot AI ở góc dưới bên phải */}
+      {!isOpen && (
+        <button
+          onClick={() => setIsOpen(true)}
+          className="fixed bottom-6 right-6 z-50 group flex items-center gap-3 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 text-white p-3.5 sm:px-5 sm:py-3.5 rounded-full shadow-[0_0_25px_rgba(99,102,241,0.5)] hover:shadow-[0_0_35px_rgba(168,85,247,0.7)] hover:scale-105 active:scale-95 transition-all duration-300 border border-white/20"
+          aria-label="Open AI Shopping Assistant"
+        >
+          <div className="relative">
+            <Sparkles className="w-6 h-6 animate-pulse text-amber-300" />
+            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-indigo-900 animate-ping"></span>
+            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-indigo-900"></span>
+          </div>
+          <span className="hidden sm:inline-block font-bold text-sm tracking-wide">
+            Hỏi Aura AI
+          </span>
+        </button>
+      )}
+
+      {/* 2. Cửa sổ Chatbot Popup hiện đại */}
+      {isOpen && (
+        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 w-[94vw] sm:w-[430px] h-[600px] max-h-[88vh] bg-[#0c0d14]/95 backdrop-blur-2xl border border-indigo-500/30 rounded-3xl shadow-[0_15px_50px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-300">
+          
+          {/* Header */}
+          <div className="bg-gradient-to-r from-indigo-900/80 via-purple-900/60 to-slate-900/80 p-4 border-b border-white/10 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="relative p-2.5 bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-2xl shadow-md">
+                <Bot className="w-5 h-5 text-white" />
+                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-[#0c0d14]"></span>
+              </div>
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <h3 className="font-bold text-white text-sm">Aura AI Shopping Assistant</h3>
+                  <span className="text-[10px] bg-indigo-500/20 text-indigo-300 font-semibold px-1.5 py-0.5 rounded border border-indigo-500/30">AI</span>
+                </div>
+                <p className="text-[11px] text-emerald-400 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span>
+                  Trực tuyến • Tư vấn mua sắm 24/7
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setIsOpen(false)}
+              className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-full transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Messages Body */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth">
+            {messages.map((msg) => (
+              <div
+                key={msg.id}
+                className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}
+              >
+                {/* Bubble Text */}
+                <div
+                  className={`max-w-[85%] rounded-2xl px-4 py-3 text-xs sm:text-sm leading-relaxed ${
+                    msg.sender === 'user'
+                      ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-br-none shadow-md shadow-indigo-600/20'
+                      : 'bg-[#181926] text-slate-200 border border-white/10 rounded-bl-none'
+                  }`}
+                >
+                  <p className="whitespace-pre-line">{msg.text}</p>
+                </div>
+
+                {/* Thẻ sản phẩm gợi ý đính kèm nếu có */}
+                {msg.products && msg.products.length > 0 && (
+                  <div className="mt-3 w-full space-y-2">
+                    <p className="text-[11px] font-semibold text-indigo-400 uppercase tracking-wider flex items-center gap-1">
+                      <Sparkles className="w-3.5 h-3.5" /> Gợi ý dành cho bạn:
+                    </p>
+                    <div className="grid grid-cols-1 gap-2">
+                      {msg.products.map((prod) => (
+                        <div
+                          key={prod.id}
+                          className="bg-[#151622] hover:bg-[#1a1b2b] border border-white/10 hover:border-indigo-500/50 p-2.5 rounded-xl transition-all flex items-center gap-3 group"
+                        >
+                          <div className="w-14 h-14 bg-white/5 rounded-lg overflow-hidden flex-shrink-0 relative">
+                            <img
+                              src={getSafeProductImage(prod)}
+                              alt={prod.name}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                              onError={handleImageError}
+                            />
+                          </div>
+
+                          <div className="flex-1 min-w-0">
+                            <Link
+                              to={`/product/${prod.id}`}
+                              onClick={() => setIsOpen(false)}
+                              className="text-xs font-medium text-white hover:text-indigo-400 line-clamp-1 block transition-colors"
+                            >
+                              {prod.name}
+                            </Link>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className="text-xs font-bold text-rose-400">${prod.price}</span>
+                              {prod.original_price > prod.price && (
+                                <span className="text-[10px] text-slate-500 line-through">${prod.original_price}</span>
+                              )}
+                              <span className="text-[10px] text-slate-400 truncate max-w-[100px]">
+                                • {prod.shop_name}
+                              </span>
+                            </div>
+                            {prod.recommend_reason && (
+                              <span className="text-[9px] text-indigo-300 bg-indigo-500/10 px-1 py-0.5 rounded border border-indigo-500/20 inline-block mt-0.5">
+                                {prod.recommend_reason}
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => addToCart(prod, 1)}
+                              className="p-1.5 bg-indigo-600/30 hover:bg-indigo-600 text-indigo-300 hover:text-white rounded-lg transition-colors"
+                              title="Thêm vào giỏ hàng"
+                            >
+                              <ShoppingCart className="w-3.5 h-3.5" />
+                            </button>
+                            <Link
+                              to={`/product/${prod.id}`}
+                              onClick={() => setIsOpen(false)}
+                              className="p-1.5 bg-white/5 hover:bg-white/15 text-slate-300 rounded-lg transition-colors"
+                              title="Xem chi tiết"
+                            >
+                              <ArrowRight className="w-3.5 h-3.5" />
+                            </Link>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Câu hỏi gợi ý nhanh sau phản hồi */}
+                {msg.suggestedQuestions && msg.suggestedQuestions.length > 0 && (
+                  <div className="mt-2.5 flex flex-wrap gap-1.5">
+                    {msg.suggestedQuestions.map((q, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => handleSendMessage(q)}
+                        className="text-[10px] sm:text-[11px] bg-white/5 hover:bg-indigo-600/20 text-slate-300 hover:text-indigo-300 border border-white/10 hover:border-indigo-500/40 px-2.5 py-1 rounded-full transition-all text-left"
+                      >
+                        {q}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+
+            {/* Loading Indicator */}
+            {loading && (
+              <div className="flex items-center gap-2 text-indigo-400 text-xs bg-white/5 p-3 rounded-2xl w-fit">
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                <span>Aura AI đang phân tích dữ liệu kho hàng...</span>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Footer Input */}
+          <div className="p-3 bg-[#0c0d14] border-t border-white/10">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSendMessage();
+              }}
+              className="flex items-center gap-2 bg-[#181926] border border-white/10 rounded-2xl px-3 py-1.5 focus-within:border-indigo-500/60 transition-colors"
+            >
+              <input
+                type="text"
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                placeholder="Hỏi Aura AI về sản phẩm, ngân sách, quà tặng..."
+                className="flex-1 bg-transparent text-white text-xs sm:text-sm outline-none placeholder:text-slate-500 py-1.5"
+                disabled={loading}
+              />
+              <button
+                type="submit"
+                disabled={!inputMessage.trim() || loading}
+                className="p-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              >
+                <Send className="w-3.5 h-3.5" />
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}

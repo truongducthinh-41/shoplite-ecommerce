@@ -526,6 +526,111 @@ const getProductRecommendations = async (req, res) => {
   }
 };
 
+// 11. Ghi nhận hành vi tương tác của người dùng (Behavioral Event Tracking)
+const trackInteraction = async (req, res) => {
+  const { productId, interactionType = 'view', categoryId } = req.body;
+  const userId = req.userId || null;
+  
+  if (!productId) {
+    return res.status(400).json({ error: 'Missing productId' });
+  }
+
+  const weight = interactionType === 'purchase' ? 5.0 : (interactionType === 'cart' ? 3.0 : 1.0);
+
+  try {
+    await pool.query(
+      `INSERT INTO UserInteractions (user_id, product_id, category_id, interaction_type, weight)
+       VALUES ($1, $2, $3, $4, $5)`,
+      [userId, productId, categoryId || null, interactionType, weight]
+    ).catch(err => {
+      // Bảng UserInteractions có thể chưa được tạo trên Supabase remote, bắt lỗi êm dịu
+      console.warn('[UserInteractions log warning]:', err.message);
+    });
+
+    res.json({ success: true, message: 'Interaction tracked' });
+  } catch (error) {
+    console.error('[trackInteraction Error]:', error);
+    res.json({ success: true, fallback: true });
+  }
+};
+
+// 12. Gợi ý cá nhân hóa theo hành vi (Personalized Behavioral Feed)
+const getPersonalizedFeed = async (req, res) => {
+  const userId = req.userId || null;
+  const clientCategoryIds = req.query.categoryIds ? req.query.categoryIds.split(',').map(Number).filter(Boolean) : [];
+
+  try {
+    let targetCategoryIds = [...clientCategoryIds];
+
+    // Nếu người dùng đã đăng nhập, truy vấn top 3 danh mục tương tác nhiều nhất trong 30 ngày qua
+    if (userId) {
+      const topCatQuery = `
+        SELECT category_id, SUM(weight) as total_weight
+        FROM UserInteractions
+        WHERE user_id = $1 AND category_id IS NOT NULL AND created_at >= NOW() - INTERVAL '30 days'
+        GROUP BY category_id
+        ORDER BY total_weight DESC
+        LIMIT 3
+      `;
+      const catRes = await pool.query(topCatQuery, [userId]).catch(() => ({ rows: [] }));
+      if (catRes.rows.length > 0) {
+        targetCategoryIds = [...new Set([...catRes.rows.map(r => r.category_id), ...targetCategoryIds])];
+      }
+    }
+
+    if (targetCategoryIds.length > 0) {
+      const recQuery = `
+        SELECT 
+          p.id, p.name, p.price, p.original_price, p.sold_count, p.rating_avg, p.review_count,
+          p.image_url, p.category_id, p.brand_id, p.shop_id,
+          s.name as shop_name, s.is_official as shop_is_official,
+          c.name as category_name,
+          b.name as brand_name
+        FROM Products p
+        JOIN Shops s ON p.shop_id = s.id
+        JOIN Categories c ON p.category_id = c.id
+        LEFT JOIN Brands b ON p.brand_id = b.id
+        WHERE p.category_id = ANY($1::int[]) AND p.status = 'active'
+        ORDER BY p.sold_count DESC, p.rating_avg DESC
+        LIMIT 8
+      `;
+      const recRes = await pool.query(recQuery, [targetCategoryIds]).catch(() => ({ rows: [] }));
+      if (recRes.rows.length > 0) {
+        return res.json({
+          type: 'personalized-behavioral',
+          categories: targetCategoryIds,
+          products: recRes.rows
+        });
+      }
+    }
+
+    // Fallback: Sản phẩm bán chạy nhất toàn sàn
+    const fallbackRes = await pool.query(`
+      SELECT 
+        p.id, p.name, p.price, p.original_price, p.sold_count, p.rating_avg, p.review_count,
+        p.image_url, p.category_id, p.brand_id, p.shop_id,
+        s.name as shop_name, s.is_official as shop_is_official,
+        c.name as category_name,
+        b.name as brand_name
+      FROM Products p
+      JOIN Shops s ON p.shop_id = s.id
+      JOIN Categories c ON p.category_id = c.id
+      LEFT JOIN Brands b ON p.brand_id = b.id
+      WHERE p.status = 'active'
+      ORDER BY p.sold_count DESC
+      LIMIT 8
+    `).catch(() => ({ rows: [] }));
+
+    res.json({
+      type: 'trending-fallback',
+      products: fallbackRes.rows
+    });
+  } catch (error) {
+    console.error('[Catalog getPersonalizedFeed Error]:', error);
+    res.json({ type: 'trending-fallback', products: [] });
+  }
+};
+
 module.exports = {
   getProducts,
   getProductById,
@@ -538,5 +643,7 @@ module.exports = {
   updateProduct,
   deleteProduct,
   getBestSellers,
-  getProductRecommendations
+  getProductRecommendations,
+  trackInteraction,
+  getPersonalizedFeed
 };

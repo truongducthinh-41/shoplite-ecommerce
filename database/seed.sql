@@ -1,5 +1,6 @@
 -- Xóa dữ liệu cũ theo thứ tự ràng buộc khóa ngoại
 TRUNCATE TABLE 
+    UserInteractions,
     ProductAuditLogs,
     InventoryLogs, 
     Reviews, 
@@ -328,9 +329,34 @@ INSERT INTO Products (id, shop_id, category_id, brand_id, sku, name, description
 (81, 2, 17, 16, 'ZRA-BLAZER-OVR', 'Áo Blazer Nữ Zara Dáng Suông 2 Lớp Công Sở Thanh Lịch', 'Form áo đứng thanh mảnh tôn dáng, đệm vai tinh tế phối cùng quần tây hoặc chân váy cực kỳ sang trọng.', 69.00, 89.00, 50, 260, 4.88, 48, 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&q=80&w=800'),
 (82, 2, 17, 17, 'HM-MAXI-FLWR', 'Đầm Maxi Nữ H&M Hoa Nhí Dáng Dài Đi Biển Cổ V Duyên Dáng', 'Chất liệu voan cát mềm rũ bay bổng, hoa văn rực rỡ ngọt ngào lý tưởng cho kỳ nghỉ hè dạo phố và du lịch.', 38.00, 49.00, 70, 390, 4.86, 65, 'https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&q=80&w=800'),
 (83, 6, 27, 14, 'PGN-BOTTLE-240', 'Bình Sữa Cổ Rộng Kháng Khuẩn Pigeon Streamline 240ml PPSU', 'Chất liệu nhựa PPSU cao cấp chịu nhiệt 180 độ C, núm ti silicon siêu mềm mô phỏng bầu ngực mẹ giúp bé bú dễ dàng.', 14.00, 18.00, 120, 620, 4.95, 130, 'https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&q=80&w=800'),
-(84, 8, 32, 31, 'HSB-TF-OPTIMUS', 'Mô Hình Đồ Chơi Robot Transformers Optimus Prime Hasbro 30cm', 'Biến hình linh hoạt giữa xe tải đầu kéo và robot chiến binh chỉ qua 25 bước lắp ghép, khớp nối cử động linh hoạt.', 42.00, 55.00, 55, 270, 4.92, 58, 'https://images.unsplash.com/photo-1563089145-599997674d42?auto=format&fit=crop&q=80&w=800');
+(84, 8, 32, 31, 'HSB-TF-OPTIMUS', 'Mô Hình Đồ Chơi Robot Transformers Optimus Prime Hasbro 30cm', 'Biến hình linh hoạt giữa xe tải đầu kéo và robot chiến binh chỉ qua 25 bước lắp ghép, khớp nối cử động linh hoạt.', 42.00, 55.00, 55, 270, 4.92, 58, 'https://images.unsplash.com/photo-1563089145-599997674d42?auto=format&fit=crop&q=80&w=800'),
+-- 24 Sản phẩm bổ sung cho đợt nâng cấp AI Recommendation (IDs 85 - 108)
+(85, 3, 10, 2, 'GGL-PX8P-128', 'Google Pixel 8 Pro 128GB Bay Blue (Google Tensor G3, Camera AI)', 'Nhiếp ảnh điện toán đỉnh cao với chip Tensor G3, tính năng Best Take sửa ảnh thần kỳ và màn hình Super Actua Display.', 899.00, 999.00, 45, 190, 4.88, 42, 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&q=80&w=800'),
+(86, 4, 11, 3, 'SNY-SBAR-HTS20', 'Loa Thanh Soundbar Sony HT-S20R 5.1 Kênh Vòm Rạp Chiếu Phim', 'Công suất thực 400W uy lực, âm thanh vòm 5.1 chân thực với loa sau và subwoofer rời cho trải nghiệm phim ảnh đỉnh cao.', 199.00, 249.00, 35, 280, 4.85, 56, 'https://images.unsplash.com/photo-1545454675-3531b543be5d?auto=format&fit=crop&q=80&w=800'),
+(87, 4, 12, 21, 'KCH-K2P-RGB', 'Bàn Phím Cơ Không Dây Keychron K2 Pro QMK/VIA Switch Gateron G Pro', 'Layout 75% gọn gàng, hỗ trợ tùy biến phím QMK/VIA, kết nối Bluetooth 5.1 cùng lúc 3 thiết bị và đèn nền RGB rực rỡ.', 95.00, 115.00, 60, 310, 4.90, 68, 'https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&q=80&w=800'),
+(88, 4, 13, 9, 'DJI-OM6-PLT', 'Gimbal Chống Rung DJI Osmo Mobile 6 Theo Dõi ActiveTrack 6.0', 'Khả năng chống rung 3 trục siêu mượt, thanh nối dài tích hợp 215mm cho góc selfie rộng và ngàm kẹp từ tính tháo lắp nhanh.', 139.00, 159.00, 40, 220, 4.86, 45, 'https://images.unsplash.com/photo-1589256469067-ea99122bbdc4?auto=format&fit=crop&q=80&w=800'),
+(89, 4, 14, 23, 'MSH-MJ4-BLK', 'Tai Nghe Chụp Tai Không Dây Marshall Major IV Bluetooth Pin 80h', 'Thiết kế vintage bọc da cổ điển, chất âm Marshall bùng nổ đặc trưng, sạc không dây tiện lợi và pin nghe nhạc hơn 80 giờ.', 129.00, 149.00, 50, 360, 4.92, 78, 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=800'),
+(90, 4, 15, 3, 'MS-XBX-CTRL', 'Tay Cầm Chơi Game Không Dây Microsoft Xbox Wireless Controller Carbon', 'Kết nối nhanh PC, Xbox, iOS, Android qua Bluetooth, vân nhám bám tay chống trượt và nút D-pad hybrid chính xác.', 59.00, 69.00, 75, 410, 4.87, 82, 'https://images.unsplash.com/photo-1600080972464-8e5f35f63d08?auto=format&fit=crop&q=80&w=800'),
+(91, 2, 16, 33, 'CNF-BLAZ-REG', 'Áo Khoác Blazer Nam Công Sở Canifa Dáng Regular Fit Trẻ Trung', 'Chất vải thun dệt cao cấp đứng phom, co giãn nhẹ nhàng mang lại cảm giác thoải mái khi ngồi làm việc cả ngày.', 49.00, 65.00, 65, 290, 4.82, 51, 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&q=80&w=800'),
+(92, 2, 17, 34, 'UNQ-SWEAT-TURT', 'Áo Len Nữ Cổ Lọ Dệt Kim Mềm Mịn Uniqlo Giữ Nhiệt Mùa Đông', 'Công nghệ sợi len siêu mềm không gây ngứa cổ, giữ ấm cơ thể nhẹ nhàng và dễ phối cùng áo khoác dáng dài.', 35.00, 45.00, 80, 340, 4.89, 64, 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&q=80&w=800'),
+(93, 2, 18, 4, 'CLK-OXF-LTHR', 'Giày Tây Nam Da Bò Thật Oxford Buộc Dây Công Sở Sang Trọng', 'Chất da bò nhập khẩu sáng bóng, lót đệm êm chân chống sốc và đường khâu đế thủ công tỉ mỉ độ bền trên 3 năm.', 75.00, 99.00, 55, 260, 4.88, 49, 'https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?auto=format&fit=crop&q=80&w=800'),
+(94, 2, 19, 18, 'CK-FLAT-RND', 'Giày Búp Bê Nữ Mũi Tròn Da Cừu Êm Chân Charles & Keith', 'Đế cao su dẻo uốn cong linh hoạt, quai nơ đính kim loại thanh tao, bảo vệ gót chân khi đi bộ nhiều.', 45.00, 59.00, 70, 380, 4.86, 67, 'https://images.unsplash.com/photo-1595341888016-a392ef81b7de?auto=format&fit=crop&q=80&w=800'),
+(95, 2, 20, 18, 'CK-CLUTCH-GLD', 'Ví Cầm Tay Nữ Da Thật Mini Clutch Sang Trọng Khóa Mạ Vàng', 'Nhiều ngăn đựng thẻ ngân hàng, tiền mặt và son môi nhỏ gọn, kèm dây xích đeo vai tinh xảo cho dạ tiệc.', 39.00, 49.00, 85, 420, 4.90, 73, 'https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?auto=format&fit=crop&q=80&w=800'),
+(96, 7, 21, 10, 'CSO-SHN-SAP', 'Đồng Hồ Nữ Dây Kim Loại Casio Sheen Kính Sapphire Chống Trầy', 'Mặt kính Sapphire cao cấp chống trầy xước hoàn hảo, đính đá Swarovski lấp lánh và chuẩn chống nước 50m.', 89.00, 110.00, 50, 310, 4.93, 58, 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&q=80&w=800'),
+(97, 6, 22, 35, 'MI-LAMP-RGB', 'Đèn Ngủ Để Bàn Thông Minh Cảm Ứng Đổi 16 Triệu Màu Xiaomi Mijia', 'Điều khiển bằng giọng nói và điện thoại, tùy chỉnh độ sáng mượt mà bảo vệ mắt khi đọc sách và tạo không gian thư giãn.', 29.00, 39.00, 95, 520, 4.87, 94, 'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&q=80&w=800'),
+(98, 6, 23, 35, 'LCK-AF55-DIG', 'Nồi Chiên Không Dầu Điện Tử Lock&Lock 5.5L Nướng Đối Lưu 360', 'Giảm 80% dầu mỡ trong món ăn, 8 chương trình nấu cài đặt sẵn với màn hình cảm ứng LED hiện đại dễ lau chùi.', 79.00, 109.00, 45, 270, 4.91, 62, 'https://images.unsplash.com/photo-1584992236310-6edddc08acff?auto=format&fit=crop&q=80&w=800'),
+(99, 8, 24, 30, 'PET-TREE-SISAL', 'Trụ Cào Móng Cho Mèo Đa Tầng Bọc Dây Thừng Tự Nhiên Kèm Võng', 'Chất liệu gỗ MDF bọc dây thừng gai tự nhiên bền chắc, giúp mèo giải tỏa stress và hạn chế cào xước đồ nội thất.', 25.00, 35.00, 65, 380, 4.84, 57, 'https://images.unsplash.com/photo-1545249390-6bdfa286032f?auto=format&fit=crop&q=80&w=800'),
+(100, 5, 25, 13, 'MB-MATTE-INK', 'Son Kem Lì Maybelline SuperStay Matte Ink Chuẩn Màu Lâu Trôi 16h', 'Khả năng giữ màu chuẩn sắc suốt 16 tiếng không lem trôi khi ăn uống, bảng màu thời thượng tôn mọi sắc tố da.', 12.00, 16.00, 150, 850, 4.94, 145, 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&q=80&w=800'),
+(101, 5, 26, 27, 'HLT-OMG3-200', 'Viên Uống Dầu Cá Tinh Khiết Omega 3 Bổ Mắt & Tim Mạch Hộp 200 Viên', 'Chiết xuất từ cá biển sâu tự nhiên giàu EPA & DHA hỗ trợ sáng mắt, giảm mỏi mắt khi dùng máy tính và bảo vệ tim mạch.', 22.00, 29.00, 90, 490, 4.90, 88, 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&q=80&w=800'),
+(102, 6, 27, 15, 'STR-TRVL-ALU', 'Xe Đẩy Gấp Gọn Du Lịch Siêu Nhẹ Khung Nhôm Cho Bé 0-3 Tuổi', 'Khung nhôm hàng không siêu nhẹ chỉ 4.5kg, gấp gọn bằng một nút bấm có thể xách tay lên khoang máy bay tiện lợi.', 59.00, 79.00, 40, 230, 4.88, 46, 'https://images.unsplash.com/photo-1591088398332-8a7791972843?auto=format&fit=crop&q=80&w=800'),
+(103, 8, 28, 8, 'YGA-MAT-TPE8', 'Thảm Tập Yoga Chống Trượt Định Tuyến TPE 2 Lớp Dày 8mm Êm Chân', 'Vạch kẻ định tuyến chuẩn giúp vào tư thế chính xác, chất liệu TPE thân thiện môi trường, chống trơn trượt mồ hôi tối đa.', 19.00, 26.00, 110, 620, 4.85, 98, 'https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?auto=format&fit=crop&q=80&w=800'),
+(104, 8, 29, 24, '70M-DASH-A500', 'Camera Hành Trình Ô Tô 70mai A500S Ghi Hình 2K Siêu Nét Ban Đêm', 'Cảm biến Sony Starvis hỗ trợ GPS và ADAS cảnh báo lệch làn, tự động khóa video khi xảy ra va chạm khẩn cấp.', 69.00, 89.00, 55, 310, 4.91, 59, 'https://images.unsplash.com/photo-1508974239320-0a029497e820?auto=format&fit=crop&q=80&w=800'),
+(105, 8, 30, 28, 'FHS-PSY-MONEY', 'Sách Tâm Lý Học Về Tiền - Kiệt Tác Tài Chính Cá Nhân Bìa Cứng', '19 câu chuyện ngắn hé lộ cách tư duy kỳ lạ của con người về tiền bạc, giúp xây dựng thói quen tài chính bền vững.', 9.00, 12.00, 200, 1200, 4.96, 230, 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=800'),
+(106, 7, 31, 26, 'CD-COF-ARA500', 'Cà Phê Hạt Rang Mộc Arabica Cầu Đất Thơm Đượm Vị Gói 500g', '100% hạt Arabica Cầu Đất tuyển chọn độ cao 1600m, rang mộc độ vừa (medium roast) hương hoa quả và hậu vị ngọt sâu.', 8.00, 11.00, 180, 750, 4.92, 115, 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?auto=format&fit=crop&q=80&w=800'),
+(107, 8, 32, 31, 'LGO-ARC-LDN468', 'Bộ Xếp Hình LEGO Architecture London Cầu Tháp Luân Đôn 468 Chi Tiết', 'Tái hiện đường chân trời London với biểu tượng Tháp Big Ben, Mắt Luân Đôn và Cầu Tháp lịch sử tinh xảo để bàn làm việc.', 45.00, 55.00, 60, 340, 4.95, 74, 'https://images.unsplash.com/photo-1585366119957-e9730b6d0f60?auto=format&fit=crop&q=80&w=800'),
+(108, 1, 33, 32, 'VOU-CGV-2D', 'E-Voucher Vé Xem Phim CGV 2D Toàn Quốc Hạn Dùng 6 Tháng', 'Áp dụng cho mọi rạp CGV trên toàn quốc từ Thứ 2 đến Chủ Nhật, nhận mã vé điện tử tức thì qua SMS hoặc App.', 5.00, 7.00, 400, 2800, 4.90, 320, 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&q=80&w=800');
 
-SELECT setval('products_id_seq', 84);
+SELECT setval('products_id_seq', 108);
 
 -- ------------------------------------------------------------------------------
 -- 7. SEED ORDERS & ORDERDETAILS (Đa gian hàng, mô phỏng doanh thu theo từng tháng)
@@ -391,3 +417,24 @@ INSERT INTO Reviews (id, product_id, user_id, order_id, rating, comment) VALUES
 (7, 52, 11, 8, 5, 'Serum L''Oreal Glycolic dùng 2 tuần da mờ thâm mụn rõ rệt, chất serum mỏng nhẹ thấm nhanh.');
 
 SELECT setval('reviews_id_seq', 7);
+
+-- ------------------------------------------------------------------------------
+-- 9. SEED USERINTERACTIONS (Dữ liệu mẫu lịch sử hành vi phục vụ AI Recommendation)
+-- ------------------------------------------------------------------------------
+INSERT INTO UserInteractions (id, user_id, product_id, category_id, interaction_type, weight, created_at) VALUES
+-- User 10: Người đam mê đồ công nghệ (Smartphones, Laptops, Audio, Gaming)
+(1, 10, 1, 10, 'view', 1.0, NOW() - INTERVAL '3 days'),
+(2, 10, 2, 10, 'view', 1.0, NOW() - INTERVAL '2 days'),
+(3, 10, 8, 12, 'cart', 3.0, NOW() - INTERVAL '2 days'),
+(4, 10, 15, 14, 'purchase', 5.0, NOW() - INTERVAL '1 day'),
+(5, 10, 19, 15, 'view', 1.0, NOW() - INTERVAL '12 hours'),
+(6, 10, 85, 10, 'view', 1.0, NOW() - INTERVAL '2 hours'),
+-- User 11: Người đam mê thời trang, làm đẹp (Women's Fashion, Bags, Beauty)
+(7, 11, 27, 17, 'view', 1.0, NOW() - INTERVAL '3 days'),
+(8, 11, 29, 17, 'cart', 3.0, NOW() - INTERVAL '2 days'),
+(9, 11, 36, 20, 'view', 1.0, NOW() - INTERVAL '1 day'),
+(10, 11, 52, 25, 'purchase', 5.0, NOW() - INTERVAL '1 day'),
+(11, 11, 92, 17, 'view', 1.0, NOW() - INTERVAL '5 hours'),
+(12, 11, 100, 25, 'cart', 3.0, NOW() - INTERVAL '1 hour');
+
+SELECT setval('userinteractions_id_seq', 12);

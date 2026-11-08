@@ -318,3 +318,55 @@ BEGIN
 END;
 GO
 
+-- ==============================================================================
+-- 4. BẢNG USERINTERACTIONS & TRUY VẤN AI GỢI Ý CÁ NHÂN HÓA TRONG T-SQL
+-- ==============================================================================
+
+-- 4.1. Khởi tạo bảng lưu vết hành vi người dùng (User Interactions)
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'UserInteractions')
+BEGIN
+    CREATE TABLE UserInteractions (
+        id INT IDENTITY(1,1) PRIMARY KEY,
+        user_id INT FOREIGN KEY REFERENCES Users(id) ON DELETE CASCADE,
+        product_id INT NOT NULL FOREIGN KEY REFERENCES Products(id) ON DELETE CASCADE,
+        category_id INT FOREIGN KEY REFERENCES Categories(id),
+        interaction_type VARCHAR(20) NOT NULL, -- 'view', 'cart', 'purchase', 'search'
+        weight DECIMAL(4, 2) DEFAULT 1.0,     -- view: 1.0, cart: 3.0, purchase: 5.0
+        created_at DATETIME2 DEFAULT SYSDATETIME()
+    );
+
+    CREATE NONCLUSTERED INDEX idx_UI_User ON UserInteractions (user_id);
+    CREATE NONCLUSTERED INDEX idx_UI_Category ON UserInteractions (category_id);
+    CREATE NONCLUSTERED INDEX idx_UI_Created ON UserInteractions (created_at DESC);
+END;
+GO
+
+-- 4.2. Truy vấn gợi ý cá nhân hóa dựa trên trọng số hành vi (Personalized Behavioral Query):
+-- Tìm Top 3 danh mục người dùng tương tác nhiều nhất trong 30 ngày và lấy sản phẩm nổi bật
+WITH UserFavoredCategories AS (
+    SELECT TOP 3
+        category_id,
+        SUM(weight) AS TotalWeight
+    FROM UserInteractions
+    WHERE user_id = 10 -- Ví dụ: Khách hàng ID 10
+      AND category_id IS NOT NULL
+      AND created_at >= DATEADD(day, -30, SYSDATETIME())
+    GROUP BY category_id
+    ORDER BY TotalWeight DESC
+)
+SELECT TOP 8
+    p.id AS ProductID,
+    p.name AS ProductName,
+    p.price AS Price,
+    p.sold_count AS SoldCount,
+    p.rating_avg AS RatingAvg,
+    c.name AS CategoryName,
+    s.name AS ShopName
+FROM Products p
+INNER JOIN Categories c ON p.category_id = c.id
+INNER JOIN Shops s ON p.shop_id = s.id
+WHERE p.category_id IN (SELECT category_id FROM UserFavoredCategories)
+  AND p.status = 'active'
+ORDER BY p.sold_count DESC, p.rating_avg DESC;
+GO
+

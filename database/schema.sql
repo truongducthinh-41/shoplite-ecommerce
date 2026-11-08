@@ -191,6 +191,22 @@ CREATE TABLE ProductAuditLogs (
     note TEXT
 );
 
+-- 12. USERINTERACTIONS TABLE (Lưu vết hành vi người dùng phục vụ AI Recommendation)
+CREATE TABLE UserInteractions (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES Users(id) ON DELETE CASCADE,
+    product_id INT NOT NULL REFERENCES Products(id) ON DELETE CASCADE,
+    category_id INT REFERENCES Categories(id) ON DELETE SET NULL,
+    interaction_type VARCHAR(20) NOT NULL, -- 'view', 'cart', 'purchase', 'search'
+    weight NUMERIC(4, 2) DEFAULT 1.0,     -- view: 1.0, cart: 3.0, purchase: 5.0
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_user_interactions_user ON UserInteractions (user_id);
+CREATE INDEX idx_user_interactions_product ON UserInteractions (product_id);
+CREATE INDEX idx_user_interactions_category ON UserInteractions (category_id);
+CREATE INDEX idx_user_interactions_created ON UserInteractions (created_at DESC);
+
 -- ==============================================================================
 -- PHẦN 2: LẬP TRÌNH HÀM (FUNCTIONS) ĐÚNG NGHIỆP VỤ THỰC TẾ
 -- ==============================================================================

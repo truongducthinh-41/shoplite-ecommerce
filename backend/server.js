@@ -10,6 +10,7 @@ const orderRoutes = require('./modules/order/order.routes');
 const dashboardRoutes = require('./modules/dashboard/dashboard.routes');
 const reviewsRoutes = require('./modules/reviews/reviews.routes');
 const shopRoutes = require('./modules/shops/shop.routes');
+const aiRoutes = require('./modules/ai/ai.routes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -43,6 +44,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/admin', dashboardRoutes);
 app.use('/api/reviews', reviewsRoutes);
 app.use('/api/shops', shopRoutes);
+app.use('/api/ai', aiRoutes);
 
 if (require.main === module) {
   app.listen(PORT, () => {

@@ -2,15 +2,18 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { apiFetch } from '../services/api';
 import { useCart } from '../context/CartContext';
-import { ShoppingCart, Star, Smartphone, Laptop, Headphones, Gamepad, Watch, Camera, Flame, Shirt, ShoppingBag, Baby, Monitor, Home, Sparkles, HeartPulse, Footprints, Briefcase, Coffee, Dumbbell, Store, Car, Book, Gamepad2, Gift, Box, Ticket, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
+import { ShoppingCart, Star, Smartphone, Laptop, Headphones, Gamepad, Watch, Camera, Flame, Shirt, ShoppingBag, Baby, Monitor, Home, Sparkles, HeartPulse, Footprints, Briefcase, Coffee, Dumbbell, Store, Car, Book, Gamepad2, Gift, Box, Ticket, ChevronLeft, ChevronRight, ChevronDown, History } from 'lucide-react';
 import VertexHero from '../components/VertexHero';
 import { calculatePricing } from '../utils/pricing';
 import { FALLBACK_PRODUCTS } from '../data/categoryProducts';
 import { getSafeProductImage, handleImageError } from '../utils/productImages';
+import { getRecentlyViewedProducts, calculatePersonalizedRecommendations } from '../utils/userTracker';
 
 export default function HomePage() {
   const [products, setProducts] = useState([]);
   const [bestSellers, setBestSellers] = useState([]);
+  const [personalizedFeed, setPersonalizedFeed] = useState([]);
+  const [recentlyViewed, setRecentlyViewed] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -78,6 +81,13 @@ export default function HomePage() {
 
         setProducts(sanitizedProducts);
         setBestSellers(sanitizedBestSellers);
+
+        // Tính toán danh sách cá nhân hóa AI và sản phẩm vừa xem
+        const recent = getRecentlyViewedProducts();
+        setRecentlyViewed(recent);
+        const personalized = calculatePersonalizedRecommendations(sanitizedProducts, 6);
+        setPersonalizedFeed(personalized);
+
         setPage(0);
         setHasMore(productsData && productsData.length === LIMIT);
       } catch (error) {
@@ -244,6 +254,100 @@ export default function HomePage() {
               </div>
             );
           })}
+          </div>
+        </div>
+      )}
+
+      {/* AI Personalized Recommendations Section (Giải pháp 3: Cá nhân hóa theo dõi hành vi) */}
+      {!searchQuery && personalizedFeed.length > 0 && (
+        <div className="mb-12 bg-gradient-to-r from-indigo-950/40 via-purple-950/20 to-slate-900/40 rounded-3xl p-6 sm:p-8 border border-indigo-500/30 relative overflow-hidden shadow-[0_0_30px_rgba(99,102,241,0.1)]">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+          
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-gradient-to-tr from-indigo-600 to-purple-600 text-white rounded-2xl shadow-md">
+                <Sparkles className="w-5 h-5 animate-pulse text-amber-300" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg sm:text-xl font-bold uppercase tracking-wider text-white">Gợi Ý Dành Riêng Cho Bạn</h2>
+                  <span className="text-[10px] font-bold bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 px-2 py-0.5 rounded-full">AI Personalized</span>
+                </div>
+                <p className="text-xs text-slate-400">Thuật toán phân tích sở thích & hành vi duyệt hàng của bạn theo thời gian thực</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 sm:gap-4">
+            {personalizedFeed.map(product => {
+              const { salePrice, originalPrice, discountPercent, hasDiscount } = calculatePricing(product);
+              return (
+                <div key={`p-${product.id}`} className="bg-[#111]/90 rounded-xl border border-white/10 hover:border-indigo-500/60 hover:shadow-[0_0_15px_rgba(99,102,241,0.2)] transition-all group flex flex-col h-full overflow-hidden">
+                  <Link to={`/product/${product.id}`} className="block w-full relative aspect-square bg-white/5 overflow-hidden">
+                    <img 
+                      src={getSafeProductImage(product)} 
+                      alt={product.name} 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      onError={handleImageError}
+                    />
+                    {product.personalized_reason && (
+                      <span className="absolute top-2 left-2 z-10 text-[9px] font-bold bg-indigo-950/90 text-indigo-300 backdrop-blur-md px-1.5 py-0.5 rounded border border-indigo-500/40 line-clamp-1 max-w-[90%]">
+                        {product.personalized_reason}
+                      </span>
+                    )}
+                  </Link>
+                  <div className="p-3 flex flex-col flex-grow">
+                    <Link to={`/product/${product.id}`}>
+                      <h3 className="font-medium text-slate-200 hover:text-indigo-400 transition-colors line-clamp-2 text-xs leading-tight min-h-[32px]">{product.name}</h3>
+                    </Link>
+                    <div className="mt-auto flex items-center justify-between pt-2">
+                      <div className="flex flex-col">
+                        {hasDiscount ? (
+                          <>
+                            <span className="text-[10px] text-slate-500 line-through">${originalPrice}</span>
+                            <span className="text-sm font-bold text-rose-400">${salePrice}</span>
+                          </>
+                        ) : (
+                          <span className="text-sm font-bold text-indigo-400">${salePrice}</span>
+                        )}
+                      </div>
+                      <button 
+                        onClick={() => addToCart(product)}
+                        className="p-1.5 bg-white/10 text-indigo-400 rounded-full hover:bg-indigo-500 hover:text-white transition-colors"
+                        aria-label="Add to cart"
+                      >
+                        <ShoppingCart className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Recently Viewed Products Section */}
+      {!searchQuery && recentlyViewed.length > 0 && (
+        <div className="mb-12 bg-[#0e0f17] rounded-2xl p-5 sm:p-6 border border-white/5">
+          <div className="flex items-center gap-2 mb-4 text-slate-300">
+            <History className="w-4 h-4 text-indigo-400" />
+            <h3 className="text-sm font-bold uppercase tracking-wider text-white">Sản Phẩm Bạn Vừa Xem</h3>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2.5">
+            {recentlyViewed.map(item => (
+              <Link 
+                key={`recent-${item.id}`} 
+                to={`/product/${item.id}`}
+                className="bg-white/5 hover:bg-white/10 p-2 rounded-xl border border-white/5 hover:border-indigo-500/30 transition-all flex flex-col group"
+              >
+                <div className="aspect-square w-full rounded-lg overflow-hidden bg-black/40 mb-1.5">
+                  <img src={getSafeProductImage(item)} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" onError={handleImageError} />
+                </div>
+                <p className="text-[11px] text-slate-300 line-clamp-1 group-hover:text-indigo-400 font-medium">{item.name}</p>
+                <p className="text-[11px] font-bold text-rose-400 mt-auto">${item.price}</p>
+              </Link>
+            ))}
           </div>
         </div>
       )}
