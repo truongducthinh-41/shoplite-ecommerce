@@ -79,6 +79,9 @@ export default function ProductDetailPage() {
         console.error('Failed to fetch product:', error);
         const fallbackItem = FALLBACK_PRODUCTS.find(p => String(p.id) === String(id));
         setProduct(fallbackItem || null);
+        if (fallbackItem) {
+          trackProductInteraction(fallbackItem, 'view');
+        }
       } finally {
         setLoading(false);
       }

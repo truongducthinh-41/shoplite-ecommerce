@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, User, Search, LogOut, ChevronDown } from 'lucide-react';
+import { ShoppingCart, User, Search, LogOut, ChevronDown, RotateCcw } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { apiFetch } from '../services/api';
-import { trackSearchQuery, trackProductInteraction, getSmartSearchSuggestions } from '../utils/userTracker';
+import { trackSearchQuery, trackProductInteraction, getSmartSearchSuggestions, resetTrackingHistory } from '../utils/userTracker';
 import { getSafeProductImage, handleImageError } from '../utils/productImages';
 
 export default function Navbar() {
@@ -21,6 +21,21 @@ export default function Navbar() {
   const userMenuRef = useRef(null);
 
   const cartItemCount = cart.reduce((total, item) => total + item.quantity, 0);
+
+  // Tự động reset demo nếu có tham số ?reset=true trên URL
+  useEffect(() => {
+    if (window.location.search.includes('reset=true')) {
+      resetTrackingHistory();
+      navigate('/', { replace: true });
+    }
+  }, [navigate]);
+
+  const handleResetDemo = () => {
+    resetTrackingHistory();
+    alert('Đã xóa sạch toàn bộ lịch sử theo vết! Hệ thống đã trở về trạng thái nguyên bản để bắt đầu Demo.');
+    navigate('/');
+    window.location.reload();
+  };
 
   // Gợi ý tìm kiếm thông minh đa tầng (cả từ khóa gợi ý lẫn sản phẩm)
   useEffect(() => {
@@ -113,13 +128,57 @@ export default function Navbar() {
                   <div className="p-4 text-center text-xs text-slate-400">Đang tìm kiếm gợi ý...</div>
                 ) : (suggestions.queries?.length > 0 || suggestions.products?.length > 0) ? (
                   <>
-                    {/* Phần 1: Gợi ý cụm từ khóa tìm kiếm (Query Suggestions) */}
+                    {/* Phần 1: Sản phẩm gợi ý trực quan (Ưu tiên hiển thị trên cùng) */}
+                    {suggestions.products && suggestions.products.length > 0 && (
+                      <div>
+                        <div className="px-3 py-1.5 bg-white/5 border-b border-white/5 flex items-center justify-between text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                          <span>Sản phẩm phù hợp</span>
+                          <span className="text-[10px] text-indigo-400 font-normal lowercase">{suggestions.products.length} sản phẩm</span>
+                        </div>
+                        <ul className="max-h-64 overflow-y-auto [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-white/10">
+                          {suggestions.products.map((item) => (
+                            <li key={item.id}>
+                              <button
+                                onClick={() => {
+                                  setShowSuggestions(false);
+                                  trackProductInteraction(item, 'view');
+                                  navigate(`/product/${item.id}`);
+                                }}
+                                className="w-full text-left px-3 py-2 hover:bg-white/10 transition-colors flex items-center justify-between gap-3 border-b border-white/5 last:border-0 group"
+                              >
+                                <div className="flex items-center gap-2.5 overflow-hidden">
+                                  <img 
+                                    src={getSafeProductImage(item)} 
+                                    alt={item.name} 
+                                    className="w-9 h-9 object-cover rounded-lg bg-black/40 shrink-0 border border-white/10"
+                                    onError={handleImageError}
+                                  />
+                                  <div className="overflow-hidden">
+                                    <p className="text-xs font-medium text-slate-200 group-hover:text-indigo-400 truncate transition-colors">
+                                      {item.name}
+                                    </p>
+                                    <span className="text-[9px] text-slate-400 bg-white/5 px-1.5 py-0.5 rounded border border-white/5 inline-block">
+                                      {item.category_name || 'Điện tử & TMĐT'}
+                                    </span>
+                                  </div>
+                                </div>
+                                <span className="text-xs font-bold text-rose-400 shrink-0">
+                                  ${item.price}
+                                </span>
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Phần 2: Gợi ý cụm từ khóa tìm kiếm (Query Suggestions) */}
                     {suggestions.queries && suggestions.queries.length > 0 && (
-                      <div className="border-b border-white/5 py-1.5 bg-white/[0.02]">
+                      <div className="border-t border-white/5 py-1.5 bg-white/[0.02]">
                         <div className="px-3 py-1 text-[10px] uppercase font-bold text-slate-500 tracking-wider">
                           Gợi ý tìm kiếm
                         </div>
-                        {suggestions.queries.map((q, idx) => (
+                        {suggestions.queries.slice(0, 4).map((q, idx) => (
                           <button
                             key={idx}
                             onClick={() => {
@@ -135,52 +194,6 @@ export default function Navbar() {
                           </button>
                         ))}
                       </div>
-                    )}
-
-                    {/* Phần 2: Sản phẩm gợi ý trực quan */}
-                    {suggestions.products && suggestions.products.length > 0 && (
-                      <>
-                        <div className="px-3 py-1.5 bg-white/5 border-b border-white/5 flex items-center justify-between text-[10px] uppercase font-bold text-slate-500 tracking-wider">
-                          <span>Sản phẩm liên quan</span>
-                          <span className="text-[10px] text-indigo-400 font-normal lowercase">{suggestions.products.length} sản phẩm</span>
-                        </div>
-                        <ul className="max-h-72 overflow-y-auto [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-white/10">
-                          {suggestions.products.map((item) => (
-                            <li key={item.id}>
-                              <button
-                                onClick={() => {
-                                  setSearchQuery(item.name);
-                                  setShowSuggestions(false);
-                                  trackSearchQuery(item.name);
-                                  trackProductInteraction(item, 'view');
-                                  navigate(`/?search=${encodeURIComponent(item.name)}`);
-                                }}
-                                className="w-full text-left px-3 py-2 hover:bg-white/10 transition-colors flex items-center justify-between gap-3 border-b border-white/5 last:border-0 group"
-                              >
-                                <div className="flex items-center gap-2.5 overflow-hidden">
-                                  <img 
-                                    src={getSafeProductImage(item)} 
-                                    alt={item.name} 
-                                    className="w-9 h-9 object-cover rounded-lg bg-black/40 shrink-0 border border-white/10"
-                                    onError={handleImageError}
-                                  />
-                                  <div className="overflow-hidden">
-                                    <p className="text-xs font-medium text-slate-200 group-hover:text-indigo-400 truncate transition-colors">
-                                      {item.name}
-                                    </p>
-                                    <span className="text-[9px] text-slate-400 bg-white/5 px-1.5 py-0.2 rounded border border-white/5 inline-block">
-                                      {item.category_name || 'Điện tử & TMĐT'}
-                                    </span>
-                                  </div>
-                                </div>
-                                <span className="text-xs font-bold text-rose-400 shrink-0">
-                                  ${item.price}
-                                </span>
-                              </button>
-                            </li>
-                          ))}
-                        </ul>
-                      </>
                     )}
 
                     <button
@@ -277,6 +290,16 @@ export default function Navbar() {
                 </Link>
               </div>
             )}
+
+            {/* Nút Làm Mới Demo (Xóa Lịch Sử Theo Vết để bắt đầu buổi thuyết trình) */}
+            <button
+              onClick={handleResetDemo}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/25 hover:bg-rose-500/20 hover:border-rose-500/40 transition-all shadow-sm group shrink-0"
+              title="Đặt lại toàn bộ lịch sử tìm kiếm & xem hàng về trạng thái ban đầu cho Demo"
+            >
+              <RotateCcw className="w-3.5 h-3.5 group-hover:-rotate-90 transition-transform duration-300" />
+              <span className="hidden sm:inline">Reset Demo</span>
+            </button>
 
             {/* Cart Icon */}
             <Link to="/checkout" className="relative p-2 text-slate-300 hover:text-indigo-400 transition-colors bg-white/5 rounded-full border border-white/10">

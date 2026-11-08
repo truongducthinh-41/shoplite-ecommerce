@@ -75,7 +75,7 @@ export const ALL_SEARCH_SUGGESTIONS = [
   'điện thoại xiaomi redmi',
   'smartphone 5g cao cấp',
   'phone case ốp lưng điện thoại',
-  'củ sạc nhanh 45w type-c',
+  'củ sạc nhanh type-c 45w samsung',
   'phụ kiện điện thoại thông minh',
 
   // 2. Thời trang nam (Category 16)
@@ -95,7 +95,7 @@ export const ALL_SEARCH_SUGGESTIONS = [
   'áo len nữ cổ lọ giữ nhiệt',
   'áo kiểu nữ thời trang',
   'váy đầm dạ hội dự tiệc',
-  'chân váy xếp ly dáng dài',
+  'chân váy xếp ly midi dáng dài',
   'đầm maxi hoa nhí đi biển',
   'quần ống rộng nữ cạp cao',
 
@@ -103,7 +103,7 @@ export const ALL_SEARCH_SUGGESTIONS = [
   'laptop văn phòng mỏng nhẹ sinh viên',
   'laptop gaming đồ họa rtx',
   'macbook pro m3 space black',
-  'chuột công thái học logitech không dây',
+  'chuột công thái học không dây logitech',
   'bàn phím cơ không dây bluetooth',
   'màn hình máy tính gaming 2k',
 
@@ -126,7 +126,7 @@ export const ALL_SEARCH_SUGGESTIONS = [
   'son môi cao cấp chính hãng lì mịn',
   'son kem lì lâu trôi chính hãng',
   'kem chống nắng bảo vệ da quang phổ rộng',
-  'serum dưỡng ẩm vitamin c sáng da',
+  'serum dưỡng sáng mờ thâm loreal paris',
   'nước hoa nam nữ chính hãng cao cấp',
   'nước tẩy trang dịu nhẹ cho da nhạy cảm',
 
@@ -151,7 +151,7 @@ export const ALL_SEARCH_SUGGESTIONS = [
   'robot hút bụi lau nhà thông minh',
   'nồi chiên không dầu điện tử',
   'máy lọc không khí gia đình',
-  'chăn ga gối đệm lụa tencel cao cấp',
+  'bộ chăn ga gối lụa tencel lock&lock',
 
   // 12. Mẹ & Bé (Category 27)
   'sữa bột phát triển chiều cao trí não cho bé',
@@ -275,7 +275,7 @@ export const CATEGORY_SYNONYMS = [
   {
     catId: 30,
     categoryName: 'Books & Stationery',
-    keywords: ['sach', 'van phong pham', 'but', 'so', 'tieu thuyet', 'giao trinh', 'truyen', 'book']
+    keywords: ['sach', 'van phong pham', 'but', 'so tay', 'tieu thuyet', 'giao trinh', 'truyen', 'book']
   },
   {
     catId: 24,
@@ -310,6 +310,8 @@ export const COMPANION_CATEGORIES = {
 /**
  * Hàm so khớp sản phẩm tìm kiếm:
  * - CHÍNH XÁC 100%, KHÔNG BAO GIỜ BỊ LẪN NGÀNH KHÁC (Áo ra áo, Điện thoại ra điện thoại, Quần ra quần)
+ * - Hỗ trợ đa từ (Multi-word intersection) để các cụm gợi ý dài luôn khớp đúng sản phẩm
+ * - Hỗ trợ ký tự đơn để khi người dùng vừa gõ chữ cái đầu (như c, d, p...) sản phẩm đã hiện ngay trong dropdown
  */
 export function matchProductSearch(product, rawQuery) {
   if (!rawQuery || !rawQuery.trim()) return true;
@@ -318,22 +320,25 @@ export function matchProductSearch(product, rawQuery) {
   const pBrand = normalizeText(product.brand_name);
   const pCat = normalizeText(product.category_name);
   const pWords = pName.split(/\s+/).concat(pBrand.split(/\s+/));
+  const qWords = qNorm.split(/\s+/).filter(w => w.length >= 1);
 
   // 1. Phân loại theo ngành hàng & từ khóa chuyên biệt (Tránh lẫn lộn 100%)
   // ĐIỆN THOẠI & PHỤ KIỆN
-  const isPhoneQuery = ['phone', 'dien thoai', 'dt', 'smartphone', 'iphone', 'samsung', 'pixel', 'op lung', 'cu sac'].includes(qNorm);
+  const isPhoneQuery = ['phone', 'dien thoai', 'dt', 'smartphone', 'iphone', 'samsung', 'pixel', 'op lung', 'cu sac'].some(k =>
+    qNorm === k || (k.includes(' ') && qNorm.includes(k)) || (k.length >= 4 && qNorm.includes(k))
+  );
   if (isPhoneQuery) {
     return product.category_id === 10 || pCat.includes('smartphone') || pCat.includes('dien thoai');
   }
 
   // ÁO (CHỈ LẤY ÁO, KHÔNG LẤY QUẦN, KHÔNG LẤY ĐẦM, KHÔNG LẤY ĐIỆN THOẠI)
-  if (qNorm === 'ao' || qNorm === 'ao thun' || qNorm === 'ao so mi' || qNorm === 'ao polo' || qNorm === 'ao hoodie' || qNorm === 'ao khoac' || qNorm === 'shirt') {
+  if (qNorm === 'ao' || qNorm.startsWith('ao ') || qNorm === 'shirt') {
     return (product.category_id === 16 || product.category_id === 17) &&
       pWords.some(w => ['ao', 'shirt', 'polo', 'hoodie', 'khoac', 'blazer', 'len'].includes(w));
   }
 
   // QUẦN (CHỈ LẤY QUẦN, KHÔNG LẤY ÁO)
-  if (qNorm === 'quan' || qNorm === 'quan jean' || qNorm === 'quan tay' || qNorm === 'jean' || qNorm === 'pants') {
+  if (qNorm === 'quan' || qNorm.startsWith('quan ') || qNorm === 'jean' || qNorm === 'pants') {
     return (product.category_id === 16 || product.category_id === 17) &&
       pWords.some(w => ['quan', 'jean', 'jeans', 'short'].includes(w));
   }
@@ -374,19 +379,27 @@ export function matchProductSearch(product, rawQuery) {
     return product.category_id === 25;
   }
 
-  // 2. So khớp từ chuẩn xác theo từ đơn hoặc cụm từ
+  // 2. So khớp trực tiếp chuỗi con (nếu tên sản phẩm chứa cụm từ)
   if (pName.includes(qNorm) || pBrand.includes(qNorm)) {
-    // Tránh trường hợp "ao" nằm trong "xiaomi"
     if (qNorm === 'ao' && !pWords.includes('ao')) return false;
-    // Tránh trường hợp "son" nằm trong "sony"
     if (qNorm === 'son' && pBrand === 'sony') return false;
     return true;
   }
 
-  // So khớp từ chính xác
-  if (pWords.some(w => w === qNorm || (qNorm.length >= 4 && w.startsWith(qNorm)))) {
-    if (qNorm === 'son' && pWords.includes('sony')) return false;
-    return true;
+  // 3. So khớp đa từ (Multi-word intersection) cho các cụm gợi ý dài
+  if (qWords.length >= 2) {
+    const matchCount = qWords.filter(w => pWords.some(pw => pw === w || (w.length >= 3 && pw.startsWith(w)))).length;
+    if (matchCount >= Math.ceil(qWords.length * 0.6)) {
+      return true;
+    }
+  }
+
+  // 4. So khớp tiền tố từ đơn hoặc ký tự đầu
+  if (qWords.length === 1) {
+    if (qNorm.length === 1) {
+      return pWords.some(w => w.startsWith(qNorm));
+    }
+    return pWords.some(w => w === qNorm || (qNorm.length >= 3 && w.startsWith(qNorm)));
   }
 
   return false;
@@ -510,9 +523,8 @@ export function detectCategoryIdsFromQuery(rawQuery) {
   for (const item of CATEGORY_SYNONYMS) {
     const isMatched = item.keywords.some(k => {
       if (qNorm === k) return true;
-      if (qNorm.includes(k) && (k.length >= 3 || words.includes(k))) return true;
-      if (words.includes(k)) return true;
-      if (qNorm.length >= 4 && k.startsWith(qNorm)) return true;
+      if (k.split(/\s+/).includes(qNorm)) return true;
+      if (words.length > 1 && qNorm.includes(k) && k.length >= 3) return true;
       return false;
     });
     if (isMatched) {
@@ -520,11 +532,11 @@ export function detectCategoryIdsFromQuery(rawQuery) {
     }
   }
 
-  // 3. Dò theo từ điển từ đồng nghĩa QUERY_SYNONYMS
+  // 3. Dò theo từ điển từ đồng nghĩa QUERY_SYNONYMS (chính xác từng từ, không dùng substring lung tung)
   const synonyms = QUERY_SYNONYMS[qNorm] || [];
   for (const syn of synonyms) {
     for (const item of CATEGORY_SYNONYMS) {
-      if (item.keywords.some(k => k === syn || syn.includes(k) || k.includes(syn))) {
+      if (item.keywords.some(k => k === syn || k.split(/\s+/).includes(syn))) {
         matchedCatSet.add(item.catId);
       }
     }
@@ -633,44 +645,76 @@ export function getRecentSearches() {
 }
 
 /**
+ * XÓA TOÀN BỘ LỊCH SỬ THEO VẾT ĐỂ PHỤC VỤ DEMO TỪ ĐẦU (RESET DEMO DATA)
+ */
+export function resetTrackingHistory() {
+  try {
+    localStorage.removeItem(RECENT_VIEWS_KEY);
+    localStorage.removeItem(CATEGORY_WEIGHTS_KEY);
+    localStorage.removeItem(RECENT_SEARCHES_KEY);
+    console.log('[Aura AI] Đã đặt lại toàn bộ lịch sử theo vết về trạng thái ban đầu.');
+  } catch (e) {
+    console.error('Failed to reset tracking history', e);
+  }
+}
+
+if (typeof window !== 'undefined') {
+  window.resetAuraDemo = resetTrackingHistory;
+}
+
+/**
  * GIẢI THUẬT ĐAN XEN CÁ NHÂN HÓA SHOPEE / TIKTOK SHOP (Interleaved Recommendation Stream)
  * 
- * - Khi người dùng vừa tìm kiếm / xem sản phẩm ("nghe lén"):
- *   12 SẢN PHẨM ĐẦU TIÊN (HÀNG 1 & HÀNG 2) 100% ĐẬP VÀO MẶT USER BẰNG SẢN PHẨM LIÊN QUAN!
+ * - AI TỰ ĐỘNG TẬP TRUNG VÀO Ý ĐỊNH GẦN NHẤT (LATEST INTENT) CỦA NGƯỜI DÙNG:
+ *   Dù người dùng có nghịch nhiều, click xem nhiều sản phẩm khác nhau đi nữa,
+ *   thì sản phẩm / từ khóa VỪA MỚI TÌM HOẶC VỪA MỚI XEM GẦN NHẤT sẽ luôn được ưu tiên tuyệt đối!
+ * - 12 SẢN PHẨM ĐẦU TIÊN (HÀNG 1 & HÀNG 2) 100% ĐẬP VÀO MẶT USER BẰNG SẢN PHẨM GẦN NHẤT & HỆ SINH THÁI!
  * - Xáo trộn ngẫu nhiên (Fisher-Yates) giữa các sản phẩm cùng ngành trên mỗi lần F5 / về Home.
  * - Từ hàng 3 trở đi: Đan xen liên tục (2 món liên quan : 1 món thịnh hành khác) trên toàn bộ 108 sản phẩm.
- * - Sạch sẽ 100%, không có bất kỳ tag màu mè nào.
  */
 export function generateBlendedDiscoverFeed(rawProducts = []) {
   if (!rawProducts || rawProducts.length === 0) return [];
 
-  const categoryWeights = JSON.parse(localStorage.getItem(CATEGORY_WEIGHTS_KEY) || '{}');
   const recentSearches = getRecentSearches();
   const recentViews = getRecentlyViewedProducts();
-  const recentCatIds = new Set(recentViews.map(p => p.category_id).filter(Boolean));
 
-  const topCatIds = getTopCategoryInterests();
+  // 1. TÌM Ý ĐỊNH GẦN ĐÂY NHẤT (LATEST INTENT):
+  // So sánh giữa lần Tìm Kiếm gần nhất và lần Xem Sản Phẩm gần nhất
+  const latestSearch = recentSearches[0];
+  const latestView = recentViews[0];
 
-  // Dò tìm danh mục từ các lần search gần đây (kể cả với dữ liệu cũ trong localStorage)
-  const searchCatIds = new Set();
-  recentSearches.slice(0, 3).forEach(s => {
-    const catIds = (s.matchedCatIds && s.matchedCatIds.length > 0)
-      ? s.matchedCatIds
-      : detectCategoryIdsFromQuery(s.query || s.normalized);
-    catIds.forEach(id => searchCatIds.add(id));
-  });
+  let targetCatIds = [];
+  let targetQuery = null;
 
-  // Danh mục mục tiêu chính đã bị "nghe lén" (Tìm kiếm + Xem chi tiết + Điểm tương tác)
-  const primaryCatIds = new Set([...topCatIds, ...searchCatIds, ...recentCatIds]);
+  if (latestSearch && latestView) {
+    const searchTime = latestSearch.timestamp || 0;
+    const viewTime = latestView.viewed_at || 0;
+    if (searchTime >= viewTime) {
+      targetQuery = latestSearch.query || latestSearch.normalized;
+      targetCatIds = (latestSearch.matchedCatIds && latestSearch.matchedCatIds.length > 0)
+        ? latestSearch.matchedCatIds
+        : detectCategoryIdsFromQuery(targetQuery);
+    } else {
+      targetCatIds = [latestView.category_id];
+      targetQuery = latestView.name;
+    }
+  } else if (latestSearch) {
+    targetQuery = latestSearch.query || latestSearch.normalized;
+    targetCatIds = (latestSearch.matchedCatIds && latestSearch.matchedCatIds.length > 0)
+      ? latestSearch.matchedCatIds
+      : detectCategoryIdsFromQuery(targetQuery);
+  } else if (latestView) {
+    targetCatIds = [latestView.category_id];
+    targetQuery = latestView.name;
+  }
 
-  // Hệ sinh thái bổ trợ tương thích (Companion Categories)
-  const expandedCatIds = new Set(primaryCatIds);
-  primaryCatIds.forEach(catId => {
-    const companions = COMPANION_CATEGORIES[catId] || [];
-    companions.forEach(c => expandedCatIds.add(c));
-  });
-
-  const hasUserIntent = primaryCatIds.size > 0 || recentSearches.length > 0 || recentViews.length > 0;
+  // Nếu targetCatIds rỗng nhưng có targetQuery, tự động tìm danh mục của sản phẩm khớp trong kho
+  if ((!targetCatIds || targetCatIds.length === 0) && targetQuery) {
+    const matchedP = rawProducts.find(p => matchProductSearch(p, targetQuery));
+    if (matchedP) {
+      targetCatIds = [matchedP.category_id];
+    }
+  }
 
   // Hàm Fisher-Yates xáo trộn mảng ngẫu nhiên
   const shuffleArray = (array) => {
@@ -682,74 +726,59 @@ export function generateBlendedDiscoverFeed(rawProducts = []) {
     return arr;
   };
 
-  // NẾU LÀ KHÁCH MỚI (CHƯA CÓ LỊCH SỬ): Xáo trộn ngẫu nhiên toàn bộ 108 sản phẩm trên mỗi lần F5 / về Home
-  if (!hasUserIntent) {
+  // NẾU LÀ KHÁCH MỚI (CHƯA CÓ LỊCH SỬ NÀO): Xáo trộn ngẫu nhiên toàn bộ 108 sản phẩm trên mỗi lần F5 / về Home
+  if ((!targetCatIds || targetCatIds.length === 0) && !targetQuery) {
     return shuffleArray(rawProducts);
   }
 
-  // NẾU ĐÃ CÓ LỊCH SỬ TÌM KIẾM / XEM HÀNG ("BỊ NGHE LÉN"):
-  const poolRetargetedPrimary = [];   // Đúng ngành hàng tìm kiếm / vừa xem (Điện thoại, phụ kiện hoặc Quần áo)
-  const poolRetargetedCompanion = []; // Hệ sinh thái tương thích bổ trợ
-  const poolTrendingOutside = [];     // Các ngành hàng ngoài lề khác toàn sàn
+  // 2. TẬP TRUNG TOÀN LỰC VÀO SẢN PHẨM / NGÀNH HÀNG GẦN NHẤT VỪA TÌM HOẶC VỪA XEM:
+  const primaryCatSet = new Set(targetCatIds || []);
+  const companionCatSet = new Set();
+  primaryCatSet.forEach(catId => {
+    (COMPANION_CATEGORIES[catId] || []).forEach(comp => companionCatSet.add(comp));
+  });
+
+  const poolPrimary = [];
+  const poolCompanion = [];
+  const poolOutside = [];
 
   rawProducts.forEach(product => {
-    const pNameNorm = normalizeText(product.name);
-    const pCatNorm = normalizeText(product.category_name);
-
-    let isExactSearchMatch = false;
-    for (const search of recentSearches.slice(0, 3)) {
-      if (search.query && matchProductSearch(product, search.query)) {
-        isExactSearchMatch = true;
-        break;
-      }
-      if (search.normalized && (pNameNorm.includes(search.normalized) || pCatNorm.includes(search.normalized))) {
-        isExactSearchMatch = true;
-        break;
-      }
-      if (search.matchedCatIds && search.matchedCatIds.includes(product.category_id)) {
-        isExactSearchMatch = true;
-        break;
-      }
-    }
-
-    const isPrimaryCat = primaryCatIds.has(product.category_id);
-    const isCompanionCat = expandedCatIds.has(product.category_id) && !isPrimaryCat;
-
-    // Random Jitter để mỗi lần F5 thứ tự các món lại đổi mới sinh động
     const rnd = Math.random() * 50;
+    const isPrimaryCat = primaryCatSet.has(product.category_id);
+    const isDirectMatch = targetQuery && matchProductSearch(product, targetQuery);
 
-    if (isExactSearchMatch || isPrimaryCat) {
-      poolRetargetedPrimary.push({ ...product, _score: 300 + rnd });
-    } else if (isCompanionCat) {
-      poolRetargetedCompanion.push({ ...product, _score: 150 + rnd });
+    if (isDirectMatch || isPrimaryCat) {
+      poolPrimary.push({ ...product, _score: 500 + rnd });
+    } else if (companionCatSet.has(product.category_id)) {
+      poolCompanion.push({ ...product, _score: 250 + rnd });
     } else {
-      poolTrendingOutside.push({ ...product, _score: (product.sold_count || 0) + (rnd * 2) });
+      poolOutside.push({ ...product, _score: (product.sold_count || 0) + (rnd * 2) });
     }
   });
 
-  // Xáo trộn ngẫu nhiên bên trong từng nhóm
-  poolRetargetedPrimary.sort((a, b) => b._score - a._score);
-  poolRetargetedCompanion.sort((a, b) => b._score - a._score);
-  poolTrendingOutside.sort((a, b) => b._score - a._score);
+  // Xáo trộn ngẫu nhiên bên trong từng nhóm để mỗi lần F5 thứ tự các món lại đổi mới sinh động
+  poolPrimary.sort((a, b) => b._score - a._score);
+  poolCompanion.sort((a, b) => b._score - a._score);
+  poolOutside.sort((a, b) => b._score - a._score);
 
-  const allRetargeted = [...poolRetargetedPrimary, ...poolRetargetedCompanion];
+  const allRetargeted = [...poolPrimary, ...poolCompanion];
   const blendedFeed = [];
   let rIdx = 0;
   let oIdx = 0;
 
-  // 1. HAI HÀNG ĐẦU TIÊN (12 sản phẩm đầu): 100% ĐẬP VÀO MẶT USER BẰNG SẢN PHẨM NGHE LÉN / HỆ SINH THÁI!
+  // 1. HAI HÀNG ĐẦU TIÊN (12 sản phẩm đầu): 100% ĐẬP VÀO MẶT USER BẰNG SẢN PHẨM GẦN NHẤT VÀ HỆ SINH THÁI!
   while (rIdx < Math.min(12, allRetargeted.length)) {
     blendedFeed.push(allRetargeted[rIdx++]);
   }
 
-  // 2. TỪ HÀNG THỨ 3 TRỞ ĐI: Đan xen liên tục (2 món nghe lén : 1 món ngoài lề)
-  while (rIdx < allRetargeted.length || oIdx < poolTrendingOutside.length) {
+  // 2. TỪ HÀNG THỨ 3 TRỞ ĐI: Đan xen liên tục theo nhịp 2 món liên quan : 1 món thịnh hành ngoài lề
+  while (rIdx < allRetargeted.length || oIdx < poolOutside.length) {
     if (rIdx < allRetargeted.length) blendedFeed.push(allRetargeted[rIdx++]);
     if (rIdx < allRetargeted.length) blendedFeed.push(allRetargeted[rIdx++]);
-    if (oIdx < poolTrendingOutside.length) blendedFeed.push(poolTrendingOutside[oIdx++]);
+    if (oIdx < poolOutside.length) blendedFeed.push(poolOutside[oIdx++]);
 
-    if (rIdx >= allRetargeted.length && oIdx < poolTrendingOutside.length) {
-      blendedFeed.push(poolTrendingOutside[oIdx++]);
+    if (rIdx >= allRetargeted.length && oIdx < poolOutside.length) {
+      blendedFeed.push(poolOutside[oIdx++]);
     }
   }
 
