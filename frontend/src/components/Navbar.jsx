@@ -16,7 +16,7 @@ export default function Navbar() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
-  
+
   const dropdownRef = useRef(null);
   const userMenuRef = useRef(null);
 
@@ -36,7 +36,7 @@ export default function Navbar() {
       setSuggestions({ queries: [], products: [] });
       return;
     }
-    
+
     const delayDebounceFn = setTimeout(async () => {
       setLoadingSuggestions(true);
       try {
@@ -87,7 +87,7 @@ export default function Navbar() {
     <nav className="bg-[#020204]/80 backdrop-blur-md border-b border-white/10 sticky top-0 z-[500] shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          
+
           {/* Logo & Brand */}
           <div className="flex items-center">
             <Link to="/" className="flex items-center gap-3">
@@ -140,9 +140,9 @@ export default function Navbar() {
                                 className="w-full text-left px-3 py-2 hover:bg-white/10 transition-colors flex items-center justify-between gap-3 border-b border-white/5 last:border-0 group"
                               >
                                 <div className="flex items-center gap-2.5 overflow-hidden">
-                                  <img 
-                                    src={getSafeProductImage(item)} 
-                                    alt={item.name} 
+                                  <img
+                                    src={getSafeProductImage(item)}
+                                    alt={item.name}
                                     className="w-9 h-9 object-cover rounded-lg bg-black/40 shrink-0 border border-white/10"
                                     referrerPolicy="no-referrer"
                                     loading="lazy"
@@ -210,7 +210,7 @@ export default function Navbar() {
 
           {/* Right Navigation */}
           <div className="flex items-center gap-4 sm:gap-6">
-            
+
             {/* User Menu */}
             {user ? (
               <div className="flex items-center gap-3 sm:gap-4">
@@ -221,8 +221,8 @@ export default function Navbar() {
                 )}
 
                 {/* Shopee-style User Dropdown (Matches user screenshot 1) */}
-                <div 
-                  ref={userMenuRef} 
+                <div
+                  ref={userMenuRef}
                   className="relative group"
                   onMouseEnter={() => setShowUserDropdown(true)}
                   onMouseLeave={() => setShowUserDropdown(false)}
@@ -250,21 +250,21 @@ export default function Navbar() {
                         {/* Triangle arrow pointer pointing to avatar */}
                         <div className="absolute -top-1.5 right-6 w-3 h-3 bg-white border-t border-l border-slate-100 rotate-45" />
 
-                        <Link 
+                        <Link
                           to="/profile?tab=profile"
                           onClick={() => setShowUserDropdown(false)}
                           className="block px-4 py-2.5 text-sm font-normal text-slate-700 hover:text-indigo-600 hover:bg-slate-50 transition-colors"
                         >
                           My Account
                         </Link>
-                        <Link 
+                        <Link
                           to="/profile?tab=purchase"
                           onClick={() => setShowUserDropdown(false)}
                           className="block px-4 py-2.5 text-sm font-normal text-slate-700 hover:text-indigo-600 hover:bg-slate-50 transition-colors"
                         >
                           My Purchase
                         </Link>
-                        <button 
+                        <button
                           onClick={handleLogout}
                           className="w-full text-left px-4 py-2.5 text-sm font-normal text-slate-700 hover:text-indigo-600 hover:bg-slate-50 transition-colors border-t border-slate-100"
                         >

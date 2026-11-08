@@ -21,7 +21,7 @@ export default function HomePage() {
   const [searchParams] = useSearchParams();
   const searchQuery = searchParams.get('search') || '';
   const navigate = useNavigate();
-  
+
   const scrollContainerRef = useRef(null);
   const searchResultsRef = useRef(null);
   const observer = useRef();
@@ -167,30 +167,30 @@ export default function HomePage() {
   }, [page]);
 
   const categoryIcons = [
-    { name: "Men's Fashion",           label: 'Thời Trang Nam',          icon: Shirt },
-    { name: "Women's Fashion",         label: 'Thời Trang Nữ',           icon: ShoppingBag },
+    { name: "Men's Fashion", label: 'Thời Trang Nam', icon: Shirt },
+    { name: "Women's Fashion", label: 'Thời Trang Nữ', icon: ShoppingBag },
     { name: 'Smartphones & Accessories', label: 'Điện Thoại & Phụ Kiện', icon: Smartphone },
-    { name: 'Mom & Baby',              label: 'Mẹ & Bé',                 icon: Baby },
-    { name: 'Electronics',             label: 'Điện Tử',                 icon: Monitor },
-    { name: 'Home & Living',           label: 'Nhà Cửa & Đời Sống',      icon: Home },
-    { name: 'Laptops & Computers',     label: 'Máy Tính & Laptop',       icon: Laptop },
-    { name: 'Beauty',                  label: 'Làm Đẹp',                 icon: Sparkles },
-    { name: 'Cameras',                 label: 'Máy Ảnh',                 icon: Camera },
-    { name: 'Health',                  label: 'Sức Khỏe',                icon: HeartPulse },
-    { name: 'Watches',                 label: 'Đồng Hồ',                 icon: Watch },
-    { name: "Women's Shoes",           label: 'Giày Nữ',                 icon: Footprints },
-    { name: "Men's Shoes",             label: 'Giày Nam',                icon: Footprints },
-    { name: "Women's Bags",            label: 'Túi Xách Nữ',             icon: Briefcase },
-    { name: 'Smart Home & Appliances', label: 'Nhà Thông Minh',          icon: Coffee },
-    { name: 'Audio',                   label: 'Âm Thanh',                icon: Headphones },
-    { name: 'Sports & Outdoors',       label: 'Thể Thao & Ngoài Trời',   icon: Dumbbell },
-    { name: 'Groceries',               label: 'Thực Phẩm',               icon: Store },
-    { name: 'Automotive',              label: 'Ô Tô & Xe Máy',           icon: Car },
-    { name: 'Books & Stationery',      label: 'Sách & Văn Phòng Phẩm',   icon: Book },
-    { name: 'Gaming',                  label: 'Gaming',                  icon: Gamepad2 },
-    { name: 'Pet Supplies',            label: 'Thú Cưng',                icon: Box },
-    { name: 'Gifts',                   label: 'Quà Tặng',                icon: Gift },
-    { name: 'Vouchers',                label: 'Phiếu Giảm Giá',          icon: Ticket },
+    { name: 'Mom & Baby', label: 'Mẹ & Bé', icon: Baby },
+    { name: 'Electronics', label: 'Điện Tử', icon: Monitor },
+    { name: 'Home & Living', label: 'Nhà Cửa & Đời Sống', icon: Home },
+    { name: 'Laptops & Computers', label: 'Máy Tính & Laptop', icon: Laptop },
+    { name: 'Beauty', label: 'Làm Đẹp', icon: Sparkles },
+    { name: 'Cameras', label: 'Máy Ảnh', icon: Camera },
+    { name: 'Health', label: 'Sức Khỏe', icon: HeartPulse },
+    { name: 'Watches', label: 'Đồng Hồ', icon: Watch },
+    { name: "Women's Shoes", label: 'Giày Nữ', icon: Footprints },
+    { name: "Men's Shoes", label: 'Giày Nam', icon: Footprints },
+    { name: "Women's Bags", label: 'Túi Xách Nữ', icon: Briefcase },
+    { name: 'Smart Home & Appliances', label: 'Nhà Thông Minh', icon: Coffee },
+    { name: 'Audio', label: 'Âm Thanh', icon: Headphones },
+    { name: 'Sports & Outdoors', label: 'Thể Thao & Ngoài Trời', icon: Dumbbell },
+    { name: 'Groceries', label: 'Thực Phẩm', icon: Store },
+    { name: 'Automotive', label: 'Ô Tô & Xe Máy', icon: Car },
+    { name: 'Books & Stationery', label: 'Sách & Văn Phòng Phẩm', icon: Book },
+    { name: 'Gaming', label: 'Gaming', icon: Gamepad2 },
+    { name: 'Pet Supplies', label: 'Thú Cưng', icon: Box },
+    { name: 'Gifts', label: 'Quà Tặng', icon: Gift },
+    { name: 'Vouchers', label: 'Phiếu Giảm Giá', icon: Ticket },
   ];
 
   return (
@@ -219,7 +219,7 @@ export default function HomePage() {
           <ChevronRight className="w-5 h-5" />
         </button>
 
-        <div 
+        <div
           ref={scrollContainerRef}
           className="grid grid-rows-2 auto-cols-[85px] sm:auto-cols-[95px] grid-flow-col overflow-x-auto gap-y-3 gap-x-3 pb-2.5 pt-1 -mx-2 px-2 sm:-mx-4 sm:px-4 snap-x [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-track]:bg-white/5 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-indigo-500/40 hover:[&::-webkit-scrollbar-thumb]:bg-indigo-500 [&::-webkit-scrollbar-thumb]:rounded-full transition-all"
         >
@@ -243,59 +243,59 @@ export default function HomePage() {
             <Flame className="w-6 h-6 fill-current" />
             <h2 className="text-xl font-bold uppercase tracking-wider text-white">Tìm Kiếm Hàng Đầu</h2>
           </div>
-          
+
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
             {bestSellers.map(product => {
               const { salePrice, originalPrice, discountPercent, hasDiscount } = calculatePricing(product);
               return (
-              <div key={product.id} className="bg-[#111] rounded-2xl border border-white/10 overflow-hidden hover:border-indigo-500/50 hover:shadow-[0_0_15px_rgba(99,102,241,0.15)] transition-all group flex flex-col relative h-full">
-                {/* Top Badge */}
-                <span className="absolute top-3 left-3 z-10 bg-amber-500 text-white text-[10px] sm:text-xs uppercase tracking-wider font-bold px-2.5 py-1 rounded-full shadow-sm">TOP</span>
+                <div key={product.id} className="bg-[#111] rounded-2xl border border-white/10 overflow-hidden hover:border-indigo-500/50 hover:shadow-[0_0_15px_rgba(99,102,241,0.15)] transition-all group flex flex-col relative h-full">
+                  {/* Top Badge */}
+                  <span className="absolute top-3 left-3 z-10 bg-amber-500 text-white text-[10px] sm:text-xs uppercase tracking-wider font-bold px-2.5 py-1 rounded-full shadow-sm">TOP</span>
 
-                <Link to={`/product/${product.id}`} onClick={() => trackProductInteraction(product, 'view')} className="block w-full relative aspect-square bg-white/5 overflow-hidden">
-                  <img 
-                    src={getSafeProductImage(product)} 
-                    alt={product.name} 
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    referrerPolicy="no-referrer"
-                    loading="lazy"
-                    data-category-id={product.category_id}
-                    onError={handleImageError}
-                  />
-                </Link>
-                
-                <div className="px-4 pb-4 pt-3 flex flex-col flex-grow">
-                  <Link to={`/product/${product.id}`} onClick={() => trackProductInteraction(product, 'view')}>
-                    <h3 className="font-semibold text-white hover:text-indigo-400 transition-colors line-clamp-2 text-sm min-h-[40px]">{product.name}</h3>
+                  <Link to={`/product/${product.id}`} onClick={() => trackProductInteraction(product, 'view')} className="block w-full relative aspect-square bg-white/5 overflow-hidden">
+                    <img
+                      src={getSafeProductImage(product)}
+                      alt={product.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      referrerPolicy="no-referrer"
+                      loading="lazy"
+                      data-category-id={product.category_id}
+                      onError={handleImageError}
+                    />
                   </Link>
-                  <div className="mt-auto flex items-center justify-between pt-4">
-                    <div className="flex flex-col">
-                      {hasDiscount ? (
-                        <>
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-xs text-slate-500 line-through">${originalPrice}</span>
-                            <span className="text-[10px] font-bold text-rose-400 bg-rose-500/15 px-1.5 py-0.5 rounded border border-rose-500/30">
-                              -{discountPercent}%
-                            </span>
-                          </div>
-                          <span className="text-base sm:text-lg font-bold text-rose-400">${salePrice}</span>
-                        </>
-                      ) : (
-                        <span className="text-base sm:text-lg font-bold text-indigo-400">${salePrice}</span>
-                      )}
+
+                  <div className="px-4 pb-4 pt-3 flex flex-col flex-grow">
+                    <Link to={`/product/${product.id}`} onClick={() => trackProductInteraction(product, 'view')}>
+                      <h3 className="font-semibold text-white hover:text-indigo-400 transition-colors line-clamp-2 text-sm min-h-[40px]">{product.name}</h3>
+                    </Link>
+                    <div className="mt-auto flex items-center justify-between pt-4">
+                      <div className="flex flex-col">
+                        {hasDiscount ? (
+                          <>
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-xs text-slate-500 line-through">${originalPrice}</span>
+                              <span className="text-[10px] font-bold text-rose-400 bg-rose-500/15 px-1.5 py-0.5 rounded border border-rose-500/30">
+                                -{discountPercent}%
+                              </span>
+                            </div>
+                            <span className="text-base sm:text-lg font-bold text-rose-400">${salePrice}</span>
+                          </>
+                        ) : (
+                          <span className="text-base sm:text-lg font-bold text-indigo-400">${salePrice}</span>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => addToCart(product)}
+                        className="p-1.5 sm:p-2 bg-white/10 text-indigo-400 rounded-full hover:bg-indigo-500 hover:text-white transition-colors border border-transparent"
+                        aria-label="Add to cart"
+                      >
+                        <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
+                      </button>
                     </div>
-                    <button 
-                      onClick={() => addToCart(product)}
-                      className="p-1.5 sm:p-2 bg-white/10 text-indigo-400 rounded-full hover:bg-indigo-500 hover:text-white transition-colors border border-transparent"
-                      aria-label="Add to cart"
-                    >
-                      <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
-                    </button>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
           </div>
         </div>
       )}
@@ -326,69 +326,69 @@ export default function HomePage() {
 
         <div className="w-full">
           {loading ? (
-             <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div></div>
+            <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div></div>
           ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
-            {products.length === 0 ? (
-               <div className="col-span-full py-12 text-center text-slate-500 rounded-2xl border border-dashed border-white/20">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
+              {products.length === 0 ? (
+                <div className="col-span-full py-12 text-center text-slate-500 rounded-2xl border border-dashed border-white/20">
                   <p>No products found.</p>
-               </div>
-            ) : products.map((product, index) => {
-              const isLast = products.length === index + 1;
-              const { salePrice, originalPrice, discountPercent, hasDiscount } = calculatePricing(product);
-              return (
-              <div ref={isLast ? lastProductElementRef : null} key={product.id} className="bg-[#111] rounded-xl border border-white/10 overflow-hidden hover:border-indigo-500/50 hover:shadow-[0_0_15px_rgba(99,102,241,0.15)] transition-all group flex flex-col h-full relative">
-                <Link to={`/product/${product.id}`} onClick={() => trackProductInteraction(product, 'view')} className="block w-full relative aspect-square bg-white/5 overflow-hidden">
-                  <img 
-                    src={getSafeProductImage(product)} 
-                    alt={product.name} 
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    referrerPolicy="no-referrer"
-                    loading="lazy"
-                    data-category-id={product.category_id}
-                    onError={handleImageError}
-                  />
-
-                  {product.stock === 0 && (
-                    <span className="absolute top-2 right-2 bg-red-500/80 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-md">Out of stock</span>
-                  )}
-                </Link>
-                
-                <div className="p-3 flex flex-col flex-grow">
-                  <div className="flex justify-between items-start mb-1">
-                    <Link to={`/product/${product.id}`} onClick={() => trackProductInteraction(product, 'view')}>
-                      <h3 className="font-medium text-slate-200 hover:text-indigo-400 transition-colors line-clamp-2 text-xs leading-tight min-h-[34px]">{product.name}</h3>
-                    </Link>
-                  </div>
-                  
-                  <div className="mt-auto flex items-center justify-between pt-2">
-                    <div className="flex flex-col">
-                      {hasDiscount ? (
-                        <>
-                          <div className="flex items-center gap-1">
-                            <span className="text-[10px] text-slate-500 line-through">${originalPrice}</span>
-                            <span className="text-[9px] font-bold text-rose-400">-{discountPercent}%</span>
-                          </div>
-                          <span className="text-sm font-bold text-rose-400">${salePrice}</span>
-                        </>
-                      ) : (
-                        <span className="text-sm font-bold text-indigo-400">${salePrice}</span>
-                      )}
-                    </div>
-                    <button 
-                      onClick={() => addToCart(product)}
-                      disabled={product.stock === 0}
-                      className="p-1.5 bg-white/10 text-indigo-400 rounded-full hover:bg-indigo-500 hover:text-white transition-colors border border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-                      aria-label="Add to cart"
-                    >
-                      <ShoppingCart className="w-4 h-4" />
-                    </button>
-                  </div>
                 </div>
-              </div>
-            );
-          })}
-          </div>
+              ) : products.map((product, index) => {
+                const isLast = products.length === index + 1;
+                const { salePrice, originalPrice, discountPercent, hasDiscount } = calculatePricing(product);
+                return (
+                  <div ref={isLast ? lastProductElementRef : null} key={product.id} className="bg-[#111] rounded-xl border border-white/10 overflow-hidden hover:border-indigo-500/50 hover:shadow-[0_0_15px_rgba(99,102,241,0.15)] transition-all group flex flex-col h-full relative">
+                    <Link to={`/product/${product.id}`} onClick={() => trackProductInteraction(product, 'view')} className="block w-full relative aspect-square bg-white/5 overflow-hidden">
+                      <img
+                        src={getSafeProductImage(product)}
+                        alt={product.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        referrerPolicy="no-referrer"
+                        loading="lazy"
+                        data-category-id={product.category_id}
+                        onError={handleImageError}
+                      />
+
+                      {product.stock === 0 && (
+                        <span className="absolute top-2 right-2 bg-red-500/80 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-md">Out of stock</span>
+                      )}
+                    </Link>
+
+                    <div className="p-3 flex flex-col flex-grow">
+                      <div className="flex justify-between items-start mb-1">
+                        <Link to={`/product/${product.id}`} onClick={() => trackProductInteraction(product, 'view')}>
+                          <h3 className="font-medium text-slate-200 hover:text-indigo-400 transition-colors line-clamp-2 text-xs leading-tight min-h-[34px]">{product.name}</h3>
+                        </Link>
+                      </div>
+
+                      <div className="mt-auto flex items-center justify-between pt-2">
+                        <div className="flex flex-col">
+                          {hasDiscount ? (
+                            <>
+                              <div className="flex items-center gap-1">
+                                <span className="text-[10px] text-slate-500 line-through">${originalPrice}</span>
+                                <span className="text-[9px] font-bold text-rose-400">-{discountPercent}%</span>
+                              </div>
+                              <span className="text-sm font-bold text-rose-400">${salePrice}</span>
+                            </>
+                          ) : (
+                            <span className="text-sm font-bold text-indigo-400">${salePrice}</span>
+                          )}
+                        </div>
+                        <button
+                          onClick={() => addToCart(product)}
+                          disabled={product.stock === 0}
+                          className="p-1.5 bg-white/10 text-indigo-400 rounded-full hover:bg-indigo-500 hover:text-white transition-colors border border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                          aria-label="Add to cart"
+                        >
+                          <ShoppingCart className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           )}
 
           {/* Infinite Scroll Loader */}

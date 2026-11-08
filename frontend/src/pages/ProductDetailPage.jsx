@@ -6,8 +6,320 @@ import { useAuth } from '../context/AuthContext';
 import { ShoppingCart, Star, StarHalf, ArrowLeft, Truck, Shield, RotateCcw, Sparkles, MessageSquare } from 'lucide-react';
 import { calculatePricing } from '../utils/pricing';
 import { FALLBACK_PRODUCTS } from '../data/categoryProducts';
-import { trackProductInteraction } from '../utils/userTracker';
+import { trackProductInteraction, COMPANION_CATEGORIES } from '../utils/userTracker';
 import { getSafeProductImage, handleImageError } from '../utils/productImages';
+
+// Tạo bình luận thực tế, tự nhiên và đặc thù riêng cho từng loại sản phẩm
+function generateContextualReviews(product) {
+  if (!product) return [];
+  const pName = product.name || 'sản phẩm';
+  const catId = Number(product.category_id);
+
+  const reviewPools = {
+    // 10: Điện thoại & Phụ kiện
+    10: [
+      {
+        username: 'Trần Hoàng Long',
+        rating: 5,
+        comment: `Máy ${pName} nguyên seal chính hãng, kích hoạt bảo hành điện tử ngay. Dùng rất mượt, camera chụp đêm cực nét và pin trâu cả ngày.`,
+        daysAgo: 2
+      },
+      {
+        username: 'Lê Phương Thảo',
+        rating: 5,
+        comment: 'Shop đóng gói 3 lớp chống sốc cẩn thận, giao hỏa tốc 2 tiếng. Máy cầm đầm tay, màn hình 120Hz lướt mượt mà không bị nóng máy.',
+        daysAgo: 4
+      },
+      {
+        username: 'Nguyễn Tiến Dũng',
+        rating: 5,
+        comment: 'Đã dùng được 1 tuần, mọi tác vụ đa nhiệm và chơi game đều mượt đỉnh. Hàng Mall chuẩn chỉ, chấm 10/10.',
+        daysAgo: 7
+      }
+    ],
+
+    // 11: Thiết bị điện tử, Tivi, Màn hình, Máy chiếu
+    11: [
+      {
+        username: 'Vũ Đức Thịnh',
+        rating: 5,
+        comment: `Màu sắc của ${pName} rất sâu và sống động. Chiếu/hiển thị màn lớn cực kỳ sắc nét, góc nhìn rộng và loa tích hợp to rõ ngoài mong đợi.`,
+        daysAgo: 1
+      },
+      {
+        username: 'Nguyễn Minh Châu',
+        rating: 5,
+        comment: 'Đóng thùng gỗ bọc xốp cẩn thận. Dễ dàng kết nối với điện thoại và laptop qua wifi/bluetooth, setup rạp phim tại gia cực chill.',
+        daysAgo: 3
+      },
+      {
+        username: 'Phạm Quốc Huy',
+        rating: 5,
+        comment: 'Hàng chính hãng bảo hành điện tử kích hoạt nhanh. Độ sáng tốt, xem phim 4K HDR nét căng từng chi tiết.',
+        daysAgo: 6
+      }
+    ],
+
+    // 12: Máy tính & Laptop
+    12: [
+      {
+        username: 'Đặng Quốc Huy',
+        rating: 5,
+        comment: `Vỏ kim loại của ${pName} build chắc chắn, bàn phím gõ êm, màn hình chuẩn màu làm đồ họa và code rất sướng. Pin trâu dùng cả ngày.`,
+        daysAgo: 2
+      },
+      {
+        username: 'Hoàng Thị Mai',
+        rating: 5,
+        comment: 'Khởi động máy chỉ mất vài giây, quạt tản nhiệt êm ái không bị rú khi mở nhiều tab nặng. Đóng gói chuyên nghiệp, shop phục vụ chu đáo.',
+        daysAgo: 5
+      }
+    ],
+
+    // 13: Máy ảnh & Ống kính
+    13: [
+      {
+        username: 'Lâm Hoàng Phong',
+        rating: 5,
+        comment: `Lấy nét mắt và khuôn mặt siêu nhanh, màu ảnh gốc của ${pName} trong trẻo không cần hậu kỳ nhiều. Cầm vừa vặn tay chụp cả ngày không mỏi.`,
+        daysAgo: 3
+      },
+      {
+        username: 'Nguyễn Thùy Trang',
+        rating: 5,
+        comment: 'Chất lượng quang học xuất sắc, chụp chân dung xóa phông bokeh lung linh. Shop bọc chống sốc siêu dày, an tâm tuyệt đối.',
+        daysAgo: 8
+      }
+    ],
+
+    // 14: Âm thanh & Tai nghe, Loa
+    14: [
+      {
+        username: 'Phạm Minh Tuấn',
+        rating: 5,
+        comment: `Âm bass của ${pName} đánh lực và sâu, dải mid/treble ngọt ngào không bị chói. Chống ồn chủ động ANC cực đỉnh khi đi xe buýt.`,
+        daysAgo: 1
+      },
+      {
+        username: 'Trần Thu Hà',
+        rating: 5,
+        comment: 'Thiết kế đẹp tinh tế, đeo liên tục 4-5 tiếng không bị đau tai. Kết nối Bluetooth nhanh ổn định, pin dùng cả tuần mới sạc.',
+        daysAgo: 4
+      }
+    ],
+
+    // 15: Máy chơi game & Gaming Gear
+    15: [
+      {
+        username: 'Bùi Anh Dũng',
+        rating: 5,
+        comment: `Máy ${pName} chơi game mượt mà, tốc độ load game tức thì, tay cầm rung phản hồi xúc giác siêu chân thực. Trải nghiệm game đỉnh cao!`,
+        daysAgo: 2
+      },
+      {
+        username: 'Nguyễn Hải Nam',
+        rating: 5,
+        comment: 'Hàng nguyên seal chuẩn phân phối chính hãng. Chơi liên tục máy vẫn êm mát, shop tặng kèm phụ kiện rất có tâm.',
+        daysAgo: 5
+      }
+    ],
+
+    // 16: Thời trang Nam
+    16: [
+      {
+        username: 'Đỗ Thùy Trang',
+        rating: 5,
+        comment: `Chất vải của ${pName} sờ vào rất mềm mịn, đường kim mũi chỉ tỉ mỉ không hề có chỉ thừa. Form lên dáng chuẩn như mẫu, giặt không bai dão.`,
+        daysAgo: 2
+      },
+      {
+        username: 'Nguyễn Văn Hùng',
+        rating: 5,
+        comment: 'Vải cotton thoáng mát, thấm hút mồ hôi tốt khi vận động. Màu sắc nhã nhặn dễ phối đồ đi làm hoặc đi dạo phố.',
+        daysAgo: 6
+      }
+    ],
+
+    // 17: Thời trang Nữ
+    17: [
+      {
+        username: 'Trần Bích Ngọc',
+        rating: 5,
+        comment: `Váy/áo ${pName} mặc lên tôn dáng lắm ạ, chất vải mềm rũ sang chảnh. Đóng gói hộp rất chỉnh chu thơm phức, chấm shop 10 điểm!`,
+        daysAgo: 1
+      },
+      {
+        username: 'Lê Thu Thảo',
+        rating: 5,
+        comment: 'Đúng chuẩn form chuẩn size, cạp cao hack dáng cực kỳ. Chất vải dày dặn không bị lộ, đi tiệc hay đi làm đều đẹp.',
+        daysAgo: 4
+      }
+    ],
+
+    // 18 & 19: Giày Nam, Nữ
+    18: [
+      {
+        username: 'Trịnh Gia Huy',
+        rating: 5,
+        comment: `Đế giày của ${pName} êm chân bất ngờ, đi bộ cả ngày không bị đau gót hay cấn ngón. Chuẩn form, phối quần tây hay jeans đều đẹp.`,
+        daysAgo: 3
+      },
+      {
+        username: 'Phan Quốc Đạt',
+        rating: 5,
+        comment: 'Da xịn bóng đẹp, đường may chắc chắn. Hộp giày còn nguyên vẹn không móp méo, giao nhanh đúng hẹn.',
+        daysAgo: 7
+      }
+    ],
+    19: [
+      {
+        username: 'Vũ Ngọc Hân',
+        rating: 5,
+        comment: `Giày ${pName} mang êm chân, gót vững chắc không bị tròng trành. Thiết kế thanh lịch tôn chân thon dài, rất ưng ý!`,
+        daysAgo: 2
+      },
+      {
+        username: 'Đinh Mai Phương',
+        rating: 5,
+        comment: 'Form ôm chân chuẩn size, lót đệm êm ái. Mang đi làm đứng nhiều vẫn thoải mái, sẽ ủng hộ shop tiếp.',
+        daysAgo: 5
+      }
+    ],
+
+    // 20: Túi ví thời trang
+    20: [
+      {
+        username: 'Lê Thanh Hằng',
+        rating: 5,
+        comment: `Chất da cao cấp của ${pName} không bị mùi khó chịu, khóa kim loại mạ sáng bóng mượt mà. Ngăn trong rộng rãi đựng vừa nhiều đồ.`,
+        daysAgo: 2
+      },
+      {
+        username: 'Nguyễn Thảo My',
+        rating: 5,
+        comment: 'Túi form cứng cáp sang trọng, đóng gói hộp cứng kèm túi chống bụi chính hãng. Đi làm hay đi tiệc đều rất sang.',
+        daysAgo: 4
+      }
+    ],
+
+    // 21: Đồng hồ
+    21: [
+      {
+        username: 'Nguyễn Thành Nam',
+        rating: 5,
+        comment: `Đồng hồ ${pName} đeo lên tay nhìn rất sang trọng và đẳng cấp. Mặt kính sapphire chống trầy xước tốt, dây đeo ôm tay êm ái.`,
+        daysAgo: 1
+      },
+      {
+        username: 'Hoàng Kim Ngân',
+        rating: 5,
+        comment: 'Hàng chính hãng fullbox tem chống hàng giả đầy đủ. Các tính năng đo sức khỏe và nhịp tim hoạt động rất chính xác.',
+        daysAgo: 5
+      }
+    ],
+
+    // 22 & 23: Nhà cửa đời sống & Thiết bị thông minh
+    22: [
+      {
+        username: 'Trần Đình Khang',
+        rating: 5,
+        comment: `Sản phẩm ${pName} hoàn thiện rất tỉ mỉ, chất liệu cao cấp dùng thích mê. Nhà cửa nhìn gọn gàng và hiện đại hẳn lên.`,
+        daysAgo: 3
+      },
+      {
+        username: 'Hồ Thanh Trúc',
+        rating: 5,
+        comment: 'Vải mềm mịn mát lạnh, đường trần chỉ kỹ lưỡng. Giặt máy không bị phai màu hay xù lông, rất hài lòng!',
+        daysAgo: 6
+      }
+    ],
+    23: [
+      {
+        username: 'Phạm Quang Minh',
+        rating: 5,
+        comment: `Thiết bị ${pName} hoạt động rất êm, kết nối điều khiển qua app trên điện thoại cực kỳ nhạy. Tiết kiệm thời gian dọn dẹp nấu nướng cho gia đình.`,
+        daysAgo: 2
+      },
+      {
+        username: 'Lê Mỹ Dung',
+        rating: 5,
+        comment: 'Hàng chính hãng bảo hành 2 năm tận nhà. Thiết kế hiện đại sang trọng, gia đình mình ai cũng thích.',
+        daysAgo: 4
+      }
+    ],
+
+    // 25: Mỹ phẩm & Làm đẹp
+    25: [
+      {
+        username: 'Ngô Khánh Linh',
+        rating: 5,
+        comment: `Chất serum/kem của ${pName} mỏng nhẹ thấm nhanh, không hề gây nhờn rít hay bí da. Dùng 1 tuần thấy da ẩm mịn và căng bóng hơn hẳn.`,
+        daysAgo: 1
+      },
+      {
+        username: 'Trần Ngọc Bích',
+        rating: 5,
+        comment: 'Mùi hương dịu nhẹ thư giãn, thành phần lành tính không châm chích da nhạy cảm. Chuẩn hàng Mall yên tâm dùng lâu dài.',
+        daysAgo: 3
+      }
+    ],
+
+    // 26: Sức khỏe
+    26: [
+      {
+        username: 'Võ Văn Kiệt',
+        rating: 5,
+        comment: `Sản phẩm ${pName} date còn rất xa, có tem phụ tiếng Việt và mã QR truy xuất nguồn gốc. Uống đều đặn thấy cơ thể nhẹ nhõm khỏe khoắn hơn.`,
+        daysAgo: 2
+      },
+      {
+        username: 'Lương Thị Hoa',
+        rating: 5,
+        comment: 'Đóng gói kín đáo kỹ càng, hướng dẫn sử dụng chi tiết. Mua cho bố mẹ dùng rất an tâm về chất lượng.',
+        daysAgo: 5
+      }
+    ],
+
+    // 31: Bách hóa & Thực phẩm
+    31: [
+      {
+        username: 'Dương Mỹ Uyên',
+        rating: 5,
+        comment: `Gia vị/thực phẩm ${pName} date mới tinh, mùi vị thơm ngon chuẩn vị gia đình. Đóng gói chống sốc kỹ, giao nhanh trong 2h.`,
+        daysAgo: 1
+      },
+      {
+        username: 'Nguyễn Tấn Đạt',
+        rating: 5,
+        comment: 'Mua online trên shop vừa được giá tốt vừa freeship tận cửa. Hàng chuẩn công ty đóng gói sạch sẽ.',
+        daysAgo: 4
+      }
+    ]
+  };
+
+  const pool = reviewPools[catId] || [
+    {
+      username: 'Trần Hoàng Nam',
+      rating: 5,
+      comment: `Sản phẩm ${pName} thực tế đẹp hơn trên hình, độ hoàn thiện tinh xảo. Nhân viên tư vấn nhiệt tình, giao hàng đúng hẹn.`,
+      daysAgo: 2
+    },
+    {
+      username: 'Đặng Mai Anh',
+      rating: 5,
+      comment: 'Hàng chuẩn chính hãng tem mác đầy đủ. Rất xứng đáng với giá tiền, chấm 5 sao cho chất lượng dịch vụ của shop!',
+      daysAgo: 5
+    }
+  ];
+
+  return pool.map((r, i) => ({
+    id: 1000 + i + (Number(product.id) * 10),
+    username: r.username,
+    rating: r.rating,
+    comment: r.comment,
+    created_at: new Date(Date.now() - (86400000 * r.daysAgo)).toISOString()
+  }));
+}
 
 export default function ProductDetailPage() {
   const { id } = useParams();
@@ -25,6 +337,9 @@ export default function ProductDetailPage() {
   const [reviewError, setReviewError] = useState('');
 
   useEffect(() => {
+    // 1. Luôn cuộn lên đỉnh trang ngay lập tức khi mở bất kỳ sản phẩm nào
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+
     const fetchProductData = async () => {
       setLoading(true);
       try {
@@ -44,28 +359,23 @@ export default function ProductDetailPage() {
         }
 
         if (activeProduct) {
-          if (!activeRecs || activeRecs.length === 0) {
-            activeRecs = FALLBACK_PRODUCTS
-              .filter(p => p.category_id === activeProduct.category_id && String(p.id) !== String(activeProduct.id))
-              .slice(0, 4);
+          // Gợi ý SẢN PHẨM TƯƠNG TỰ: Ưu tiên cùng danh mục (sameCategory) 100%
+          const sameCategory = FALLBACK_PRODUCTS.filter(
+            p => p.category_id === activeProduct.category_id && String(p.id) !== String(activeProduct.id)
+          );
+          let recList = [...sameCategory];
+          if (recList.length < 4) {
+            const companionCatIds = COMPANION_CATEGORIES[activeProduct.category_id] || [];
+            const companions = FALLBACK_PRODUCTS.filter(
+              p => companionCatIds.includes(p.category_id) && String(p.id) !== String(activeProduct.id)
+            );
+            recList = [...recList, ...companions];
           }
-          if (!activeReviews || activeReviews.length === 0) {
-            activeReviews = [
-              {
-                id: 101,
-                username: 'Nguyễn Văn Anh',
-                rating: 5,
-                comment: 'Sản phẩm chính hãng chất lượng cực kỳ tốt, đóng gói 3 lớp xốp khí rất kỹ lưỡng và giao hỏa tốc.',
-                created_at: new Date(Date.now() - 86400000 * 2).toISOString()
-              },
-              {
-                id: 102,
-                username: 'Bành Thị Tòn Tén',
-                rating: 5,
-                comment: 'Đúng chuẩn hàng Mall, bảo hành điện tử chính hãng kích hoạt ngay khi nhận hàng. Rất hài lòng!',
-                created_at: new Date(Date.now() - 86400000 * 5).toISOString()
-              }
-            ];
+          activeRecs = recList.slice(0, 4);
+
+          // Đánh giá thiết thực theo từng loại sản phẩm cụ thể
+          if (!activeReviews || activeReviews.length === 0 || activeReviews.every(r => r.username === 'Nguyễn Văn Anh' || r.username === 'Bành Thị Tòn Tén')) {
+            activeReviews = generateContextualReviews(activeProduct);
           }
         }
 
@@ -74,7 +384,7 @@ export default function ProductDetailPage() {
           trackProductInteraction(activeProduct, 'view');
         }
         setActiveImageIndex(0);
-        setRecommendations({ type: recData?.type || 'Related', items: activeRecs });
+        setRecommendations({ type: 'similar', items: activeRecs });
         setReviews(activeReviews);
       } catch (error) {
         console.error('Failed to fetch product:', error);
@@ -82,6 +392,11 @@ export default function ProductDetailPage() {
         setProduct(fallbackItem || null);
         if (fallbackItem) {
           trackProductInteraction(fallbackItem, 'view');
+          const sameCat = FALLBACK_PRODUCTS.filter(
+            p => p.category_id === fallbackItem.category_id && String(p.id) !== String(fallbackItem.id)
+          ).slice(0, 4);
+          setRecommendations({ type: 'similar', items: sameCat });
+          setReviews(generateContextualReviews(fallbackItem));
         }
       } finally {
         setLoading(false);
@@ -106,11 +421,11 @@ export default function ProductDetailPage() {
   const submitReview = async (e) => {
     e.preventDefault();
     if (!user) {
-      setReviewError('You must be logged in to leave a review.');
+      setReviewError('Vui lòng đăng nhập để gửi đánh giá.');
       return;
     }
     if (!newReview.comment.trim()) {
-      setReviewError('Please write a comment.');
+      setReviewError('Vui lòng nhập nội dung đánh giá của bạn.');
       return;
     }
 
@@ -149,7 +464,7 @@ export default function ProductDetailPage() {
   return (
     <div className="max-w-7xl mx-auto">
       <Link to="/" className="inline-flex items-center text-sm font-medium text-slate-400 hover:text-indigo-400 mb-8 transition-colors">
-        <ArrowLeft className="w-4 h-4 mr-2" /> Back to Catalog
+        <ArrowLeft className="w-4 h-4 mr-2" /> Quay lại danh mục
       </Link>
 
       <div className="bg-[#111] rounded-3xl shadow-sm border border-white/10 overflow-hidden mb-12">
@@ -181,10 +496,10 @@ export default function ProductDetailPage() {
                     }
                   }}
                 >
-                  <img 
-                    src={product.images[activeImageIndex] || getSafeProductImage(product)} 
-                    alt={product.name} 
-                    className="w-full h-full object-contain drop-shadow-xl transition-transform duration-200 pointer-events-none" 
+                  <img
+                    src={product.images[activeImageIndex] || getSafeProductImage(product)}
+                    alt={product.name}
+                    className="w-full h-full object-contain drop-shadow-xl transition-transform duration-200 pointer-events-none"
                     referrerPolicy="no-referrer"
                     data-category-id={product.category_id}
                     onError={handleImageError}
@@ -225,10 +540,10 @@ export default function ProductDetailPage() {
                   }
                 }}
               >
-                <img 
-                  src={getSafeProductImage(product)} 
-                  alt={product.name} 
-                  className="w-full h-full object-contain drop-shadow-xl transition-transform duration-200 pointer-events-none" 
+                <img
+                  src={getSafeProductImage(product)}
+                  alt={product.name}
+                  className="w-full h-full object-contain drop-shadow-xl transition-transform duration-200 pointer-events-none"
                   referrerPolicy="no-referrer"
                   data-category-id={product.category_id}
                   onError={handleImageError}
@@ -310,15 +625,15 @@ export default function ProductDetailPage() {
               <div className="grid grid-cols-3 gap-4 pt-6 border-t border-white/10">
                 <div className="flex flex-col items-center text-center gap-2">
                   <Truck className="w-6 h-6 text-indigo-400" />
-                  <span className="text-xs text-slate-400 font-medium">Free Delivery</span>
+                  <span className="text-xs text-slate-400 font-medium">Giao Hàng Nhanh Toàn Quốc</span>
                 </div>
                 <div className="flex flex-col items-center text-center gap-2">
                   <Shield className="w-6 h-6 text-indigo-400" />
-                  <span className="text-xs text-slate-400 font-medium">1 Year Warranty</span>
+                  <span className="text-xs text-slate-400 font-medium">Cam Kết Chính Hãng 100%</span>
                 </div>
                 <div className="flex flex-col items-center text-center gap-2">
                   <RotateCcw className="w-6 h-6 text-indigo-400" />
-                  <span className="text-xs text-slate-400 font-medium">30-Day Return</span>
+                  <span className="text-xs text-slate-400 font-medium">Đổi Trả Dễ Dàng 30 Ngày</span>
                 </div>
               </div>
             </div>
@@ -332,19 +647,19 @@ export default function ProductDetailPage() {
           <div className="bg-white/10 p-3 rounded-xl">
             <MessageSquare className="w-6 h-6 text-indigo-400" />
           </div>
-          <h2 className="text-2xl font-bold tracking-tight">Customer Reviews</h2>
+          <h2 className="text-2xl font-bold tracking-tight">Đánh Giá Từ Khách Hàng</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {/* Write a Review */}
           <div className="md:col-span-1">
-            <h3 className="font-bold text-lg mb-4">Write a Review</h3>
+            <h3 className="font-bold text-lg mb-4">Viết Đánh Giá</h3>
             {reviewError && <p className="text-rose-400 text-sm mb-4 bg-rose-500/10 p-3 rounded-lg border border-rose-500/20">{reviewError}</p>}
 
             {user ? (
               <form onSubmit={submitReview} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-2">Rating</label>
+                  <label className="block text-sm font-medium text-slate-400 mb-2">Đánh giá sao</label>
                   <div className="flex gap-1">
                     {[1, 2, 3, 4, 5].map(star => (
                       <button
@@ -359,13 +674,13 @@ export default function ProductDetailPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-2">Your Review</label>
+                  <label className="block text-sm font-medium text-slate-400 mb-2">Nhận xét của bạn</label>
                   <textarea
                     rows="4"
                     value={newReview.comment}
                     onChange={e => setNewReview({ ...newReview, comment: e.target.value })}
                     className="w-full border border-white/10 bg-black/50 text-white rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none resize-none transition-all"
-                    placeholder="What did you like or dislike?"
+                    placeholder="Chia sẻ cảm nhận chi tiết của bạn về sản phẩm này..."
                   ></textarea>
                 </div>
                 <button
@@ -373,13 +688,13 @@ export default function ProductDetailPage() {
                   disabled={submittingReview}
                   className="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-500 transition-colors disabled:opacity-50 flex justify-center shadow-lg shadow-indigo-600/30"
                 >
-                  {submittingReview ? <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div> : 'Submit Review'}
+                  {submittingReview ? <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div> : 'Gửi Đánh Giá'}
                 </button>
               </form>
             ) : (
               <div className="bg-white/5 p-6 rounded-2xl border border-white/10 text-center">
-                <p className="text-slate-400 mb-4">You must be logged in to leave a review.</p>
-                <Link to="/auth" className="inline-block bg-indigo-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-indigo-500 transition-colors">Login / Register</Link>
+                <p className="text-slate-400 mb-4">Vui lòng đăng nhập để gửi đánh giá sản phẩm.</p>
+                <Link to="/auth" className="inline-block bg-indigo-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-indigo-500 transition-colors">Đăng nhập / Đăng ký</Link>
               </div>
             )}
           </div>
@@ -387,14 +702,14 @@ export default function ProductDetailPage() {
           {/* Review List */}
           <div className="md:col-span-2 space-y-6">
             {reviews.length === 0 ? (
-              <p className="text-slate-500 text-center py-12 bg-white/5 rounded-2xl border border-dashed border-white/10">No reviews yet. Be the first to review this product!</p>
+              <p className="text-slate-500 text-center py-12 bg-white/5 rounded-2xl border border-dashed border-white/10">Chưa có đánh giá nào cho sản phẩm này. Hãy là người đầu tiên đánh giá!</p>
             ) : (
               reviews.map((review, idx) => (
                 <div key={idx} className="border-b border-white/10 pb-6 last:border-0 last:pb-0">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-bold text-white">{review.username || review.user_name || 'Customer'}</span>
+                    <span className="font-bold text-white">{review.username || review.user_name || 'Khách hàng'}</span>
                     <span className="text-xs text-slate-500">
-                      {new Date(review.created_at).toLocaleDateString()}
+                      {new Date(review.created_at).toLocaleDateString('vi-VN')}
                     </span>
                   </div>
                   <div className="flex text-amber-400 mb-2">
@@ -420,9 +735,9 @@ export default function ProductDetailPage() {
               </div>
               <div>
                 <h2 className="text-lg sm:text-xl font-bold text-white">
-                  {recommendations.type === 'co-occurrence' ? 'Frequently Bought Together' : 'Similar Products You Might Like'}
+                  Sản Phẩm Tương Tự
                 </h2>
-                <p className="text-xs text-slate-400">Personalized recommendations powered by ShopLite AI</p>
+                <p className="text-xs text-slate-400">Các sản phẩm cùng ngành hàng bạn có thể quan tâm</p>
               </div>
             </div>
 
@@ -437,9 +752,9 @@ export default function ProductDetailPage() {
                   >
                     <div className="aspect-square w-full bg-black/40 rounded-xl mb-3 overflow-hidden relative">
                       {rec.image_url ? (
-                        <img 
-                          src={getSafeProductImage(rec)} 
-                          alt={rec.name} 
+                        <img
+                          src={getSafeProductImage(rec)}
+                          alt={rec.name}
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                           referrerPolicy="no-referrer"
                           loading="lazy"

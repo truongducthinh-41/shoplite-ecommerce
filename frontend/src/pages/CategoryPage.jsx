@@ -11,7 +11,7 @@ import { trackCategoryInteraction } from '../utils/userTracker';
 import { getSafeProductImage, handleImageError } from '../utils/productImages';
 
 // Helper to normalize strings (remove accents, quotes, spaces) for matching
-const normalizeStr = (s) => 
+const normalizeStr = (s) =>
   (s || '')
     .toString()
     .normalize("NFD")
@@ -55,11 +55,10 @@ function BrandLogoCard({ brand, isSelected, onClick }) {
   return (
     <div
       onClick={onClick}
-      className={`flex-shrink-0 w-32 h-20 sm:w-36 sm:h-22 rounded-2xl border transition-all cursor-pointer shadow-lg overflow-hidden p-2.5 flex flex-col items-center justify-center gap-1.5 group select-none ${
-        isSelected
+      className={`flex-shrink-0 w-32 h-20 sm:w-36 sm:h-22 rounded-2xl border transition-all cursor-pointer shadow-lg overflow-hidden p-2.5 flex flex-col items-center justify-center gap-1.5 group select-none ${isSelected
           ? 'bg-indigo-950/80 border-indigo-500 ring-2 ring-indigo-500/70 shadow-indigo-500/30'
           : 'bg-[#18181c] border-white/10 hover:border-indigo-400 hover:bg-[#22222a]'
-      }`}
+        }`}
       title={`Lọc theo thương hiệu: ${brand.name}`}
     >
       <div className="h-9 w-full flex items-center justify-center overflow-hidden">
@@ -98,7 +97,7 @@ export default function CategoryPage() {
   const [brandsFilter, setBrandsFilter] = useState([]);
   const [ratingFilter, setRatingFilter] = useState(null);
   const [subCategoryFilter, setSubCategoryFilter] = useState('');
-  
+
   const observer = useRef();
   const { addToCart } = useCart();
   const LIMIT = 100;
@@ -121,8 +120,8 @@ export default function CategoryPage() {
     // 2. Search Query filter
     if (searchQuery) {
       const qNorm = normalizeStr(searchQuery);
-      list = list.filter(p => 
-        normalizeStr(p.name).includes(qNorm) || 
+      list = list.filter(p =>
+        normalizeStr(p.name).includes(qNorm) ||
         normalizeStr(p.description).includes(qNorm) ||
         normalizeStr(p.brand_name).includes(qNorm)
       );
@@ -134,7 +133,7 @@ export default function CategoryPage() {
       list = list.filter(p => {
         const pBrandNorm = normalizeStr(p.brand_name);
         const pNameNorm = normalizeStr(p.name);
-        return normBrands.some(b => 
+        return normBrands.some(b =>
           pBrandNorm.includes(b) || b.includes(pBrandNorm) || pNameNorm.includes(b)
         );
       });
@@ -158,8 +157,8 @@ export default function CategoryPage() {
     // 7. Subcategory keyword filter
     if (subCategoryFilter) {
       const subNorm = normalizeStr(subCategoryFilter);
-      list = list.filter(p => 
-        normalizeStr(p.name).includes(subNorm) || 
+      list = list.filter(p =>
+        normalizeStr(p.name).includes(subNorm) ||
         normalizeStr(p.description).includes(subNorm) ||
         normalizeStr(p.category_name).includes(subNorm)
       );
@@ -209,7 +208,7 @@ export default function CategoryPage() {
           ...(subCategoryFilter && { subcategory: subCategoryFilter })
         });
         const productsData = await apiFetch(`/products?${queryParams.toString()}`).catch(() => []);
-        
+
         if (productsData && productsData.length > 0) {
           // If remote API returns products, filter out cross-category contaminants if any
           const sanitized = productsData.filter(p => isCategoryMatch(p.category_name, categoryName));
@@ -317,10 +316,10 @@ export default function CategoryPage() {
         <div className="flex justify-between items-center mb-5">
           <h2 className="text-base sm:text-lg font-bold text-rose-500 uppercase tracking-wider">Top Brands</h2>
           <Link to={`/brands/${encodeURIComponent(categoryName || 'All')}`} className="text-sm text-rose-500 hover:text-rose-400 flex items-center gap-1 font-medium transition-colors">
-            See All <ChevronRight className="w-4 h-4"/>
+            See All <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
-        
+
         <div className="relative w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
           <div className="flex animate-marquee gap-4 py-1">
             {/* First Set */}
@@ -384,84 +383,84 @@ export default function CategoryPage() {
 
           <div className="w-full">
             {loading ? (
-               <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div></div>
+              <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div></div>
             ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
-              {products.length === 0 ? (
-                <div className="col-span-full py-16 text-center text-slate-400 rounded-2xl border border-dashed border-white/20 p-8 flex flex-col items-center justify-center gap-3 bg-white/[0.02]">
-                  <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-slate-500 mb-2">
-                    <Filter className="w-6 h-6" />
-                  </div>
-                  <p className="text-base text-slate-200 font-medium">Không tìm thấy sản phẩm phù hợp với bộ lọc hiện tại</p>
-                  <p className="text-xs text-slate-500 max-w-sm">Thử điều chỉnh lại khoảng giá, bỏ chọn thương hiệu hoặc làm mới bộ lọc.</p>
-                  <button
-                    onClick={handleClearAllFilters}
-                    className="mt-2 px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold transition-all shadow-lg shadow-indigo-600/30"
-                  >
-                    Xóa tất cả bộ lọc
-                  </button>
-                </div>
-              ) : products.map((product, index) => {
-              const isLast = products.length === index + 1;
-              const { salePrice, originalPrice, discountPercent, hasDiscount } = calculatePricing(product);
-              return (
-              <div ref={isLast ? lastProductElementRef : null} key={product.id} className="bg-[#111] rounded-xl border border-white/10 overflow-hidden hover:border-indigo-500/50 hover:shadow-[0_0_15px_rgba(99,102,241,0.15)] transition-all group flex flex-col h-full">
-                <Link to={`/product/${product.id}`} className="block w-full relative aspect-square bg-white/5 overflow-hidden">
-                  {product.image_url ? (
-                    <img 
-                      src={getSafeProductImage(product)} 
-                      alt={product.name} 
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      referrerPolicy="no-referrer"
-                      loading="lazy"
-                      data-category-id={product.category_id}
-                      onError={handleImageError}
-                    />
-                  ) : (
-                     <div className="w-full h-full bg-white/5 flex items-center justify-center text-slate-500 group-hover:scale-105 transition-transform duration-300">
-                        <span className="text-xl font-bold opacity-50">No Image</span>
-                     </div>
-                  )}
-                  {product.stock === 0 && (
-                    <span className="absolute top-2 left-2 bg-red-500/80 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-md">Out of stock</span>
-                  )}
-                </Link>
-                
-                <div className="p-3 flex flex-col flex-grow">
-                  <div className="flex justify-between items-start mb-1">
-                    <Link to={`/product/${product.id}`}>
-                      <h3 className="font-medium text-slate-200 hover:text-indigo-400 transition-colors line-clamp-2 text-xs leading-tight min-h-[34px]">{product.name}</h3>
-                    </Link>
-                  </div>
-                  
-                  <div className="mt-auto flex items-center justify-between pt-2">
-                    <div className="flex flex-col">
-                      {hasDiscount ? (
-                        <>
-                          <div className="flex items-center gap-1">
-                            <span className="text-[10px] text-slate-500 line-through">${originalPrice}</span>
-                            <span className="text-[9px] font-bold text-rose-400">-{discountPercent}%</span>
-                          </div>
-                          <span className="text-sm font-bold text-rose-400">${salePrice}</span>
-                        </>
-                      ) : (
-                        <span className="text-sm font-bold text-indigo-400">${salePrice}</span>
-                      )}
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+                {products.length === 0 ? (
+                  <div className="col-span-full py-16 text-center text-slate-400 rounded-2xl border border-dashed border-white/20 p-8 flex flex-col items-center justify-center gap-3 bg-white/[0.02]">
+                    <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-slate-500 mb-2">
+                      <Filter className="w-6 h-6" />
                     </div>
-                    <button 
-                      onClick={() => addToCart(product)}
-                      disabled={product.stock === 0}
-                      className="p-1.5 bg-white/10 text-indigo-400 rounded-full hover:bg-indigo-500 hover:text-white transition-colors border border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-                      aria-label="Add to cart"
+                    <p className="text-base text-slate-200 font-medium">Không tìm thấy sản phẩm phù hợp với bộ lọc hiện tại</p>
+                    <p className="text-xs text-slate-500 max-w-sm">Thử điều chỉnh lại khoảng giá, bỏ chọn thương hiệu hoặc làm mới bộ lọc.</p>
+                    <button
+                      onClick={handleClearAllFilters}
+                      className="mt-2 px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold transition-all shadow-lg shadow-indigo-600/30"
                     >
-                      <ShoppingCart className="w-4 h-4" />
+                      Xóa tất cả bộ lọc
                     </button>
                   </div>
-                </div>
+                ) : products.map((product, index) => {
+                  const isLast = products.length === index + 1;
+                  const { salePrice, originalPrice, discountPercent, hasDiscount } = calculatePricing(product);
+                  return (
+                    <div ref={isLast ? lastProductElementRef : null} key={product.id} className="bg-[#111] rounded-xl border border-white/10 overflow-hidden hover:border-indigo-500/50 hover:shadow-[0_0_15px_rgba(99,102,241,0.15)] transition-all group flex flex-col h-full">
+                      <Link to={`/product/${product.id}`} className="block w-full relative aspect-square bg-white/5 overflow-hidden">
+                        {product.image_url ? (
+                          <img
+                            src={getSafeProductImage(product)}
+                            alt={product.name}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            referrerPolicy="no-referrer"
+                            loading="lazy"
+                            data-category-id={product.category_id}
+                            onError={handleImageError}
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-white/5 flex items-center justify-center text-slate-500 group-hover:scale-105 transition-transform duration-300">
+                            <span className="text-xl font-bold opacity-50">No Image</span>
+                          </div>
+                        )}
+                        {product.stock === 0 && (
+                          <span className="absolute top-2 left-2 bg-red-500/80 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-md">Out of stock</span>
+                        )}
+                      </Link>
+
+                      <div className="p-3 flex flex-col flex-grow">
+                        <div className="flex justify-between items-start mb-1">
+                          <Link to={`/product/${product.id}`}>
+                            <h3 className="font-medium text-slate-200 hover:text-indigo-400 transition-colors line-clamp-2 text-xs leading-tight min-h-[34px]">{product.name}</h3>
+                          </Link>
+                        </div>
+
+                        <div className="mt-auto flex items-center justify-between pt-2">
+                          <div className="flex flex-col">
+                            {hasDiscount ? (
+                              <>
+                                <div className="flex items-center gap-1">
+                                  <span className="text-[10px] text-slate-500 line-through">${originalPrice}</span>
+                                  <span className="text-[9px] font-bold text-rose-400">-{discountPercent}%</span>
+                                </div>
+                                <span className="text-sm font-bold text-rose-400">${salePrice}</span>
+                              </>
+                            ) : (
+                              <span className="text-sm font-bold text-indigo-400">${salePrice}</span>
+                            )}
+                          </div>
+                          <button
+                            onClick={() => addToCart(product)}
+                            disabled={product.stock === 0}
+                            className="p-1.5 bg-white/10 text-indigo-400 rounded-full hover:bg-indigo-500 hover:text-white transition-colors border border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                            aria-label="Add to cart"
+                          >
+                            <ShoppingCart className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            );
-          })}
-          </div>
             )}
 
             {/* Infinite Scroll Loader */}
