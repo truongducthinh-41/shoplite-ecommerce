@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, User, Search, LogOut, ChevronDown, RotateCcw } from 'lucide-react';
+import { ShoppingCart, User, Search, LogOut, ChevronDown } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { apiFetch } from '../services/api';
@@ -22,20 +22,13 @@ export default function Navbar() {
 
   const cartItemCount = cart.reduce((total, item) => total + item.quantity, 0);
 
-  // Tự động reset demo nếu có tham số ?reset=true trên URL
+  // Tự động reset dữ liệu ngầm nếu truy cập bằng URL ?reset=true
   useEffect(() => {
     if (window.location.search.includes('reset=true')) {
       resetTrackingHistory();
       navigate('/', { replace: true });
     }
   }, [navigate]);
-
-  const handleResetDemo = () => {
-    resetTrackingHistory();
-    alert('Đã xóa sạch toàn bộ lịch sử theo vết! Hệ thống đã trở về trạng thái nguyên bản để bắt đầu Demo.');
-    navigate('/');
-    window.location.reload();
-  };
 
   // Gợi ý tìm kiếm thông minh đa tầng (cả từ khóa gợi ý lẫn sản phẩm)
   useEffect(() => {
@@ -290,16 +283,6 @@ export default function Navbar() {
                 </Link>
               </div>
             )}
-
-            {/* Nút Làm Mới Demo (Xóa Lịch Sử Theo Vết để bắt đầu buổi thuyết trình) */}
-            <button
-              onClick={handleResetDemo}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/25 hover:bg-rose-500/20 hover:border-rose-500/40 transition-all shadow-sm group shrink-0"
-              title="Đặt lại toàn bộ lịch sử tìm kiếm & xem hàng về trạng thái ban đầu cho Demo"
-            >
-              <RotateCcw className="w-3.5 h-3.5 group-hover:-rotate-90 transition-transform duration-300" />
-              <span className="hidden sm:inline">Reset Demo</span>
-            </button>
 
             {/* Cart Icon */}
             <Link to="/checkout" className="relative p-2 text-slate-300 hover:text-indigo-400 transition-colors bg-white/5 rounded-full border border-white/10">
